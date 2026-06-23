@@ -368,8 +368,6 @@ function procesarCSV(csv) {
   // En la hoja AOC la sección Junio empieza tras "% Asistencia" (col 26) y tiene col D + 15 días
   // Columna 27 = "D" (dummy), col 28 = L 1 Jun, ... col 42 = V 20 Jun (15 días hábiles)
   // Usar posiciones fijas basadas en la estructura conocida del CSV
-  const COL_INICIO_DIAS = 28; // primera columna de día real (L 1 Jun)
-
   const jardines = {};
   // Rastrear jardín y jornada activos (persisten entre filas del mismo bloque)
   let jardActivo = '';
@@ -399,23 +397,25 @@ function procesarCSV(csv) {
     const colA = (fila[0] || '').trim();
     const colG = (fila[6] || '').trim().toUpperCase();
     const colH = (fila[7] || '').trim();
-    const esJornada = colG === 'NORMAL' || colG.includes('TJ') || colG.includes('TJMJ') || colG === 'NOR';
+    // Normalizar variantes/typos de jornada en col G
+    const normG = colG.replace(/\s/g,'').toUpperCase();
+    const esJornada = ['NORMAL','NOR','NORMA','NROMAL'].includes(normG) || normG.startsWith('TJ') || normG === 'J';
+    const jornadaNorm = (normG.startsWith('TJ') || normG === 'J') ? 'TJMJ' : 'NORMAL';
 
-    // Actualizar jardín activo si encontramos nombre en col A o col H
-    if (esNombreJardin(colA) && esJardinConocido(colA)) {
+    // Col A = 'TJMJ' indica cambio de jornada (no nombre de jardín)
+    if (colA === 'TJMJ') { jornActiva = 'TJMJ'; }
+    else if (esNombreJardin(colA) && esJardinConocido(colA)) {
       jardActivo = matchNombre(colA);
     }
     if (esNombreJardin(colH) && esJardinConocido(colH)) {
       jardActivo = matchNombre(colH);
     }
-    if (esJornada) jornActiva = colG;
+    if (esJornada) jornActiva = jornadaNorm;
 
     if (!jardActivo) return;
 
-    // Columna G (índice 6) = Jornada para esta fila (o usar la activa)
-    // Normalizar abreviaciones: NOR -> NORMAL
-    const jornadaRaw = esJornada ? colG : jornActiva;
-    const jornada = jornadaRaw.startsWith('NOR') ? 'NORMAL' : jornadaRaw;
+    // Jornada ya normalizada arriba
+    const jornada = esJornada ? jornadaNorm : jornActiva;
 
     // Columna M (índice 12) = Nivel educativo
     const nivel = (fila[12] || '').trim();
@@ -435,13 +435,13 @@ function procesarCSV(csv) {
     // Columna Z (índice 25) = Cupos disponibles
     const cupos = parseInt((fila[25] || '').replace(',','.')) || 0;
 
-    // % Asistencia (índice 26)
-    const asistStr = (fila[26] || '').replace('%','').replace(',','.');
+    // % Asistencia = columna AB (índice 27)
+    const asistStr = (fila[27] || '').replace('%','').replace(',','.');
     const asistencia = parseFloat(asistStr) || 0;
 
-    // Días de asistencia: columna 28 (índice) en adelante, 15 días
+    // Días de asistencia: columna 29 en adelante (índice 28 = col D vacía, 29 = L 1 Jun)
     let dias = [];
-    for (let i = COL_INICIO_DIAS; i < COL_INICIO_DIAS + 15 && i < fila.length; i++) {
+    for (let i = 29; i < 29 + 15 && i < fila.length; i++) {
       const val = fila[i];
       const n = parseInt(val);
       dias.push(isNaN(n) ? 0 : n);
