@@ -288,11 +288,36 @@ function norm(s) {
     .replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ').trim();
 }
 
+// Alias: nombres en CSV -> nombre oficial
+const ALIAS = {
+  'pequena mision': 'Pequeña Misión de Jesús',
+  'pequeña mision': 'Pequeña Misión de Jesús',
+  'sc dulce bebe': 'Dulce Bebé',
+  'dulce bebe': 'Dulce Bebé',
+  'sonrisas de colores': 'Sonrisa de Colores',
+  'arcoiris': 'Arco Iris',
+  'el canelito': 'El Canelito',
+  'kanelito': 'El Canelito',
+};
+
 // Intenta emparejar con la lista oficial
 function matchNombre(nombre) {
   const n = norm(nombre);
+  // Primero busca en alias exactos
+  if (ALIAS[n]) return ALIAS[n];
+  // Luego busca en alias por contención
+  for (const [k, v] of Object.entries(ALIAS)) {
+    if (n.includes(k) || k.includes(n)) return v;
+  }
+  // Luego busca en lista oficial
   const found = JARDINES_AOC.find(j => norm(j) === n);
-  return found || nombre; // si no matchea, usar tal cual
+  if (found) return found;
+  // Busca coincidencia parcial (contención mutua)
+  const partial = JARDINES_AOC.find(j => {
+    const nj = norm(j);
+    return nj.includes(n) || n.includes(nj);
+  });
+  return partial || nombre;
 }
 
 // ══════════════════════════════════════════════════
@@ -350,11 +375,22 @@ function procesarCSV(csv) {
   let jardActivo = '';
   let jornActiva = '';
 
+  const ALIAS_NORMS = Object.keys(ALIAS);
+
   const esNombreJardin = s => {
     if (!s || s.length < 3) return false;
     if (/^\d/.test(s)) return false;
     if (/^(jh|tjmj|inicio|termino|tias|ninos|normal|mes|2025|horario|solo|total)/i.test(s)) return false;
     return true;
+  };
+
+  // Verifica si un string coincide con jardín oficial (directo, alias o parcial)
+  const esJardinConocido = s => {
+    const n = norm(s);
+    if (JARDINES_AOC.some(j => norm(j) === n)) return true;
+    if (ALIAS[n]) return true;
+    for (const k of ALIAS_NORMS) { if (n.includes(k) || k.includes(n)) return true; }
+    return false;
   };
 
   filas.slice(headerIdx + 1).forEach(fila => {
@@ -363,13 +399,13 @@ function procesarCSV(csv) {
     const colA = (fila[0] || '').trim();
     const colG = (fila[6] || '').trim().toUpperCase();
     const colH = (fila[7] || '').trim();
-    const esJornada = colG === 'NORMAL' || colG.includes('TJ') || colG.includes('TJMJ');
+    const esJornada = colG === 'NORMAL' || colG.includes('TJ') || colG.includes('TJMJ') || colG === 'NOR';
 
     // Actualizar jardín activo si encontramos nombre en col A o col H
-    if (esNombreJardin(colA) && JARDINES_AOC.some(j => norm(j) === norm(colA))) {
+    if (esNombreJardin(colA) && esJardinConocido(colA)) {
       jardActivo = matchNombre(colA);
     }
-    if (esNombreJardin(colH) && JARDINES_AOC.some(j => norm(j) === norm(colH))) {
+    if (esNombreJardin(colH) && esJardinConocido(colH)) {
       jardActivo = matchNombre(colH);
     }
     if (esJornada) jornActiva = colG;
@@ -377,7 +413,9 @@ function procesarCSV(csv) {
     if (!jardActivo) return;
 
     // Columna G (índice 6) = Jornada para esta fila (o usar la activa)
-    const jornada = esJornada ? colG : jornActiva;
+    // Normalizar abreviaciones: NOR -> NORMAL
+    const jornadaRaw = esJornada ? colG : jornActiva;
+    const jornada = jornadaRaw.startsWith('NOR') ? 'NORMAL' : jornadaRaw;
 
     // Columna M (índice 12) = Nivel educativo
     const nivel = (fila[12] || '').trim();
@@ -568,10 +606,10 @@ function render() {
       : jn.cupos < 0
       ? `<span class="badge r">Sobre cupo JN</span>`
       : `<span class="badge a">Sin cupos JN</span>`;
-    const cid = 'card-' + encodeURIComponent(j.c);
+    const cidx = 'card-' + data.indexOf(j);
 
-    return `<div class="card" id="${cid}">
-      <div class="card-hdr" onclick="toggleCard(${JSON.stringify(j.c)})">
+    return `<div class="card" id="${cidx}">
+      <div class="card-hdr" onclick="toggleCard('${cidx}')">
         <div class="card-title-row">
           <span class="card-name">${j.n}</span>${badgeJN}
         </div>
@@ -608,8 +646,8 @@ function render() {
   }).join('');
 }
 
-function toggleCard(c) {
-  const el = document.getElementById('card-' + encodeURIComponent(c));
+function toggleCard(cid) {
+  const el = document.getElementById(cid);
   if (!el) return;
   el.classList.toggle('open');
   const tog = el.querySelector('.card-toggle');
