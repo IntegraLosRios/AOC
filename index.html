@@ -56,9 +56,12 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 .asist-bar-f{height:5px;border-radius:3px;transition:width .4s}
 .asist-bar-f.g{background:#10b981}.asist-bar-f.a{background:#f59e0b}.asist-bar-f.r{background:#ef4444}
 .asist-label{font-size:10px;color:#5a677f;text-align:right}
-.card-toggle{font-size:10px;color:#3d4f6a;text-align:center;padding:4px 0 2px;cursor:pointer}
+.card-toggle{font-size:10px;color:#3d4f6a;text-align:center;padding:4px 0 2px;cursor:pointer;transition:color .2s}
 .card-body{display:none;border-top:1px solid #21283a}
 .card.open .card-body{display:block}
+.card.open{border-color:#2a3a5c;box-shadow:0 0 0 1px #1d3a6a}
+.card.open .card-hdr{background:#1a2133}
+.card.open .card-toggle{color:#60a5fa}
 .bloque{padding:12px 15px}
 .bloque+.bloque{border-top:1px solid #1a2133}
 .bloque-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
@@ -343,52 +346,52 @@ function procesarCSV(csv) {
   const COL_INICIO_DIAS = 28; // primera columna de día real (L 1 Jun)
 
   const jardines = {};
+  // Rastrear jardín y jornada activos (persisten entre filas del mismo bloque)
+  let jardActivo = '';
+  let jornActiva = '';
 
-  // Palabras clave que indican filas de resumen/totales a ignorar
-  const esFilaResumen = fila => {
-    const f7 = norm(fila[7] || '');
-    const f12 = norm(fila[12] || '');
-    return (
-      f12.includes('total') ||
-      f12.includes('promedio') ||
-      f7 === '' ||
-      // filas con solo totales globales (col 7 vacía y col 8 vacía)
-      (fila[7] === '' && fila[8] === '' && fila[9] === '')
-    );
+  const esNombreJardin = s => {
+    if (!s || s.length < 3) return false;
+    if (/^\d/.test(s)) return false;
+    if (/^(jh|tjmj|inicio|termino|tias|ninos|normal|mes|2025|horario|solo|total)/i.test(s)) return false;
+    return true;
   };
 
   filas.slice(headerIdx + 1).forEach(fila => {
-    if (fila.length < 26) return;
-    if (esFilaResumen(fila)) return;
+    if (fila.length < 20) return;
 
-    // Columna H (índice 7) = nombre del jardín
-    const jardinRaw = (fila[7] || '').trim();
-    if (!jardinRaw) return;
+    const colA = (fila[0] || '').trim();
+    const colG = (fila[6] || '').trim().toUpperCase();
+    const colH = (fila[7] || '').trim();
+    const esJornada = colG === 'NORMAL' || colG.includes('TJ') || colG.includes('TJMJ');
 
-    // Ignorar si el nombre es un código numérico o vacío
-    if (/^\d+$/.test(jardinRaw)) return;
+    // Actualizar jardín activo si encontramos nombre en col A o col H
+    if (esNombreJardin(colA) && JARDINES_AOC.some(j => norm(j) === norm(colA))) {
+      jardActivo = matchNombre(colA);
+    }
+    if (esNombreJardin(colH) && JARDINES_AOC.some(j => norm(j) === norm(colH))) {
+      jardActivo = matchNombre(colH);
+    }
+    if (esJornada) jornActiva = colG;
 
-    const jardin = matchNombre(jardinRaw);
+    if (!jardActivo) return;
 
-    // Verificar que el jardín esté en la lista oficial
-    if (!JARDINES_AOC.some(j => norm(j) === norm(jardin))) return;
-
-    // Columna G (índice 6) = Jornada (NORMAL / TJMJ)
-    const jornada = (fila[6] || '').toUpperCase();
+    // Columna G (índice 6) = Jornada para esta fila (o usar la activa)
+    const jornada = esJornada ? colG : jornActiva;
 
     // Columna M (índice 12) = Nivel educativo
     const nivel = (fila[12] || '').trim();
 
-    // Ignorar filas de totales por nivel (contienen "TOTAL" en nivel)
-    if (norm(nivel).includes('total')) return;
+    // Solo procesar filas que tienen nivel válido, capacidad y matrícula
+    if (!nivel || norm(nivel).includes('total') || norm(nivel).includes('promedio')) return;
+    const capacidad = parseInt(fila[21]) || 0;
+    const matricula = parseInt(fila[22]) || 0;
+    // Debe tener al menos capacidad > 0 para ser fila de sala real
+    if (capacidad === 0 && matricula === 0) return;
 
     // Número de sala (columna N = índice 13)
     const nSala = parseInt(fila[13]) || 1;
 
-    // Columna V (índice 21) = Cap Sala
-    const capacidad = parseInt(fila[21]) || 0;
-    // Columna W (índice 22) = Matrícula
-    const matricula = parseInt(fila[22]) || 0;
     // Columna Y (índice 24) = Lista de espera
     const lista = parseInt(fila[24]) || 0;
     // Columna Z (índice 25) = Cupos disponibles
@@ -399,29 +402,31 @@ function procesarCSV(csv) {
     const asistencia = parseFloat(asistStr) || 0;
 
     // Días de asistencia: columna 28 (índice) en adelante, 15 días
-    // Columna 27 = "D" (indicador), 28-42 = 15 días hábiles de junio
     let dias = [];
     for (let i = COL_INICIO_DIAS; i < COL_INICIO_DIAS + 15 && i < fila.length; i++) {
       const val = fila[i];
-      // Ignorar valores no numéricos como "P", "p", "C", "c" (ausencias con razón)
       const n = parseInt(val);
       dias.push(isNaN(n) ? 0 : n);
     }
     while (dias.length < 15) dias.push(0);
     dias = dias.slice(0, 15);
 
+    // Capturar código del jardín (col I = índice 8, ej: "16010111" -> prefijo "160101")
+    const codigoRaw = (fila[9] || fila[8] || '').trim();
+    const codigo = codigoRaw.replace(/\D/g,'').substring(0,6) || jardActivo;
+
     // Inicializar jardín si no existe
-    if (!jardines[jardin]) {
-      jardines[jardin] = {
-        n: jardin,
-        c: jardin,
+    if (!jardines[jardActivo]) {
+      jardines[jardActivo] = {
+        n: jardActivo,
+        c: codigo || jardActivo,
         jn:   { cap:0, mat:0, lista:0, cupos:0, ocup:'0%', asist:0, salas:[] },
         tjmj: { cap:0, mat:0, lista:0, cupos:0, ocup:'0%', asist:0, salas:[] }
       };
     }
 
     const esTJMJ = jornada.includes('TJ') || jornada.includes('TJMJ');
-    const bloque = esTJMJ ? jardines[jardin].tjmj : jardines[jardin].jn;
+    const bloque = esTJMJ ? jardines[jardActivo].tjmj : jardines[jardActivo].jn;
 
     bloque.cap   += capacidad;
     bloque.mat   += matricula;
@@ -605,7 +610,10 @@ function render() {
 
 function toggleCard(c) {
   const el = document.getElementById('card-' + encodeURIComponent(c));
-  if (el) el.classList.toggle('open');
+  if (!el) return;
+  el.classList.toggle('open');
+  const tog = el.querySelector('.card-toggle');
+  if (tog) tog.textContent = el.classList.contains('open') ? '▴ ocultar desglose' : '▾ ver desglose por nivel y TJMJ';
 }
 
 // ══════════════════════════════════════════════════
