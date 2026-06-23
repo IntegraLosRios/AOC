@@ -3,55 +3,750 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dashboard AOC</title>
+<title>Dashboard AOC – Junio 2025</title>
 <style>
-body{font-family:Arial;background:#0d1117;color:#e2e8f0;margin:0}
-.header{display:flex;justify-content:space-between;padding:10px 15px;background:#161b27}
-button{background:#0d1f3c;color:#60a5fa;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}
-button:hover{opacity:.8}
-.container{padding:15px}
-.card{background:#161b27;margin-bottom:10px;padding:10px;border-radius:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min-height:100vh}
+/* HEADER */
+.hdr{background:#161b27;border-bottom:1px solid #21283a;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:100}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:38px;height:38px;background:linear-gradient(135deg,#00c896,#0077ff);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;flex-shrink:0}
+.brand h1{font-size:16px;font-weight:600;color:#fff}
+.brand p{font-size:11px;color:#5a677f}
+.hchips{display:flex;gap:8px;flex-wrap:wrap}
+.hchip{font-size:11px;padding:4px 11px;border-radius:20px;font-weight:600}
+.hchip.g{background:#0d3326;color:#34d399}
+.hchip.b{background:#0d1f3c;color:#60a5fa}
+.hchip.a{background:#2d1a07;color:#fbbf24}
+/* TABS */
+.tabs{display:flex;background:#161b27;border-bottom:1px solid #21283a;padding:0 20px}
+.tab{padding:11px 20px;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:#5a677f;transition:all .2s;white-space:nowrap}
+.tab.on{color:#60a5fa;border-bottom-color:#60a5fa}
+.tab:hover:not(.on){color:#e2e8f0}
+/* PAGE */
+.page{display:none;padding:18px 20px}
+.page.on{display:block}
+/* KPI ROW */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
+.kpi{background:#161b27;border:1px solid #21283a;border-radius:10px;padding:13px 15px}
+.kl{font-size:11px;color:#5a677f;margin-bottom:3px}
+.kv{font-size:22px;font-weight:700}
+.kv.g{color:#34d399}.kv.b{color:#60a5fa}.kv.a{color:#fbbf24}.kv.w{color:#e2e8f0}
+.kbar{background:#0d1117;border-radius:3px;height:4px;margin-top:5px;overflow:hidden}
+.kbarf{height:4px;border-radius:3px;background:#34d399}
+/* CTRL */
+.ctrl{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.ctrl input{flex:1;min-width:160px;padding:8px 13px;border-radius:8px;border:1px solid #21283a;background:#161b27;color:#e2e8f0;font-size:13px}
+.ctrl input:focus{outline:none;border-color:#60a5fa}
+.fbtn{padding:7px 14px;font-size:12px;font-weight:500;border-radius:8px;border:1px solid #21283a;background:#161b27;color:#5a677f;cursor:pointer}
+.fbtn.on{background:#0d1f3c;color:#60a5fa;border-color:#1d4ed8}
+.stat-row{font-size:12px;color:#5a677f;margin-bottom:12px}
+
+/* ── CARD ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.card{background:#161b27;border:1px solid #21283a;border-radius:12px;overflow:hidden}
+.card-hdr{padding:14px 15px 10px;cursor:pointer;user-select:none}
+.card-hdr:hover{background:#1a2133}
+.card-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.card-name{font-size:14px;font-weight:700;color:#fff}
+.card-code{font-size:11px;color:#3d4f6a;margin-bottom:8px}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.g{background:#0d3326;color:#34d399}
+.badge.r{background:#2d0f0f;color:#f87171}
+.badge.a{background:#2d1a07;color:#fbbf24}
+.card-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}
+.cm{background:#0d1117;border-radius:6px;padding:6px 8px;text-align:center}
+.cm-l{font-size:10px;color:#3d4f6a}
+.cm-v{font-size:14px;font-weight:700;color:#e2e8f0}
+.asist-bar-wrap{margin:6px 0 3px}
+.asist-bar-bg{background:#0d1117;border-radius:3px;height:5px;overflow:hidden}
+.asist-bar-f{height:5px;border-radius:3px;transition:width .4s}
+.asist-bar-f.g{background:#10b981}.asist-bar-f.a{background:#f59e0b}.asist-bar-f.r{background:#ef4444}
+.asist-label{font-size:10px;color:#5a677f;text-align:right}
+.card-toggle{font-size:10px;color:#3d4f6a;text-align:center;padding:4px 0 2px;cursor:pointer}
+/* ── BLOQUES JN / TJMJ ── */
+.card-body{display:none;border-top:1px solid #21283a}
+.card.open .card-body{display:block}
+.bloque{padding:12px 15px}
+.bloque+.bloque{border-top:1px solid #1a2133}
+.bloque-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.bloque-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:.06em}
+.bloque-tag.jn{background:#0d1f3c;color:#60a5fa}
+.bloque-tag.tjmj{background:#1d2d0f;color:#86efac}
+.bloque-sum{font-size:12px;color:#5a677f}
+/* tabla niveles */
+.nivel-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
+.nivel-table th{font-size:10px;color:#3d4f6a;font-weight:600;text-align:left;padding:4px 6px;border-bottom:1px solid #21283a}
+.nivel-table td{padding:5px 6px;border-bottom:1px solid #151c2a;color:#c4cfe0;vertical-align:middle}
+.nivel-table tr:last-child td{border-bottom:none}
+.nivel-table tr:hover td{background:#1a2133}
+.tag-cupos{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600}
+.tag-cupos.g{background:#0d3326;color:#34d399}
+.tag-cupos.r{background:#2d0f0f;color:#f87171}
+.tag-cupos.a{background:#2d1a07;color:#fbbf24}
+.tag-cupos.z{background:#1a2133;color:#5a677f}
+/* ── TAB ASISTENCIA ── */
+.asist-wrap{max-width:1200px;margin:0 auto}
+.sel-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.sel-row select{flex:1;min-width:160px;padding:9px 13px;border-radius:8px;border:1px solid #21283a;background:#161b27;color:#e2e8f0;font-size:13px}
+.a-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:14px}
+.ak{background:#161b27;border:1px solid #21283a;border-radius:10px;padding:11px 13px;text-align:center}
+.ak-l{font-size:10px;color:#5a677f;margin-bottom:3px}
+.ak-v{font-size:17px;font-weight:700;color:#e2e8f0}
+/* vista modos */
+.view-toggle{display:flex;gap:6px;margin-bottom:14px}
+.vbtn{padding:6px 14px;font-size:12px;font-weight:500;border-radius:7px;border:1px solid #21283a;background:#161b27;color:#5a677f;cursor:pointer}
+.vbtn.on{background:#0d1f3c;color:#60a5fa;border-color:#1d4ed8}
+/* MODO GRÁFICO */
+.chart-box{background:#161b27;border:1px solid #21283a;border-radius:12px;padding:16px;margin-bottom:14px;position:relative;height:260px}
+/* MODO TABLA DETALLE POR NIVEL */
+.det-wrap{overflow-x:auto;border-radius:12px;border:1px solid #21283a;background:#161b27}
+.det-table{width:100%;border-collapse:collapse;font-size:12px;min-width:700px}
+.det-table th{background:#0d1117;padding:8px 10px;text-align:center;font-size:10px;color:#5a677f;font-weight:600;border-bottom:1px solid #21283a;white-space:nowrap;position:sticky;top:0}
+.det-table th.left{text-align:left}
+.det-table td{padding:7px 10px;border-bottom:1px solid #13192a;vertical-align:middle;text-align:center;white-space:nowrap}
+.det-table td.left{text-align:left}
+.det-table tr:last-child td{border-bottom:none}
+.det-table tr:hover td{background:#1a2133}
+.det-table tr.total-row td{background:#0d1117;font-weight:700;border-top:1px solid #21283a}
+.det-table tr.nivel-hdr td{background:#111827;font-size:10px;font-weight:700;color:#5a677f;text-transform:uppercase;letter-spacing:.05em;padding:5px 10px}
+.cell-v{display:inline-flex;align-items:center;justify-content:center;width:36px;height:24px;border-radius:5px;font-weight:600;font-size:12px}
+.cell-v.g{background:#0d3326;color:#34d399}
+.cell-v.a{background:#2d1a07;color:#fbbf24}
+.cell-v.r{background:#2d0f0f;color:#f87171}
+.cell-v.z{background:#13192a;color:#3d4f6a}
+.sala-tag{display:inline-block;padding:1px 8px;border-radius:4px;font-size:10px;font-weight:600;margin-right:4px}
+.sala-tag.jn{background:#0d1f3c;color:#60a5fa}
+.sala-tag.tjmj{background:#1d2d0f;color:#86efac}
+/* MODO SEMANA */
+.sem-grid{display:flex;flex-direction:column;gap:10px}
+.sem-blk{background:#161b27;border:1px solid #21283a;border-radius:10px;overflow:hidden}
+.sem-hdr{background:#0d1117;padding:8px 14px;font-size:11px;font-weight:700;color:#5a677f;letter-spacing:.05em;text-transform:uppercase;display:flex;gap:16px;align-items:center}
+.sem-hdr span{color:#e2e8f0}
+.sem-body{overflow-x:auto}
+.sem-table{width:100%;border-collapse:collapse;font-size:12px;min-width:600px}
+.sem-table th{background:#111827;padding:7px 10px;font-size:10px;color:#5a677f;font-weight:600;text-align:center;border-bottom:1px solid #21283a}
+.sem-table th.left{text-align:left}
+.sem-table td{padding:6px 10px;border-bottom:1px solid #13192a;text-align:center}
+.sem-table td.left{text-align:left;color:#c4cfe0}
+.sem-table tr:last-child td{border-bottom:none}
+.sem-table tr.total-sem td{background:#0d1117;font-weight:700;border-top:1px solid #21283a}
+/* pbar inline */
+.pbar{display:flex;align-items:center;gap:6px}
+.pbar-bg{flex:1;background:#0d1117;border-radius:3px;height:5px;overflow:hidden;min-width:40px}
+.pbar-f{height:5px;border-radius:3px}
+.pbar-f.g{background:#10b981}.pbar-f.a{background:#f59e0b}.pbar-f.r{background:#ef4444}
+.nodata{text-align:center;padding:3rem;color:#3d4f6a;font-size:13px}
 </style>
 </head>
 <body>
-<div class="header">
-  <div>Dashboard AOC</div>
-  <div>
-    <button onclick="cargarDatos()">🔄 Actualizar</button>
+
+<div class="hdr">
+  <div class="brand">
+    <div class="logo">AOC</div>
+    <div>
+      <h1>Dashboard Jardines AOC</h1>
+      <p>Solo Jornada Normal en KPIs · TJMJ visible en detalle · Junio 2025</p>
+    </div>
+  </div>
+  <div class="hchips">
+    <span class="hchip b" id="hcJ">● 13 jardines</span>
+    <span class="hchip b" id="hcC">● Cap. JN 2.210</span>
+    <span class="hchip g" id="hcQ">● Cupos JN 267</span>
+    <span class="hchip a" id="hcA">● Asist. prom. 59%</span>
   </div>
 </div>
-<div class="container" id="content">Cargando datos...</div>
 
+<div class="tabs">
+  <div class="tab on" onclick="sw('resumen',this)">Resumen por jardín</div>
+  <div class="tab" onclick="sw('asistencia',this)">Asistencia diaria</div>
+</div>
+
+<!-- ═══ TAB RESUMEN ═══ -->
+<div class="page on" id="tab-resumen">
+  <div class="kpis">
+    <div class="kpi"><div class="kl">Jardines</div><div class="kv w" id="kJ">—</div></div>
+    <div class="kpi"><div class="kl">Cap. Jornada Normal</div><div class="kv b" id="kCap">—</div>
+      <div class="kbar"><div class="kbarf" id="kCapB" style="width:0"></div></div></div>
+    <div class="kpi"><div class="kl">Matrícula JN</div><div class="kv w" id="kMat">—</div></div>
+    <div class="kpi"><div class="kl">Cupos disponibles JN</div><div class="kv g" id="kCupos">—</div></div>
+    <div class="kpi"><div class="kl">Lista de espera JN</div><div class="kv a" id="kLista">—</div></div>
+    <div class="kpi"><div class="kl">% Asistencia prom. JN</div><div class="kv a" id="kAsist">—</div></div>
+  </div>
+  <div class="ctrl">
+    <input type="text" id="buscar" placeholder="Buscar jardín..." oninput="render()">
+    <button class="fbtn on" onclick="setF('todos',this)">Todos</button>
+    <button class="fbtn" onclick="setF('cupos',this)">Con cupos JN</button>
+    <button class="fbtn" onclick="setF('lleno',this)">Sin cupos JN</button>
+  </div>
+  <div class="stat-row" id="statRow"></div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- ═══ TAB ASISTENCIA ═══ -->
+<div class="page" id="tab-asistencia">
+  <div class="asist-wrap">
+    <div class="sel-row">
+      <select id="jSel" onchange="renderAsist()">
+        <option value="">— Selecciona un jardín —</option>
+      </select>
+      <select id="jornSel" onchange="renderAsist()">
+        <option value="ambas">JN + TJMJ (juntas)</option>
+        <option value="jn">Solo Jornada Normal</option>
+        <option value="tjmj">Solo TJMJ</option>
+      </select>
+    </div>
+    <div id="aContent" style="display:none">
+      <div class="a-kpis" id="aKpis"></div>
+      <div class="view-toggle">
+        <button class="vbtn on" onclick="setView('detalle',this)">📋 Detalle por nivel/día</button>
+        <button class="vbtn" onclick="setView('semana',this)">📅 Por semana</button>
+        <button class="vbtn" onclick="setView('grafico',this)">📊 Gráfico total</button>
+      </div>
+      <!-- VISTA DETALLE -->
+      <div id="v-detalle">
+        <div class="det-wrap"><table class="det-table" id="detTable"></table></div>
+      </div>
+      <!-- VISTA SEMANA -->
+      <div id="v-semana" style="display:none">
+        <div class="sem-grid" id="semGrid"></div>
+      </div>
+      <!-- VISTA GRÁFICO -->
+      <div id="v-grafico" style="display:none">
+        <div class="chart-box"><canvas id="aChart"></canvas></div>
+      </div>
+    </div>
+    <div class="nodata" id="aEmpty">Selecciona un jardín para ver su asistencia diaria por nivel</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
+const DIAS_LABEL = ["02 Jun","03 Jun","04 Jun","05 Jun","06 Jun","09 Jun","10 Jun","11 Jun","12 Jun","13 Jun","16 Jun","17 Jun","18 Jun","19 Jun","20 Jun"];
+const DIAS_DIA   = ["Lun","Mar","Mié","Jue","Vie","Lun","Mar","Mié","Jue","Vie","Lun","Mar","Mié","Jue","Vie"];
+
+
 const URL_SHEET='https://docs.google.com/spreadsheets/d/e/2PACX-1vSS-eDu5WFkMlyVSMPQDEIhlmC__dPNGZqAdSFAxU9eXZQSiMUIaSzSl_9YdDIKaSZk0ZgAij8b9Tw2/pub?gid=909729487&single=true&output=csv';
-let dataCache=[];
+const CORS_PROXY='https://cors.isomorphic-git.org/';
+
+let J = [];
 
 async function cargarDatos(){
-  const cont=document.getElementById('content');
-  cont.innerHTML='Actualizando...';
   try{
-    const r=await fetch(URL_SHEET+'?_='+Date.now());
-    const txt=await r.text();
-    const filas=txt.split('
-').slice(1);
-    dataCache=filas.map(f=>f.split(','));
-    render();
+    let r;
+    try{
+      r = await fetch(URL_SHEET);
+    }catch(err){
+      r = await fetch(CORS_PROXY + URL_SHEET);
+    }
+    const csv = await r.text();
+
+    const filas = csv.trim().split('\n').map(f=>f.split(','));
+    const jardines = {};
+
+    filas.slice(1).forEach(f=>{
+      const jardin=(f[0]||'').trim();
+      if(!jardin) return;
+
+      const jornada=(f[6]||'').trim().toUpperCase();
+      const nivel=(f[12]||'').trim();
+
+      const capacidad=Number(f[21])||0;
+      const matricula=Number(f[22])||0;
+      const lista=Number(f[24])||0;
+      const cupos=Number(f[25])||0;
+      const asistencia=parseFloat(String(f[27]||0).replace('%','').replace(',','.'))||0;
+
+      const dias=[];
+      for(let i=29;i<=48;i++){ dias.push(Number(f[i])||0); }
+
+      if(!jardines[jardin]){
+        jardines[jardin]={
+          n:jardin,
+          c:jardin,
+          jn:{cap:0,mat:0,lista:0,cupos:0,ocup:'0%',asist:0,niveles:[],salas:[]},
+          tjmj:{cap:0,mat:0,lista:0,cupos:0,ocup:'0%',asist:0,niveles:[],salas:[]}
+        };
+      }
+
+      const bloque=jornada.includes('TJ') ? jardines[jardin].tjmj : jardines[jardin].jn;
+
+      bloque.cap+=capacidad;
+      bloque.mat+=matricula;
+      bloque.lista+=lista;
+      bloque.cupos+=cupos;
+
+      const sala={nivel:nivel,s:1,cap:capacidad,mat:matricula,lista:lista,cupos:cupos,asist:asistencia+'%',dias:dias};
+
+      bloque.niveles.push({...sala});
+      bloque.salas.push(sala);
+    });
+
+    J=Object.values(jardines);
+
+    J.forEach(j=>{
+      ['jn','tjmj'].forEach(k=>{
+        const b=j[k];
+        b.asist=b.niveles.length ? (b.niveles.reduce((a,n)=>a+parseFloat(n.asist),0)/b.niveles.length).toFixed(1) : 0;
+        b.ocup=b.cap ? Math.round((b.mat/b.cap)*100)+'%' : '0%';
+      });
+    });
+
+    const sel=document.getElementById('jSel');
+    if(sel){
+      sel.innerHTML='<option value="">— Selecciona un jardín —</option>';
+      J.forEach((j,i)=>{
+        const o=document.createElement('option');
+        o.value=i;
+        o.textContent=j.n;
+        sel.appendChild(o);
+      });
+    }
+
+    if(typeof render==='function') render();
+
+    let lbl=document.getElementById('ultimaActualizacion');
+    if(!lbl){
+      lbl=document.createElement('div');
+      lbl.id='ultimaActualizacion';
+      lbl.style.cssText='position:fixed;bottom:10px;right:10px;background:#161b27;padding:8px;border-radius:6px;font-size:11px;z-index:9999';
+      document.body.appendChild(lbl);
+    }
+    lbl.textContent='Última actualización: '+new Date().toLocaleString('es-CL');
+
   }catch(e){
-    cont.innerHTML='Error cargando datos';
+    console.error(e);
+    alert('No fue posible leer Google Sheets. Si abre el archivo desde su computador (file://), publique el HTML en un servidor web o use la versión con proxy incluida. Revise F12 > Consola para más detalle.');
   }
 }
 
-function render(){
-  const cont=document.getElementById('content');
-  if(!dataCache.length){ cont.innerHTML='Sin datos'; return; }
-  cont.innerHTML=dataCache.slice(0,20).map(f=>`<div class='card'>${f[0]} - Mat: ${f[22]} - Cupos: ${f[25]}</div>`).join('');
+window.addEventListener('load',()=>{
+  cargarDatos();
+  setInterval(cargarDatos,300000);
+});
+
+// Poblar selector
+const sel=document.getElementById('jSel');
+J.forEach((j,i)=>{const o=document.createElement('option');o.value=i;o.textContent=j.n;sel.appendChild(o);});
+
+let fil='todos';
+let chartInst=null;
+
+function sw(id,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('tab-'+id).classList.add('on');
 }
 
-// Auto refresh cada 5 minutos
-setInterval(cargarDatos,300000);
+function setF(f,btn){fil=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');render();}
 
-// Primera carga
-cargarDatos();
+function bc(p){return p>=75?'g':p>=55?'a':'r';}
+
+function tagCupos(c){
+  if(c>0) return `<span class="tag-cupos g">+${c} cupos</span>`;
+  if(c<0) return `<span class="tag-cupos r">Sobre cupo</span>`;
+  return `<span class="tag-cupos z">Sin cupos</span>`;
+}
+
+function nivelesHtml(nivs){
+  return `<table class="nivel-table">
+    <thead><tr><th>Nivel</th><th>Sala</th><th>Cap</th><th>Mat</th><th>L.Espera</th><th>Cupos</th><th>Asist.</th></tr></thead>
+    <tbody>${nivs.map(n=>`<tr>
+      <td>${n.nivel}</td>
+      <td style="color:#5a677f">${n.s}</td>
+      <td>${n.cap}</td>
+      <td>${n.mat}</td>
+      <td>${n.lista>0?`<span style="color:#fbbf24">${n.lista}</span>`:'—'}</td>
+      <td>${tagCupos(n.cupos)}</td>
+      <td style="color:${bc(parseFloat(n.asist))>=2?'inherit':'inherit'}">${n.asist}</td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function render(){
+  const q=(document.getElementById('buscar').value||'').toLowerCase();
+  let data=J.filter(j=>j.n.toLowerCase().includes(q));
+  if(fil==='cupos') data=data.filter(j=>j.jn.cupos>0);
+  if(fil==='lleno') data=data.filter(j=>j.jn.cupos<=0);
+
+  // KPIs — solo JN
+  const tCap=data.reduce((s,j)=>s+j.jn.cap,0);
+  const tMat=data.reduce((s,j)=>s+j.jn.mat,0);
+  const tCupos=data.reduce((s,j)=>s+j.jn.cupos,0);
+  const tLista=data.reduce((s,j)=>s+j.jn.lista,0);
+  const avgA=data.length?Math.round(data.reduce((s,j)=>s+j.jn.asist,0)/data.length):0;
+
+  document.getElementById('kJ').textContent=data.length;
+  document.getElementById('kCap').textContent=tCap.toLocaleString('es-CL');
+  document.getElementById('kCapB').style.width=Math.min(Math.round(tMat/tCap*100),100)+'%';
+  document.getElementById('kMat').textContent=tMat.toLocaleString('es-CL');
+  document.getElementById('kCupos').textContent=tCupos.toLocaleString('es-CL');
+  document.getElementById('kLista').textContent=tLista.toLocaleString('es-CL');
+  document.getElementById('kAsist').textContent=avgA+'%';
+
+  document.getElementById('hcJ').textContent='● '+data.length+' jardines';
+  document.getElementById('hcC').textContent='● Cap. JN '+tCap.toLocaleString('es-CL');
+  document.getElementById('hcQ').textContent='● Cupos JN '+tCupos.toLocaleString('es-CL');
+  document.getElementById('hcA').textContent='● Asist. prom. '+avgA+'%';
+  document.getElementById('statRow').textContent='Mostrando '+data.length+' jardines · '+data.filter(j=>j.jn.cupos>0).length+' con cupos disponibles en JN';
+
+  const g=document.getElementById('grid');
+  if(!data.length){g.innerHTML='<div class="nodata" style="grid-column:1/-1">Sin resultados</div>';return;}
+
+  g.innerHTML=data.map(j=>{
+    const jn=j.jn, tj=j.tjmj;
+    const bj=bc(jn.asist);
+    const cc=jn.cupos>0?'g':jn.cupos<0?'r':'a';
+    const badgeJN=jn.cupos>0?`<span class="badge g">+${jn.cupos} cupos JN</span>`
+                 :jn.cupos<0?`<span class="badge r">Sobre cupo JN</span>`
+                 :`<span class="badge a">Sin cupos JN</span>`;
+
+    return `<div class="card" id="card-${j.c}">
+      <div class="card-hdr" onclick="toggleCard('${j.c}')">
+        <div class="card-title-row">
+          <span class="card-name">${j.n}</span>
+          ${badgeJN}
+        </div>
+        <div class="card-code">${j.c}</div>
+        <div class="card-meta">
+          <div class="cm"><div class="cm-l">Cap. JN</div><div class="cm-v">${jn.cap}</div></div>
+          <div class="cm"><div class="cm-l">Matrícula</div><div class="cm-v">${jn.mat}</div></div>
+          <div class="cm"><div class="cm-l">L.Espera</div><div class="cm-v" style="color:${jn.lista>0?'#fbbf24':'#5a677f'}">${jn.lista||'—'}</div></div>
+          <div class="cm"><div class="cm-l">Ocup.</div><div class="cm-v">${jn.ocup}</div></div>
+        </div>
+        <div class="asist-bar-wrap">
+          <div class="asist-bar-bg"><div class="asist-bar-f ${bj}" style="width:${Math.min(jn.asist,100)}%"></div></div>
+        </div>
+        <div class="asist-label">Asistencia JN: ${jn.asist}%</div>
+        <div class="card-toggle">▾ ver desglose por nivel y TJMJ</div>
+      </div>
+      <div class="card-body">
+        <div class="bloque">
+          <div class="bloque-hdr">
+            <span class="bloque-tag jn">JORNADA NORMAL</span>
+            <span class="bloque-sum">Cap ${jn.cap} · Mat ${jn.mat} · ${jn.cupos>0?'+'+jn.cupos+' cupos':'sin cupos'} · Asist ${jn.asist}%</span>
+          </div>
+          ${nivelesHtml(jn.niveles)}
+        </div>
+        <div class="bloque">
+          <div class="bloque-hdr">
+            <span class="bloque-tag tjmj">TJMJ</span>
+            <span class="bloque-sum">Cap ${tj.cap} · Mat ${tj.mat} · ${tj.cupos>0?'+'+tj.cupos+' cupos':tj.cupos<0?'sobrecupo':'sin cupos'} · Asist ${tj.asist}%</span>
+          </div>
+          ${nivelesHtml(tj.niveles)}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCard(c){
+  document.getElementById('card-'+c).classList.toggle('open');
+}
+
+// ══ TAB ASISTENCIA ══
+let vistaActual = 'detalle';
+
+function setView(v, btn) {
+  vistaActual = v;
+  document.querySelectorAll('.vbtn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('v-detalle').style.display = v==='detalle'?'block':'none';
+  document.getElementById('v-semana').style.display  = v==='semana'?'block':'none';
+  document.getElementById('v-grafico').style.display = v==='grafico'?'block':'none';
+  renderVista();
+}
+
+function renderAsist(){
+  const idx = document.getElementById('jSel').value;
+  if(idx===''){
+    document.getElementById('aContent').style.display='none';
+    document.getElementById('aEmpty').style.display='block';
+    return;
+  }
+  document.getElementById('aContent').style.display='block';
+  document.getElementById('aEmpty').style.display='none';
+  renderKpis();
+  renderVista();
+}
+
+function getSalas(){
+  const idx  = document.getElementById('jSel').value;
+  const jorn = document.getElementById('jornSel').value;
+  if(idx==='') return [];
+  const j = J[parseInt(idx)];
+  let salas = [];
+  if(jorn==='ambas'||jorn==='jn')   salas = salas.concat(j.jn.salas.map(s=>({...s,_jorn:'jn'})));
+  if(jorn==='ambas'||jorn==='tjmj') salas = salas.concat(j.tjmj.salas.map(s=>({...s,_jorn:'tjmj'})));
+  return salas;
+}
+
+function renderKpis(){
+  const idx  = document.getElementById('jSel').value;
+  const jorn = document.getElementById('jornSel').value;
+  const j = J[parseInt(idx)];
+  const salas = getSalas();
+  const totalDias = Array(15).fill(0);
+  salas.forEach(s => s.dias.forEach((v,i)=>{ if(v>0) totalDias[i]+=v; }));
+  const tMat = salas.reduce((a,s)=>a+s.mat,0);
+  const tCap = salas.reduce((a,s)=>a+s.cap,0);
+  const tCupos = salas.reduce((a,s)=>a+s.cupos,0);
+  const tLista = salas.reduce((a,s)=>a+s.lista,0);
+  const valid = totalDias.filter(v=>v>0);
+  const mx = valid.length?Math.max(...valid):0;
+  const mn = valid.length?Math.min(...valid):0;
+  const avg = valid.length?Math.round(valid.reduce((a,b)=>a+b,0)/valid.length):0;
+  const lbl = jorn==='jn'?'Jornada Normal':jorn==='tjmj'?'TJMJ':'JN + TJMJ';
+
+  document.getElementById('aKpis').innerHTML=`
+    <div class="ak"><div class="ak-l">Jardín</div><div class="ak-v" style="font-size:12px;color:#fff">${j.n}</div></div>
+    <div class="ak"><div class="ak-l">Jornada</div><div class="ak-v" style="font-size:12px;color:${jorn==='jn'?'#60a5fa':jorn==='tjmj'?'#86efac':'#fbbf24'}">${lbl}</div></div>
+    <div class="ak"><div class="ak-l">Salas</div><div class="ak-v">${salas.length}</div></div>
+    <div class="ak"><div class="ak-l">Cap. total</div><div class="ak-v">${tCap}</div></div>
+    <div class="ak"><div class="ak-l">Matrícula</div><div class="ak-v">${tMat}</div></div>
+    <div class="ak"><div class="ak-l">Lista espera</div><div class="ak-v" style="color:${tLista>0?'#fbbf24':'#5a677f'}">${tLista||'—'}</div></div>
+    <div class="ak"><div class="ak-l">Cupos</div><div class="ak-v" style="color:${tCupos>0?'#34d399':tCupos<0?'#f87171':'#5a677f'}">${tCupos>0?'+'+tCupos:tCupos}</div></div>
+    <div class="ak"><div class="ak-l">Máx. día</div><div class="ak-v" style="color:#34d399">${mx}</div></div>
+    <div class="ak"><div class="ak-l">Mín. día</div><div class="ak-v" style="color:#f87171">${mn}</div></div>
+    <div class="ak"><div class="ak-l">Prom. día</div><div class="ak-v" style="color:#fbbf24">${avg}</div></div>`;
+}
+
+function cellHtml(v, mat){
+  if(v===0||v===null||v===undefined) return `<span class="cell-v z">—</span>`;
+  const p = Math.round(v/mat*100);
+  const cls = p>=75?'g':p>=55?'a':'r';
+  return `<span class="cell-v ${cls}" title="${p}%">${v}</span>`;
+}
+
+function renderVista(){
+  if(vistaActual==='detalle') renderDetalle();
+  else if(vistaActual==='semana') renderSemana();
+  else renderGrafico();
+}
+
+function renderDetalle(){
+  const salas = getSalas();
+  if(!salas.length) return;
+
+  // Cabecera: nivel/sala | cap | mat | cupos | dia1..dia15 | total
+  let thead = `<thead><tr>
+    <th class="left" style="min-width:130px">Nivel</th>
+    <th>Cap</th><th>Mat</th><th>Cupos</th>`;
+  DIAS_LABEL.forEach((d,i) => {
+    thead += `<th>${DIAS_DIA[i]}<br><span style="font-size:9px;color:#3d4f6a">${d.replace(' Jun','')}</span></th>`;
+  });
+  thead += `<th>Total</th><th>Prom</th></tr></thead>`;
+
+  // Agrupar por jornada
+  const grupos = {};
+  salas.forEach(s => {
+    const k = s._jorn;
+    if(!grupos[k]) grupos[k]=[];
+    grupos[k].push(s);
+  });
+
+  let tbody = '<tbody>';
+  const jorns = Object.keys(grupos);
+
+  // Totales generales por día
+  const totDias = Array(15).fill(0);
+  const totMat  = salas.reduce((a,s)=>a+s.mat,0);
+
+  jorns.forEach(jk => {
+    const lbl = jk==='jn'?'JORNADA NORMAL':'TJMJ';
+    const cls = jk==='jn'?'jn':'tjmj';
+    tbody += `<tr class="nivel-hdr"><td colspan="${4+15+2}" class="left">
+      <span class="sala-tag ${cls}">${lbl}</span>
+    </td></tr>`;
+
+    const jSalas = grupos[jk];
+    const jDias  = Array(15).fill(0);
+    const jMat   = jSalas.reduce((a,s)=>a+s.mat,0);
+
+    jSalas.forEach(s => {
+      const nombre = `${s.nivel} <span style="color:#3d4f6a">S${s.s}</span>`;
+      const totalS = s.dias.reduce((a,v)=>a+(v||0),0);
+      const promS  = s.dias.filter(v=>v>0).length
+        ? Math.round(totalS / s.dias.filter(v=>v>0).length) : 0;
+      const cuposTag = s.cupos>0
+        ? `<span class="tag-cupos g">+${s.cupos}</span>`
+        : s.cupos<0 ? `<span class="tag-cupos r">${s.cupos}</span>`
+        : `<span class="tag-cupos z">0</span>`;
+
+      tbody += `<tr>
+        <td class="left">${nombre}</td>
+        <td style="color:#5a677f">${s.cap}</td>
+        <td>${s.mat}</td>
+        <td>${cuposTag}</td>`;
+      s.dias.forEach((v,i) => {
+        jDias[i] += (v||0);
+        totDias[i] += (v||0);
+        tbody += `<td>${cellHtml(v, s.mat)}</td>`;
+      });
+      tbody += `<td style="font-weight:600;color:#e2e8f0">${totalS}</td>`;
+      tbody += `<td style="color:#fbbf24">${promS}</td>`;
+      tbody += `</tr>`;
+    });
+
+    // Subtotal jornada
+    const jtotal = jDias.reduce((a,v)=>a+v,0);
+    const jprom  = jDias.filter(v=>v>0).length
+      ? Math.round(jtotal/jDias.filter(v=>v>0).length):0;
+    tbody += `<tr class="total-row">
+      <td class="left" style="color:#60a5fa">TOTAL ${lbl}</td>
+      <td colspan="3" style="color:#5a677f">${jMat} mat.</td>`;
+    jDias.forEach(v => {
+      const p = jMat>0?Math.round(v/jMat*100):0;
+      const cls2 = p>=75?'g':p>=55?'a':'r';
+      tbody += `<td><span class="cell-v ${v>0?cls2:'z'}">${v||'—'}</span></td>`;
+    });
+    tbody += `<td style="font-weight:700;color:#60a5fa">${jtotal}</td>`;
+    tbody += `<td style="color:#fbbf24">${jprom}</td></tr>`;
+  });
+
+  // Total general si hay ambas jornadas
+  if(jorns.length>1){
+    const gtotal = totDias.reduce((a,v)=>a+v,0);
+    const gprom  = totDias.filter(v=>v>0).length
+      ? Math.round(gtotal/totDias.filter(v=>v>0).length):0;
+    tbody += `<tr class="total-row" style="border-top:2px solid #21283a">
+      <td class="left" style="color:#fbbf24">TOTAL JARDÍN</td>
+      <td colspan="3" style="color:#5a677f">${totMat} mat.</td>`;
+    totDias.forEach(v => {
+      const p = totMat>0?Math.round(v/totMat*100):0;
+      const cls2 = p>=75?'g':p>=55?'a':'r';
+      tbody += `<td><span class="cell-v ${v>0?cls2:'z'}">${v||'—'}</span></td>`;
+    });
+    tbody += `<td style="font-weight:700;color:#fbbf24">${gtotal}</td>`;
+    tbody += `<td style="color:#fbbf24">${gprom}</td></tr>`;
+  }
+  tbody += '</tbody>';
+
+  document.getElementById('detTable').innerHTML = thead + tbody;
+}
+
+function renderSemana(){
+  const salas = getSalas();
+  if(!salas.length) return;
+
+  // Semanas: S1=días 0-4, S2=días 5-9, S3=días 10-14
+  const SEMANAS = [
+    {label:'Semana 1',idx:[0,1,2,3,4]},
+    {label:'Semana 2',idx:[5,6,7,8,9]},
+    {label:'Semana 3',idx:[10,11,12,13,14]},
+  ];
+
+  const html = SEMANAS.map(sem => {
+    const cols = sem.idx.map(i=>DIAS_DIA[i]+' '+DIAS_LABEL[i].replace(' Jun',''));
+    let rows='';
+    let totSem = Array(5).fill(0);
+    const totMat = salas.reduce((a,s)=>a+s.mat,0);
+
+    // separadores por jornada
+    let lastJorn='';
+    salas.forEach(s => {
+      if(s._jorn !== lastJorn){
+        lastJorn=s._jorn;
+        rows+=`<tr><td class="left" colspan="${5+3}" style="background:#111827;font-size:10px;font-weight:700;color:#5a677f;text-transform:uppercase;padding:4px 10px;">
+          <span class="sala-tag ${s._jorn}">${s._jorn==='jn'?'JORNADA NORMAL':'TJMJ'}</span></td></tr>`;
+      }
+      const cuposTag = s.cupos>0?`<span class="tag-cupos g">+${s.cupos}</span>`
+        :s.cupos<0?`<span class="tag-cupos r">${s.cupos}</span>`
+        :`<span class="tag-cupos z">0</span>`;
+      const totalSem = sem.idx.reduce((a,i)=>a+(s.dias[i]||0),0);
+      const promSem  = sem.idx.filter(i=>s.dias[i]>0).length
+        ? Math.round(totalSem/sem.idx.filter(i=>s.dias[i]>0).length):0;
+      rows+=`<tr>
+        <td class="left">${s.nivel} <span style="color:#3d4f6a">S${s.s}</span></td>
+        <td>${s.mat}</td>
+        <td>${cuposTag}</td>`;
+      sem.idx.forEach((di,k)=>{
+        const v=s.dias[di]||0;
+        totSem[k]+=v;
+        rows+=`<td>${cellHtml(v,s.mat)}</td>`;
+      });
+      rows+=`<td style="color:#fbbf24">${promSem}</td></tr>`;
+    });
+    // total semana
+    const tS=totSem.reduce((a,v)=>a+v,0);
+    rows+=`<tr class="total-sem">
+      <td class="left" style="color:#fbbf24">TOTAL</td>
+      <td>${totMat}</td><td>—</td>`;
+    totSem.forEach(v=>{
+      const p=totMat>0?Math.round(v/totMat*100):0;
+      const cls=p>=75?'g':p>=55?'a':'r';
+      rows+=`<td><span class="cell-v ${v>0?cls:'z'}">${v||'—'}</span></td>`;
+    });
+    rows+=`<td style="color:#fbbf24">${tS}</td></tr>`;
+
+    return `<div class="sem-blk">
+      <div class="sem-hdr">${sem.label} &nbsp;
+        ${sem.idx.map(i=>`<span>${DIAS_LABEL[i]}</span>`).join(' · ')}
+      </div>
+      <div class="sem-body"><table class="sem-table">
+        <thead><tr>
+          <th class="left">Nivel / Sala</th>
+          <th>Mat</th><th>Cupos</th>
+          ${cols.map(c=>`<th>${c}</th>`).join('')}
+          <th>Prom</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('semGrid').innerHTML = html;
+}
+
+function renderGrafico(){
+  const salas = getSalas();
+  if(!salas.length) return;
+  const totMat = salas.reduce((a,s)=>a+s.mat,0);
+  const totDias = Array(15).fill(0);
+  salas.forEach(s => s.dias.forEach((v,i)=>{ if(v>0) totDias[i]+=v; }));
+
+  if(chartInst){chartInst.destroy();}
+  const COLORS_SALA = ['#60a5fa','#34d399','#fbbf24','#f87171','#a78bfa','#fb923c','#38bdf8','#4ade80'];
+  const datasets = salas.map((s,idx)=>({
+    label:`${s.nivel} S${s.s}${s._jorn==='tjmj'?' (TJMJ)':''}`,
+    data:s.dias.map(v=>v||null),
+    backgroundColor:COLORS_SALA[idx%COLORS_SALA.length]+'99',
+    borderColor:COLORS_SALA[idx%COLORS_SALA.length],
+    borderWidth:1,
+    borderRadius:3,
+    stack:'stack'
+  }));
+  datasets.push({
+    label:'Matrícula total',
+    data:Array(15).fill(totMat),
+    type:'line',
+    borderColor:'rgba(255,255,255,.3)',
+    borderWidth:1.5,
+    borderDash:[5,3],
+    pointRadius:0,
+    fill:false,
+    stack:undefined
+  });
+
+  chartInst=new Chart(document.getElementById('aChart'),{
+    type:'bar',
+    data:{labels:DIAS_LABEL, datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true,position:'bottom',labels:{color:'#5a677f',font:{size:10},boxWidth:10,padding:8}},
+        tooltip:{mode:'index',intersect:false}
+      },
+      scales:{
+        x:{stacked:true,ticks:{color:'#5a677f',font:{size:10}},grid:{color:'rgba(255,255,255,.04)'}},
+        y:{stacked:true,ticks:{color:'#5a677f',font:{size:10}},grid:{color:'rgba(255,255,255,.06)'},min:0}
+      }
+    }
+  });
+}
+
+render();
 </script>
 </body>
 </html>
