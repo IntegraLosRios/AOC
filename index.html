@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard AOC</title>
+<style>
+body{font-family:Arial;background:#0d1117;color:#e2e8f0;margin:0}
+.header{display:flex;justify-content:space-between;padding:10px 15px;background:#161b27}
+button{background:#0d1f3c;color:#60a5fa;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}
+button:hover{opacity:.8}
+.container{padding:15px}
+.card{background:#161b27;margin-bottom:10px;padding:10px;border-radius:8px}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>Dashboard AOC</div>
+  <div>
+    <button onclick="cargarDatos()">🔄 Actualizar</button>
+  </div>
+</div>
+<div class="container" id="content">Cargando datos...</div>
+
+<script>
+const URL_SHEET='https://docs.google.com/spreadsheets/d/e/2PACX-1vSS-eDu5WFkMlyVSMPQDEIhlmC__dPNGZqAdSFAxU9eXZQSiMUIaSzSl_9YdDIKaSZk0ZgAij8b9Tw2/pub?gid=909729487&single=true&output=csv';
+let dataCache=[];
+
+async function cargarDatos(){
+  const cont=document.getElementById('content');
+  cont.innerHTML='Actualizando...';
+  try{
+    const r=await fetch(URL_SHEET+'?_='+Date.now());
+    const txt=await r.text();
+    const filas=txt.split('
+').slice(1);
+    dataCache=filas.map(f=>f.split(','));
+    render();
+  }catch(e){
+    cont.innerHTML='Error cargando datos';
+  }
+}
+
+function render(){
+  const cont=document.getElementById('content');
+  if(!dataCache.length){ cont.innerHTML='Sin datos'; return; }
+  cont.innerHTML=dataCache.slice(0,20).map(f=>`<div class='card'>${f[0]} - Mat: ${f[22]} - Cupos: ${f[25]}</div>`).join('');
+}
+
+// Auto refresh cada 5 minutos
+setInterval(cargarDatos,300000);
+
+// Primera carga
+cargarDatos();
+</script>
+</body>
+</html>
