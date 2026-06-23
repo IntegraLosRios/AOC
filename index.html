@@ -130,7 +130,7 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
     <div class="logo">AOC</div>
     <div>
       <h1>Dashboard Jardines AOC</h1>
-      <p>Solo Jornada Normal en KPIs · TJMJ visible en detalle · Junio 2025</p>
+      <p>45 Jardines AOC · Datos actualizados desde Google Sheets · Junio 2025</p>
     </div>
   </div>
   <div class="hchips">
@@ -208,9 +208,10 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 // ══════════════════════════════════════════════════
 // CONFIGURACIÓN
 // ══════════════════════════════════════════════════
+// URL CSV publicado directamente (sin proxy necesario)
 const URL_SHEET = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSS-eDu5WFkMlyVSMPQDEIhlmC__dPNGZqAdSFAxU9eXZQSiMUIaSzSl_9YdDIKaSZk0ZgAij8b9Tw2/pub?gid=909729487&single=true&output=csv';
 
-// Lista oficial de 45 jardines AOC
+// Lista oficial de 45 jardines AOC (nombres exactos proporcionados)
 const JARDINES_AOC = [
   'El Canelito','Cuncunita','Esperanza','Papelucho','Ensueño','Los Pinguinitos',
   'Amanecer del Sol','Más Amigos','El Principito','Luz de los Ríos',
@@ -224,7 +225,8 @@ const JARDINES_AOC = [
   'Fuente de Luz','Arco Iris','Roja Flor','Pulgarcito','Pintitas de Ayelen'
 ];
 
-const DIAS_LABEL = ["02 Jun","03 Jun","04 Jun","05 Jun","06 Jun","09 Jun","10 Jun","11 Jun","12 Jun","13 Jun","16 Jun","17 Jun","18 Jun","19 Jun","20 Jun"];
+// Días hábiles de Junio 2025 según la hoja AOC (L1, M2, M3, J4, V5, L8, M9, M10, J11, V12, L15, M16, M17, J18, V19)
+const DIAS_LABEL = ["01 Jun","02 Jun","03 Jun","04 Jun","05 Jun","08 Jun","09 Jun","10 Jun","11 Jun","12 Jun","15 Jun","16 Jun","17 Jun","18 Jun","19 Jun"];
 const DIAS_DIA   = ["Lun","Mar","Mié","Jue","Vie","Lun","Mar","Mié","Jue","Vie","Lun","Mar","Mié","Jue","Vie"];
 
 let J = [];
@@ -302,7 +304,7 @@ async function cargarDatos() {
   } catch(e) {
     console.error('Error:', e);
     const em = document.getElementById('errMsg');
-    em.textContent = 'No se pudieron cargar los datos: ' + e.message + '. Asegúrese de que el archivo esté publicado como CSV en Google Sheets.';
+    em.textContent = 'No se pudieron cargar los datos: ' + e.message + '. Verifique que la hoja esté publicada en Google Sheets (Archivo → Publicar en la web → CSV) y que tenga acceso público.';
     em.style.display = 'block';
     document.getElementById('grid').innerHTML = '<div class="nodata">Sin datos disponibles</div>';
   }
@@ -312,76 +314,98 @@ function procesarCSV(csv) {
   const filas = parseCSV(csv);
   if (!filas.length) { alert('CSV vacío'); return; }
 
-  const cabecera = filas[0];
-  const N = cabecera.length;
-  console.log('Columnas (' + N + '):', cabecera);
-
-  // Construir mapa nombre→índice (normalizado)
-  const idx = {};
-  cabecera.forEach((h, i) => { idx[norm(h)] = i; });
-
-  // Helper: obtener valor por nombre de columna o posición fallback
-  const get = (fila, nombres, posFB) => {
-    for (const nombre of nombres) {
-      const i = idx[norm(nombre)];
-      if (i !== undefined && i < fila.length) return fila[i];
+  // Buscar la fila de encabezado real (contiene "Nivel" en columna M, índice 12)
+  // La hoja AOC tiene encabezados en torno a la fila 11
+  let headerIdx = -1;
+  for (let i = 0; i < Math.min(filas.length, 20); i++) {
+    const f = filas[i];
+    // La fila de cabecera tiene "Nivel" en posición 12 y "Cap Sala" en posición 21
+    if (f.length > 25 && norm(f[12]) === 'nivel' && norm(f[6]).includes('j')) {
+      headerIdx = i;
+      break;
     }
-    if (posFB !== undefined && posFB < fila.length) return fila[posFB];
-    return '';
-  };
+    // Alternativa: busca fila con "Cap Sala" o "Matricula" en posición 22
+    if (f.length > 25 && (norm(f[21]).includes('cap') || norm(f[22]).includes('matricula'))) {
+      headerIdx = i;
+      break;
+    }
+  }
+  if (headerIdx === -1) headerIdx = 0; // fallback
 
-  // Detectar columnas de días de asistencia (contienen fecha: números con guion, "jun", dígitos/mes)
-  const colsDias = cabecera
-    .map((h, i) => ({ h: norm(h), i }))
-    .filter(x =>
-      /\d{1,2}[\/\-]\d{1,2}/.test(x.h) ||
-      /\b(jun|jul|ago|sep|oct|nov|dic|ene|feb|mar|abr|may)\b/.test(x.h) ||
-      /\bd\d+\b/.test(x.h) || // d1, d2, ...
-      /\bdia\s*\d+\b/.test(x.h)
-    );
-  console.log('Columnas de días detectadas:', colsDias.length, colsDias.map(x=>x.h));
+  const cabecera = filas[headerIdx];
+  const N = cabecera.length;
+  console.log('Cabecera encontrada en fila', headerIdx, '· Columnas (' + N + '):', cabecera.slice(0,30));
+
+  // Detectar columnas de días de asistencia en el mes JUNIO (columnas 27-41 aprox)
+  // En la hoja AOC la sección Junio empieza tras "% Asistencia" (col 26) y tiene col D + 15 días
+  // Columna 27 = "D" (dummy), col 28 = L 1 Jun, ... col 42 = V 20 Jun (15 días hábiles)
+  // Usar posiciones fijas basadas en la estructura conocida del CSV
+  const COL_INICIO_DIAS = 28; // primera columna de día real (L 1 Jun)
 
   const jardines = {};
 
-  filas.slice(1).forEach(fila => {
-    if (fila.length < 5) return;
+  // Palabras clave que indican filas de resumen/totales a ignorar
+  const esFilaResumen = fila => {
+    const f7 = norm(fila[7] || '');
+    const f12 = norm(fila[12] || '');
+    return (
+      f12.includes('total') ||
+      f12.includes('promedio') ||
+      f7 === '' ||
+      // filas con solo totales globales (col 7 vacía y col 8 vacía)
+      (fila[7] === '' && fila[8] === '' && fila[9] === '')
+    );
+  };
 
-    // Nombre del jardín
-    const jardinRaw = (fila[0] || '').trim(); // Columna A
+  filas.slice(headerIdx + 1).forEach(fila => {
+    if (fila.length < 26) return;
+    if (esFilaResumen(fila)) return;
+
+    // Columna H (índice 7) = nombre del jardín
+    const jardinRaw = (fila[7] || '').trim();
     if (!jardinRaw) return;
+
+    // Ignorar si el nombre es un código numérico o vacío
+    if (/^\d+$/.test(jardinRaw)) return;
 
     const jardin = matchNombre(jardinRaw);
 
-    // Jornada
-    const jornada = (fila[6] || '').toUpperCase(); // Columna G
+    // Verificar que el jardín esté en la lista oficial
+    if (!JARDINES_AOC.some(j => norm(j) === norm(jardin))) return;
 
-    // Nivel educativo
-    const nivel = (fila[12] || '').trim(); // Columna M
+    // Columna G (índice 6) = Jornada (NORMAL / TJMJ)
+    const jornada = (fila[6] || '').toUpperCase();
 
-    // Número de sala
-    const nSala = parseInt(
-      get(fila, ['sala','n sala','numero sala','num sala','n de sala'], 13)
-    ) || 1;
+    // Columna M (índice 12) = Nivel educativo
+    const nivel = (fila[12] || '').trim();
 
-    // Capacidad, matrícula, lista, cupos
-    const capacidad = parseInt(fila[21]) || 0; // Columna V
-    const matricula = parseInt(fila[22]) || 0; // Columna W
-    const lista = parseInt(fila[24]) || 0; // Columna Y
-    const cupos = parseInt(fila[25]) || 0; // Columna Z
+    // Ignorar filas de totales por nivel (contienen "TOTAL" en nivel)
+    if (norm(nivel).includes('total')) return;
 
-    // Asistencia promedio
-    const asistStr = (fila[27] || '').replace('%','').replace(',','.'); // Columna AB
+    // Número de sala (columna N = índice 13)
+    const nSala = parseInt(fila[13]) || 1;
+
+    // Columna V (índice 21) = Cap Sala
+    const capacidad = parseInt(fila[21]) || 0;
+    // Columna W (índice 22) = Matrícula
+    const matricula = parseInt(fila[22]) || 0;
+    // Columna Y (índice 24) = Lista de espera
+    const lista = parseInt(fila[24]) || 0;
+    // Columna Z (índice 25) = Cupos disponibles
+    const cupos = parseInt((fila[25] || '').replace(',','.')) || 0;
+
+    // % Asistencia (índice 26)
+    const asistStr = (fila[26] || '').replace('%','').replace(',','.');
     const asistencia = parseFloat(asistStr) || 0;
 
-    // Días de asistencia
+    // Días de asistencia: columna 28 (índice) en adelante, 15 días
+    // Columna 27 = "D" (indicador), 28-42 = 15 días hábiles de junio
     let dias = [];
-    if (colsDias.length >= 10) {
-      dias = colsDias.slice(0, 20).map(x => parseInt(fila[x.i]) || 0);
-    } else {
-      // fallback posicional: columnas 29 a 48
-      for (let i = 29; i <= 48 && i < fila.length; i++) {
-        dias.push(parseInt(fila[i]) || 0);
-      }
+    for (let i = COL_INICIO_DIAS; i < COL_INICIO_DIAS + 15 && i < fila.length; i++) {
+      const val = fila[i];
+      // Ignorar valores no numéricos como "P", "p", "C", "c" (ausencias con razón)
+      const n = parseInt(val);
+      dias.push(isNaN(n) ? 0 : n);
     }
     while (dias.length < 15) dias.push(0);
     dias = dias.slice(0, 15);
@@ -418,7 +442,7 @@ function procesarCSV(csv) {
     });
   });
 
-  // Ordenar por nombre
+  // Ordenar por nombre oficial (mantener orden de JARDINES_AOC si se prefiere)
   J.sort((a, b) => a.n.localeCompare(b.n, 'es'));
 
   // Poblar selector de asistencia
@@ -433,7 +457,7 @@ function procesarCSV(csv) {
 
   // Debug info
   const db = document.getElementById('debugBar');
-  db.textContent = `✓ ${J.length} jardines cargados · ${filas.length-1} filas procesadas · ${cabecera.length} columnas · días detectados: ${colsDias.length}`;
+  db.textContent = `✓ ${J.length} jardines cargados · ${filas.length-1} filas procesadas · ${cabecera.length} columnas · cabecera en fila ${headerIdx}`;
   db.style.display = 'block';
 
   // Timestamp
