@@ -347,22 +347,16 @@ function procesarCSV(csv) {
     if (fila.length < 5) return;
 
     // Nombre del jardín
-    const jardinRaw = (
-      get(fila, ['jardin','nombre jardin','nombre del jardin','establecimiento','nombre'], 0)
-    ).trim();
+    const jardinRaw = (fila[0] || '').trim(); // Columna A
     if (!jardinRaw) return;
 
     const jardin = matchNombre(jardinRaw);
 
     // Jornada
-    const jornada = (
-      get(fila, ['jornada','tipo jornada','tipo de jornada'], 6)
-    ).toUpperCase();
+    const jornada = (fila[6] || '').toUpperCase(); // Columna G
 
     // Nivel educativo
-    const nivel = (
-      get(fila, ['nivel','nivel educativo','nivel ed','descripcion nivel'], 12)
-    ).trim();
+    const nivel = (fila[12] || '').trim(); // Columna M
 
     // Número de sala
     const nSala = parseInt(
@@ -370,23 +364,13 @@ function procesarCSV(csv) {
     ) || 1;
 
     // Capacidad, matrícula, lista, cupos
-    const capacidad = parseInt(
-      get(fila, ['capacidad jn','capacidad','cap jn','cap'], 21)
-    ) || 0;
-    const matricula = parseInt(
-      get(fila, ['matricula jn','matricula','mat jn','mat'], 22)
-    ) || 0;
-    const lista = parseInt(
-      get(fila, ['lista espera jn','lista espera','lista','l espera'], 24)
-    ) || 0;
-    const cupos = parseInt(
-      get(fila, ['cupos jn','cupos disponibles jn','cupos disponibles','cupos'], 25)
-    ) || 0;
+    const capacidad = parseInt(fila[21]) || 0; // Columna V
+    const matricula = parseInt(fila[22]) || 0; // Columna W
+    const lista = parseInt(fila[24]) || 0; // Columna Y
+    const cupos = parseInt(fila[25]) || 0; // Columna Z
 
     // Asistencia promedio
-    const asistStr = (
-      get(fila, ['asistencia promedio','asist promedio','asist prom','asistencia','% asistencia','porc asistencia'], 27)
-    ).replace('%','').replace(',','.');
+    const asistStr = (fila[27] || '').replace('%','').replace(',','.'); // Columna AB
     const asistencia = parseFloat(asistStr) || 0;
 
     // Días de asistencia
