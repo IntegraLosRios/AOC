@@ -294,10 +294,33 @@ const ALIAS = {
   'pequeña mision': 'Pequeña Misión de Jesús',
   'sc dulce bebe': 'Dulce Bebé',
   'dulce bebe': 'Dulce Bebé',
+  's c dulce bebe': 'Dulce Bebé',
   'sonrisas de colores': 'Sonrisa de Colores',
+  'sonrisa de colores': 'Sonrisa de Colores',
   'arcoiris': 'Arco Iris',
+  'arco iris': 'Arco Iris',
   'el canelito': 'El Canelito',
   'kanelito': 'El Canelito',
+  'los pinguinitos': 'Los Pinguinitos',
+  'los pingüinitos': 'Los Pinguinitos',
+  'pinguinitos': 'Los Pinguinitos',
+  'mas amigos': 'Más Amigos',
+  'luz de los rios': 'Luz de los Ríos',
+  'nube de algodon': 'Nube de Algodón',
+  'naguilan': 'Naguilán',
+  'rucantu': 'Rucantú',
+  'rucant': 'Rucantú',
+  'caminito de luna': 'Caminito de Luna',
+  'san jose': 'San José',
+  'antu kuyen': 'Antu Kuyen',
+  'antü küyen': 'Antu Kuyen',
+  'eluney': 'Eluney',
+  'estrellita de los rios': 'Estrellita de los Rios',
+  'huellitas del ranco': 'Huellitas del Ranco',
+  'mi mundo de alegria': 'Mi Mundo de Alegria',
+  'gotitas del rio': 'Gotitas del Rio',
+  'pintitas de ayelen': 'Pintitas de Ayelen',
+  'pasitos del futuro': 'Pasitos del Futuro',
 };
 
 // Intenta emparejar con la lista oficial
@@ -364,25 +387,31 @@ function procesarCSV(csv) {
   const N = cabecera.length;
   console.log('Cabecera encontrada en fila', headerIdx, '· Columnas (' + N + '):', cabecera.slice(0,30));
 
-  // Detectar columnas de días de asistencia en el mes JUNIO (columnas 27-41 aprox)
-  // En la hoja AOC la sección Junio empieza tras "% Asistencia" (col 26) y tiene col D + 15 días
-  // Columna 27 = "D" (dummy), col 28 = L 1 Jun, ... col 42 = V 20 Jun (15 días hábiles)
-  // Usar posiciones fijas basadas en la estructura conocida del CSV
+  // ── ESTRUCTURA CSV AOC ──────────────────────────────────────────────────────
+  // Col A (0): Nombre jardín (en primera fila) o etiquetas "JH"/"TJMJ"/"Horario..."
+  // Col G (6): Marcador jornada: "NORMAL"/"NOR" → inicio JN | "TJMJ"/"TJ..." → inicio TJMJ
+  //            "JSR" → Jardín Sobre Rueda (acumulado aparte en total global)
+  // Col H (7): Nombre jardín repetido en TODAS las filas (patrón El Canelito)
+  // REGLA CLAVE: colA='TJMJ' es etiqueta horaria, NO cambia bloque de jornada.
+  //              El cambio real JN→TJMJ ocurre ÚNICAMENTE cuando colG empieza con 'TJ'.
+  // STOP: Sección termina en fila "JARDIN SOBRE RUEDA" (colA). Después solo JSR y resumen.
+  // ────────────────────────────────────────────────────────────────────────────
+
   const jardines = {};
-  // Rastrear jardín y jornada activos (persisten entre filas del mismo bloque)
   let jardActivo = '';
-  let jornActiva = '';
+  let jornActiva = 'NORMAL';
+  let jsrCap = 0, jsrMat = 0, jsrLista = 0, jsrCupos = 0;
+  let stopParsing = false;
 
   const ALIAS_NORMS = Object.keys(ALIAS);
 
   const esNombreJardin = s => {
     if (!s || s.length < 3) return false;
     if (/^\d/.test(s)) return false;
-    if (/^(jh|tjmj|inicio|termino|tias|ninos|normal|mes|2025|horario|solo|total)/i.test(s)) return false;
+    if (/^(jh|tjmj|inicio|termino|tias|ninos|normal|mes|2025|horario|solo|total|localidad|detalle|https|grilla)/i.test(s)) return false;
     return true;
   };
 
-  // Verifica si un string coincide con jardín oficial (directo, alias o parcial)
   const esJardinConocido = s => {
     const n = norm(s);
     if (JARDINES_AOC.some(j => norm(j) === n)) return true;
@@ -391,103 +420,95 @@ function procesarCSV(csv) {
     return false;
   };
 
-  filas.slice(headerIdx + 1).forEach(fila => {
-    if (fila.length < 20) return;
+  const filasDatos = filas.slice(headerIdx + 1);
 
-    const colA = (fila[0] || '').trim();
-    const colG = (fila[6] || '').trim().toUpperCase();
-    const colH = (fila[7] || '').trim();
-    const nivelFila = (fila[12] || '').trim().toUpperCase();
+  for (let fi = 0; fi < filasDatos.length; fi++) {
+    const fila = filasDatos[fi];
+    if (fila.length < 12) continue;
 
-    // Normalizar variantes/typos de jornada en col G
-    const normG = colG.replace(/\s/g,'').toUpperCase();
+    const colA  = (fila[0] || '').trim();
+    const colG  = (fila[6] || '').trim();
+    const normG = colG.toUpperCase().replace(/\s/g,'');
+    const colH  = (fila[7] || '').trim();
+    const nivel = (fila[12] || '').trim();
+    const nivelU = nivel.toUpperCase();
 
-    // Detectar inicio de jardín por col A (nombre) o col G (NORMAL)
-    if (esNombreJardin(colA) && esJardinConocido(colA)) {
-      jardActivo = matchNombre(colA);
-      jornActiva = 'NORMAL'; // Al encontrar un nuevo jardín, siempre empieza en NORMAL
+    // HARD STOP: inicio sección resumen regional
+    if (colA === 'JARDIN SOBRE RUEDA') { stopParsing = true; }
+
+    // JSR: acumular por separado para sumar a totales globales
+    if (normG === 'JSR' || colA.startsWith('JSR ')) {
+      jsrCap   += parseInt(fila[21]) || 0;
+      jsrMat   += parseInt(fila[22]) || 0;
+      jsrLista += parseInt(fila[24]) || 0;
+      jsrCupos += parseInt(fila[25]) || 0;
+      continue;
     }
-    if (esNombreJardin(colH) && esJardinConocido(colH)) {
-      jardActivo = matchNombre(colH);
-    }
 
-    // Cambio de jornada a NORMAL: cuando col G es NORMAL explícito
+    if (stopParsing) continue;
+
+    // Cambio de jornada (SOLO por colG — colA='TJMJ' es horario, no jornada)
     if (['NORMAL','NOR','NORMA','NROMAL'].includes(normG)) {
       jornActiva = 'NORMAL';
-    }
-
-    // EL CORTE REAL entre JN y TJMJ está en la fila TOTAL J. NORMAL del CSV.
-    // Solo cambiamos a TJMJ cuando col G dice TJMJ (inicio oficial del bloque TJMJ).
-    // El colA='TJMJ' dentro del bloque JN es solo la etiqueta de horario, NO el cambio de jornada.
-    if (normG.startsWith('TJ')) {
+      if (esNombreJardin(colA) && esJardinConocido(colA)) {
+        jardActivo = matchNombre(colA);
+      }
+    } else if (normG.startsWith('TJ')) {
       jornActiva = 'TJMJ';
     }
 
-    // Ignorar filas de totales y resumen (no son salas individuales)
-    if (nivelFila.includes('TOTAL') || nivelFila.includes('PROMEDIO')) return;
+    // Nombre de jardín: colH (patrón repetido) o colA sin marcador de jornada
+    if (esNombreJardin(colH) && esJardinConocido(colH)) {
+      const nom = matchNombre(colH);
+      if (nom !== jardActivo) { jardActivo = nom; jornActiva = 'NORMAL'; }
+    }
+    if (esNombreJardin(colA) && esJardinConocido(colA) && normG === '') {
+      const nom = matchNombre(colA);
+      if (nom !== jardActivo) { jardActivo = nom; jornActiva = 'NORMAL'; }
+    }
 
-    if (!jardActivo) return;
+    if (!jardActivo) continue;
 
-    const jornada = jornActiva;
+    // Filtrar totales, encabezados y vacíos
+    if (!nivel || nivelU.includes('TOTAL') || nivelU.includes('PROMEDIO') || nivelU === 'NIVEL') continue;
 
-    // Columna M (índice 12) = Nivel educativo
-    const nivel = (fila[12] || '').trim();
-
-    // Solo procesar filas que tienen nivel válido, capacidad y matrícula
-    if (!nivel || norm(nivel).includes('total') || norm(nivel).includes('promedio')) return;
     const capacidad = parseInt(fila[21]) || 0;
     const matricula = parseInt(fila[22]) || 0;
-    // Debe tener al menos capacidad > 0 para ser fila de sala real
-    if (capacidad === 0 && matricula === 0) return;
+    if (capacidad === 0 && matricula === 0) continue;
 
-    // Número de sala (columna N = índice 13)
-    const nSala = parseInt(fila[13]) || 1;
+    const nSala      = parseInt(fila[13]) || 1;
+    const lista      = parseInt(fila[24]) || 0;
+    const cupos      = parseInt((fila[25] || '').replace(',','.')) || 0;
+    const asistencia = parseFloat((fila[27] || '').replace('%','').replace(',','.')) || 0;
 
-    // Columna Y (índice 24) = Lista de espera
-    const lista = parseInt(fila[24]) || 0;
-    // Columna Z (índice 25) = Cupos disponibles
-    const cupos = parseInt((fila[25] || '').replace(',','.')) || 0;
-
-    // % Asistencia = columna AB (índice 27)
-    const asistStr = (fila[27] || '').replace('%','').replace(',','.');
-    const asistencia = parseFloat(asistStr) || 0;
-
-    // Días de asistencia: columna 29 en adelante (índice 28 = col D vacía, 29 = L 1 Jun)
-    let dias = [];
-    for (let i = 29; i < 29 + 15 && i < fila.length; i++) {
-      const val = fila[i];
-      const n = parseInt(val);
-      dias.push(isNaN(n) ? 0 : n);
+    // 15 días hábiles Junio (índices 29–43)
+    const dias = [];
+    for (let d = 29; d < 44 && d < fila.length; d++) {
+      const v = parseInt(fila[d]);
+      dias.push(isNaN(v) ? 0 : v);
     }
     while (dias.length < 15) dias.push(0);
-    dias = dias.slice(0, 15);
 
-    // Capturar código del jardín (col I = índice 8, ej: "16010111" -> prefijo "160101")
-    const codigoRaw = (fila[9] || fila[8] || '').trim();
-    const codigo = codigoRaw.replace(/\D/g,'').substring(0,6) || jardActivo;
+    const codigo = (fila[9] || fila[8] || '').replace(/\D/g,'').substring(0,6);
 
-    // Inicializar jardín si no existe
     if (!jardines[jardActivo]) {
       jardines[jardActivo] = {
-        n: jardActivo,
-        c: codigo || jardActivo,
+        n: jardActivo, c: codigo,
         jn:   { cap:0, mat:0, lista:0, cupos:0, ocup:'0%', asist:0, salas:[] },
         tjmj: { cap:0, mat:0, lista:0, cupos:0, ocup:'0%', asist:0, salas:[] }
       };
     }
+    if (codigo && !jardines[jardActivo].c) jardines[jardActivo].c = codigo;
 
-    const esTJMJ = jornada.includes('TJ') || jornada.includes('TJMJ');
-    const bloque = esTJMJ ? jardines[jardActivo].tjmj : jardines[jardActivo].jn;
-
+    const bloque = jornActiva === 'TJMJ' ? jardines[jardActivo].tjmj : jardines[jardActivo].jn;
     bloque.cap   += capacidad;
     bloque.mat   += matricula;
     bloque.lista += lista;
     bloque.cupos += cupos;
-
     bloque.salas.push({ nivel, s: nSala, cap: capacidad, mat: matricula, lista, cupos, asist: asistencia, dias });
-  });
+  }
 
-  // Post-procesamiento
+  // Post-procesamiento: asistencia prom y ocupación
   J = Object.values(jardines);
   J.forEach(j => {
     ['jn','tjmj'].forEach(k => {
@@ -498,7 +519,9 @@ function procesarCSV(csv) {
     });
   });
 
-  // Ordenar por nombre oficial (mantener orden de JARDINES_AOC si se prefiere)
+  // JSR disponibles para render() en totales globales
+  window._jsrData = { cap: jsrCap, mat: jsrMat, lista: jsrLista, cupos: jsrCupos };
+
   J.sort((a, b) => a.n.localeCompare(b.n, 'es'));
 
   // Poblar selector de asistencia
@@ -583,10 +606,16 @@ function render() {
   if (fil === 'cupos') data = data.filter(j => j.jn.cupos > 0);
   if (fil === 'lleno') data = data.filter(j => j.jn.cupos <= 0);
 
-  const tCap   = data.reduce((s,j) => s+j.jn.cap, 0);
-  const tMat   = data.reduce((s,j) => s+j.jn.mat, 0);
-  const tCupos = data.reduce((s,j) => s+j.jn.cupos, 0);
-  const tLista = data.reduce((s,j) => s+j.jn.lista, 0);
+  const tCapJard   = data.reduce((s,j) => s+j.jn.cap, 0);
+  const tMatJard   = data.reduce((s,j) => s+j.jn.mat, 0);
+  const tCuposJard = data.reduce((s,j) => s+j.jn.cupos, 0);
+  const tListaJard = data.reduce((s,j) => s+j.jn.lista, 0);
+  // Incluir JSR en totales globales cuando se muestran todos los jardines
+  const jsr = (fil === 'todos' && !q && window._jsrData) ? window._jsrData : { cap:0, mat:0, lista:0, cupos:0 };
+  const tCap   = tCapJard   + jsr.cap;
+  const tMat   = tMatJard   + jsr.mat;
+  const tCupos = tCuposJard + jsr.cupos;
+  const tLista = tListaJard + jsr.lista;
   const conA   = data.filter(j => j.jn.asist > 0);
   const avgA   = conA.length ? Math.round(conA.reduce((s,j) => s+j.jn.asist, 0)/conA.length) : 0;
 
