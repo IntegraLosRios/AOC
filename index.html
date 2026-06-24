@@ -133,7 +133,7 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
     <div class="logo">AOC</div>
     <div>
       <h1>Dashboard Jardines AOC</h1>
-      <p>45 Jardines AOC · Datos actualizados desde Google Sheets</p>
+      <p>45 Jardines AOC · Datos actualizados desde Google Sheets · Junio 2025</p>
     </div>
   </div>
   <div class="hchips">
@@ -397,25 +397,38 @@ function procesarCSV(csv) {
     const colA = (fila[0] || '').trim();
     const colG = (fila[6] || '').trim().toUpperCase();
     const colH = (fila[7] || '').trim();
+    const nivelFila = (fila[12] || '').trim().toUpperCase();
+
     // Normalizar variantes/typos de jornada en col G
     const normG = colG.replace(/\s/g,'').toUpperCase();
-    const esJornada = ['NORMAL','NOR','NORMA','NROMAL'].includes(normG) || normG.startsWith('TJ') || normG === 'J';
-    const jornadaNorm = (normG.startsWith('TJ') || normG === 'J') ? 'TJMJ' : 'NORMAL';
 
-    // Col A = 'TJMJ' indica cambio de jornada (no nombre de jardín)
-    if (colA === 'TJMJ') { jornActiva = 'TJMJ'; }
-    else if (esNombreJardin(colA) && esJardinConocido(colA)) {
+    // Detectar inicio de jardín por col A (nombre) o col G (NORMAL)
+    if (esNombreJardin(colA) && esJardinConocido(colA)) {
       jardActivo = matchNombre(colA);
+      jornActiva = 'NORMAL'; // Al encontrar un nuevo jardín, siempre empieza en NORMAL
     }
     if (esNombreJardin(colH) && esJardinConocido(colH)) {
       jardActivo = matchNombre(colH);
     }
-    if (esJornada) jornActiva = jornadaNorm;
+
+    // Cambio de jornada a NORMAL: cuando col G es NORMAL explícito
+    if (['NORMAL','NOR','NORMA','NROMAL'].includes(normG)) {
+      jornActiva = 'NORMAL';
+    }
+
+    // EL CORTE REAL entre JN y TJMJ está en la fila TOTAL J. NORMAL del CSV.
+    // Solo cambiamos a TJMJ cuando col G dice TJMJ (inicio oficial del bloque TJMJ).
+    // El colA='TJMJ' dentro del bloque JN es solo la etiqueta de horario, NO el cambio de jornada.
+    if (normG.startsWith('TJ')) {
+      jornActiva = 'TJMJ';
+    }
+
+    // Ignorar filas de totales y resumen (no son salas individuales)
+    if (nivelFila.includes('TOTAL') || nivelFila.includes('PROMEDIO')) return;
 
     if (!jardActivo) return;
 
-    // Jornada ya normalizada arriba
-    const jornada = esJornada ? jornadaNorm : jornActiva;
+    const jornada = jornActiva;
 
     // Columna M (índice 12) = Nivel educativo
     const nivel = (fila[12] || '').trim();
