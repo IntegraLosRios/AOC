@@ -121,6 +121,11 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 .sem-table tr:last-child td{border-bottom:none}
 .sem-table tr.total-sem td{background:#0d1117;font-weight:700;border-top:1px solid #21283a}
 .nodata{text-align:center;padding:3rem;color:#3d4f6a;font-size:13px}
+.cbtn{padding:5px 12px;font-size:11px;font-weight:600;border-radius:20px;border:1px solid #21283a;background:#161b27;color:#5a677f;cursor:pointer;white-space:nowrap;transition:all .15s}
+.cbtn.on{background:#1d2d0f;color:#86efac;border-color:#166534}
+.cbtn:hover:not(.on){color:#e2e8f0;border-color:#3d4f6a}
+.comuna-strip{display:flex;gap:6px;flex-wrap:wrap;padding:10px 20px 0;background:#161b27;border-bottom:1px solid #21283a}
+.jsr-block{background:#1a2133;border:1px solid #21283a;border-radius:10px;padding:14px 16px;margin-bottom:14px;display:none}
 .loading{text-align:center;padding:3rem;color:#5a677f;font-size:13px;grid-column:1/-1}
 .error-msg{background:#2d0f0f;border:1px solid #f87171;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#f87171;display:none}
 .debug-bar{background:#111827;border:1px solid #21283a;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#5a677f;display:none}
@@ -149,6 +154,12 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
   <div class="tab" onclick="sw('asistencia',this)">Asistencia diaria</div>
 </div>
 
+<!-- BARRA COMUNAS -->
+<div class="comuna-strip" id="comunaStrip">
+  <button class="cbtn on" data-c="" onclick="setComuna('')">Todas las comunas</button>
+  <button class="cbtn" data-c="Valdivia" onclick="setComuna(comunaFil==='Valdivia'?'':this.dataset.c)">Valdivia</button><button class="cbtn" data-c="Corral" onclick="setComuna(comunaFil==='Corral'?'':this.dataset.c)">Corral</button><button class="cbtn" data-c="Máfil" onclick="setComuna(comunaFil==='Máfil'?'':this.dataset.c)">Máfil</button><button class="cbtn" data-c="Lanco" onclick="setComuna(comunaFil==='Lanco'?'':this.dataset.c)">Lanco</button><button class="cbtn" data-c="Los Lagos" onclick="setComuna(comunaFil==='Los Lagos'?'':this.dataset.c)">Los Lagos</button><button class="cbtn" data-c="Mariquina" onclick="setComuna(comunaFil==='Mariquina'?'':this.dataset.c)">Mariquina</button><button class="cbtn" data-c="Paillaco" onclick="setComuna(comunaFil==='Paillaco'?'':this.dataset.c)">Paillaco</button><button class="cbtn" data-c="La Unión" onclick="setComuna(comunaFil==='La Unión'?'':this.dataset.c)">La Unión</button><button class="cbtn" data-c="Futrono" onclick="setComuna(comunaFil==='Futrono'?'':this.dataset.c)">Futrono</button><button class="cbtn" data-c="Río Bueno" onclick="setComuna(comunaFil==='Río Bueno'?'':this.dataset.c)">Río Bueno</button><button class="cbtn" data-c="Lago Ranco" onclick="setComuna(comunaFil==='Lago Ranco'?'':this.dataset.c)">Lago Ranco</button><button class="cbtn" data-c="Malalhue" onclick="setComuna(comunaFil==='Malalhue'?'':this.dataset.c)">Malalhue</button><button class="cbtn" data-c="Panguipulli" onclick="setComuna(comunaFil==='Panguipulli'?'':this.dataset.c)">Panguipulli</button>
+</div>
+
 <!-- TAB RESUMEN -->
 <div class="page on" id="tab-resumen">
   <div class="error-msg" id="errMsg"></div>
@@ -169,6 +180,7 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
     <button class="fbtn" onclick="setF('lleno',this)">Sin cupos JN</button>
   </div>
   <div class="stat-row" id="statRow"></div>
+  <div class="jsr-block" id="jsrBlock"></div>
   <div class="grid" id="grid"><div class="loading">⏳ Cargando datos desde Google Sheets…</div></div>
 </div>
 
@@ -228,12 +240,34 @@ const JARDINES_AOC = [
   'Fuente de Luz','Arco Iris','Roja Flor','Pulgarcito','Pintitas de Ayelen'
 ];
 
+
+// Mapa jardín → comuna
+const COMUNAS = {
+  'El Canelito':'Valdivia','Cuncunita':'Valdivia','Esperanza':'Valdivia',
+  'Papelucho':'Valdivia','Ensueño':'Valdivia','Los Pinguinitos':'Valdivia',
+  'Amanecer del Sol':'Valdivia','Más Amigos':'Valdivia','El Principito':'Valdivia',
+  'Luz de los Ríos':'Valdivia','Pequeña Misión de Jesús':'Valdivia',
+  'Dulce Bebé':'Valdivia','Rinconcito Feliz':'Valdivia','Aneley':'Valdivia',
+  'Estrellita de los Rios':'Valdivia','Sueños de Colores':'Valdivia',
+  'Nube de Algodón':'Valdivia','Sonrisa de Colores':'Valdivia',
+  'Naguilán':'Corral','Palomitas':'Máfil',
+  'Nuevos Pasitos':'Lanco','Mi Mundo de Alegria':'Lanco','Alihuen':'Lanco',
+  'Girasol':'Los Lagos','Pasitos del Futuro':'Los Lagos','Gotitas del Rio':'Los Lagos',
+  'San José':'Mariquina','Trinidad':'Mariquina','Suyai':'Mariquina','Antu Kuyen':'Mariquina',
+  'Paillaquito':'Paillaco','Eluney':'Paillaco','Violeta Parra':'Paillaco',
+  'Blanca Nieves':'La Unión','Manitos Contentas':'La Unión','Acogida':'La Unión',
+  'Los Grillitos':'Futrono','Huellitas del Ranco':'Futrono',
+  'Arco Iris':'Río Bueno','Roja Flor':'Río Bueno','Pulgarcito':'Río Bueno','Pintitas de Ayelen':'Río Bueno',
+  'Rucantú':'Lago Ranco','Caminito de Luna':'Malalhue','Fuente de Luz':'Panguipulli'
+};
+
 // Días hábiles de Junio 2025 según la hoja AOC (L1, M2, M3, J4, V5, L8, M9, M10, J11, V12, L15, M16, M17, J18, V19)
 const DIAS_LABEL = ["01 Jun","02 Jun","03 Jun","04 Jun","05 Jun","08 Jun","09 Jun","10 Jun","11 Jun","12 Jun","15 Jun","16 Jun","17 Jun","18 Jun","19 Jun"];
 const DIAS_DIA   = ["Lun","Mar","Mié","Jue","Vie","Lun","Mar","Mié","Jue","Vie","Lun","Mar","Mié","Jue","Vie"];
 
 let J = [];
 let fil = 'todos';
+let comunaFil = '';
 let chartInst = null;
 let vistaActual = 'detalle';
 
@@ -401,6 +435,7 @@ function procesarCSV(csv) {
   let jardActivo = '';
   let jornActiva = 'NORMAL';
   let jsrCap = 0, jsrMat = 0, jsrLista = 0, jsrCupos = 0;
+  window._jsrList = [];
   let stopParsing = false;
 
   const ALIAS_NORMS = Object.keys(ALIAS);
@@ -433,15 +468,31 @@ function procesarCSV(csv) {
     const nivel = (fila[12] || '').trim();
     const nivelU = nivel.toUpperCase();
 
-    // HARD STOP: inicio sección resumen regional
-    if (colA === 'JARDIN SOBRE RUEDA') { stopParsing = true; }
+    // HARD STOP: inicio sección resumen regional / grilla global
+    if (colA.toUpperCase().startsWith('JARDIN SOBRE RUEDA') || colA.toUpperCase() === 'GRILLA' || colA.toUpperCase().startsWith('TOTAL ASISTENCIA')) { stopParsing = true; }
 
-    // JSR: acumular por separado para sumar a totales globales
-    if (normG === 'JSR' || colA.startsWith('JSR ')) {
-      jsrCap   += parseInt(fila[21]) || 0;
-      jsrMat   += parseInt(fila[22]) || 0;
-      jsrLista += parseInt(fila[24]) || 0;
-      jsrCupos += parseInt(fila[25]) || 0;
+    // JSR: capturar individualmente + acumular totales
+    if (normG === 'JSR' || (colA.toUpperCase().startsWith('JSR ') && parseInt(fila[21]) > 0)) {
+      const jsrCp = parseInt(fila[21]) || 0;
+      const jsrMt = parseInt(fila[22]) || 0;
+      const jsrLs = parseInt(fila[24]) || 0;
+      const jsrCq = parseInt(fila[25]) || 0;
+      const jsrNm = colA || '';
+      if (jsrNm) window._jsrList = (window._jsrList || []).concat([{n:jsrNm,cap:jsrCp,mat:jsrMt,lista:jsrLs,cupos:jsrCq}]);
+      jsrCap   += jsrCp;
+      jsrMat   += jsrMt;
+      jsrLista += jsrLs;
+      jsrCupos += jsrCq;
+      continue;
+    }
+    // También capturar JSR sin G='JSR' pero dentro del bloque JSR (después del stop)
+    if (stopParsing && colA.toUpperCase().startsWith('JSR ') && parseInt(fila[21]) > 0) {
+      const jsrCp = parseInt(fila[21]) || 0;
+      const jsrMt = parseInt(fila[22]) || 0;
+      const jsrLs = parseInt(fila[24]) || 0;
+      const jsrCq = parseInt(fila[25]) || 0;
+      window._jsrList = (window._jsrList || []).concat([{n:colA,cap:jsrCp,mat:jsrMt,lista:jsrLs,cupos:jsrCq}]);
+      jsrCap += jsrCp; jsrMat += jsrMt; jsrLista += jsrLs; jsrCupos += jsrCq;
       continue;
     }
 
@@ -520,7 +571,7 @@ function procesarCSV(csv) {
   });
 
   // JSR disponibles para render() en totales globales
-  window._jsrData = { cap: jsrCap, mat: jsrMat, lista: jsrLista, cupos: jsrCupos };
+  window._jsrData = { cap: jsrCap, mat: jsrMat, lista: jsrLista, cupos: jsrCupos, list: window._jsrList || [] };
 
   J.sort((a, b) => a.n.localeCompare(b.n, 'es'));
 
@@ -569,6 +620,14 @@ function setF(f, btn) {
   render();
 }
 
+function setComuna(c) {
+  comunaFil = c;
+  document.querySelectorAll('.cbtn').forEach(b => {
+    b.classList.toggle('on', b.dataset.c === (c||''));
+  });
+  render();
+}
+
 function bc(p) { return p >= 75 ? 'g' : p >= 55 ? 'a' : 'r'; }
 
 function tagCupos(c) {
@@ -605,6 +664,7 @@ function render() {
   let data = J.filter(j => j.n.toLowerCase().includes(q));
   if (fil === 'cupos') data = data.filter(j => j.jn.cupos > 0);
   if (fil === 'lleno') data = data.filter(j => j.jn.cupos <= 0);
+  if (comunaFil) data = data.filter(j => (COMUNAS[j.n]||'') === comunaFil);
 
   const tCapJard   = data.reduce((s,j) => s+j.jn.cap, 0);
   const tMatJard   = data.reduce((s,j) => s+j.jn.mat, 0);
@@ -638,6 +698,32 @@ function render() {
   if (!data.length) {
     g.innerHTML = '<div class="nodata" style="grid-column:1/-1">Sin resultados</div>';
     return;
+  }
+
+  // JSR block (only when no filters active)
+  const jsrWrap = document.getElementById('jsrBlock');
+  const jsr2 = window._jsrData;
+  if (jsrWrap && jsr2 && jsr2.list && !comunaFil && !q && fil==='todos') {
+    jsrWrap.style.display = 'block';
+    const rows = jsr2.list.map(r => {
+      const cuposC = r.cupos > 0 ? 'g' : r.cupos < 0 ? 'r' : 'z';
+      const cuposTxt = r.cupos > 0 ? '+'+r.cupos : r.cupos < 0 ? 'Sobre cupo' : 'Sin cupos';
+      return `<div class="cm" style="min-width:180px;flex:1">
+        <div class="cm-l" style="font-size:11px;color:#86efac;margin-bottom:4px">${r.n}</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:2px">
+          <div><div class="cm-l">Cap</div><div class="cm-v" style="font-size:13px">${r.cap}</div></div>
+          <div><div class="cm-l">Mat.</div><div class="cm-v" style="font-size:13px">${r.mat}</div></div>
+          <div><div class="cm-l">Cupos</div><div class="cm-v" style="font-size:13px;color:${r.cupos>0?'#34d399':r.cupos<0?'#f87171':'#5a677f'}">${cuposTxt}</div></div>
+        </div>
+      </div>`;
+    }).join('');
+    jsrWrap.innerHTML = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-size:11px;font-weight:700;color:#86efac;letter-spacing:.06em;background:#1d2d0f;padding:2px 10px;border-radius:4px">JSR</span>
+        <span style="font-size:12px;color:#5a677f">Jardines Sobre Ruedas · Cap ${jsr2.cap} · Mat ${jsr2.mat}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">${rows}</div>`;
+  } else if (jsrWrap) {
+    jsrWrap.style.display = 'none';
   }
 
   g.innerHTML = data.map(j => {
@@ -691,9 +777,18 @@ function render() {
 function toggleCard(cid) {
   const el = document.getElementById(cid);
   if (!el) return;
-  el.classList.toggle('open');
+  const willOpen = !el.classList.contains('open');
+  // Cerrar todas las demás tarjetas
+  document.querySelectorAll('.card.open').forEach(c => {
+    if (c.id !== cid) {
+      c.classList.remove('open');
+      const t = c.querySelector('.card-toggle');
+      if (t) t.textContent = '▾ ver desglose por nivel y TJMJ';
+    }
+  });
+  el.classList.toggle('open', willOpen);
   const tog = el.querySelector('.card-toggle');
-  if (tog) tog.textContent = el.classList.contains('open') ? '▴ ocultar desglose' : '▾ ver desglose por nivel y TJMJ';
+  if (tog) tog.textContent = willOpen ? '▴ ocultar desglose' : '▾ ver desglose por nivel y TJMJ';
 }
 
 // ══════════════════════════════════════════════════
