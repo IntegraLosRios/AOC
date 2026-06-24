@@ -36,7 +36,7 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 .fbtn{padding:7px 14px;font-size:12px;font-weight:500;border-radius:8px;border:1px solid #21283a;background:#161b27;color:#5a677f;cursor:pointer}
 .fbtn.on{background:#0d1f3c;color:#60a5fa;border-color:#1d4ed8}
 .stat-row{font-size:12px;color:#5a677f;margin-bottom:12px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
 .card{background:#161b27;border:1px solid #21283a;border-radius:12px;overflow:hidden}
 .card-hdr{padding:14px 15px 10px;cursor:pointer;user-select:none}
 .card-hdr:hover{background:#1a2133}
@@ -121,6 +121,11 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 .sem-table tr:last-child td{border-bottom:none}
 .sem-table tr.total-sem td{background:#0d1117;font-weight:700;border-top:1px solid #21283a}
 .nodata{text-align:center;padding:3rem;color:#3d4f6a;font-size:13px}
+.cbtn{padding:5px 12px;font-size:11px;font-weight:600;border-radius:20px;border:1px solid #21283a;background:#161b27;color:#5a677f;cursor:pointer;white-space:nowrap;transition:all .15s}
+.cbtn.on{background:#1d2d0f;color:#86efac;border-color:#166534}
+.cbtn:hover:not(.on){color:#e2e8f0;border-color:#3d4f6a}
+.comuna-strip{display:flex;gap:6px;flex-wrap:wrap;padding:10px 20px;background:#161b27;border-bottom:1px solid #21283a}
+.jsr-block{background:#1a2133;border:1px solid #21283a;border-radius:10px;padding:14px 16px;margin-bottom:14px;display:none}
 .loading{text-align:center;padding:3rem;color:#5a677f;font-size:13px;grid-column:1/-1}
 .error-msg{background:#2d0f0f;border:1px solid #f87171;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#f87171;display:none}
 .debug-bar{background:#111827;border:1px solid #21283a;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#5a677f;display:none}
@@ -149,6 +154,24 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
   <div class="tab" onclick="sw('asistencia',this)">Asistencia diaria</div>
 </div>
 
+<!-- BARRA COMUNAS (solo visible en tab resumen) -->
+<div class="comuna-strip" id="comunaStrip">
+  <button class="cbtn on" data-c="" onclick="setComuna('')">Todas las comunas</button>
+  <button class="cbtn" data-c="Valdivia" onclick="setComuna('Valdivia')">Valdivia</button>
+  <button class="cbtn" data-c="Corral" onclick="setComuna('Corral')">Corral</button>
+  <button class="cbtn" data-c="Máfil" onclick="setComuna('Máfil')">Máfil</button>
+  <button class="cbtn" data-c="Lanco" onclick="setComuna('Lanco')">Lanco</button>
+  <button class="cbtn" data-c="Los Lagos" onclick="setComuna('Los Lagos')">Los Lagos</button>
+  <button class="cbtn" data-c="Mariquina" onclick="setComuna('Mariquina')">Mariquina</button>
+  <button class="cbtn" data-c="Paillaco" onclick="setComuna('Paillaco')">Paillaco</button>
+  <button class="cbtn" data-c="La Unión" onclick="setComuna('La Unión')">La Unión</button>
+  <button class="cbtn" data-c="Futrono" onclick="setComuna('Futrono')">Futrono</button>
+  <button class="cbtn" data-c="Río Bueno" onclick="setComuna('Río Bueno')">Río Bueno</button>
+  <button class="cbtn" data-c="Lago Ranco" onclick="setComuna('Lago Ranco')">Lago Ranco</button>
+  <button class="cbtn" data-c="Malalhue" onclick="setComuna('Malalhue')">Malalhue</button>
+  <button class="cbtn" data-c="Panguipulli" onclick="setComuna('Panguipulli')">Panguipulli</button>
+</div>
+
 <!-- TAB RESUMEN -->
 <div class="page on" id="tab-resumen">
   <div class="error-msg" id="errMsg"></div>
@@ -169,6 +192,7 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
     <button class="fbtn" onclick="setF('lleno',this)">Sin cupos JN</button>
   </div>
   <div class="stat-row" id="statRow"></div>
+  <div class="jsr-block" id="jsrBlock"></div>
   <div class="grid" id="grid"><div class="loading">⏳ Cargando datos desde Google Sheets…</div></div>
 </div>
 
@@ -228,12 +252,34 @@ const JARDINES_AOC = [
   'Fuente de Luz','Arco Iris','Roja Flor','Pulgarcito','Pintitas de Ayelen'
 ];
 
+
+// Mapa jardín → comuna
+const COMUNAS = {
+  'El Canelito':'Valdivia','Cuncunita':'Valdivia','Esperanza':'Valdivia',
+  'Papelucho':'Valdivia','Ensueño':'Valdivia','Los Pinguinitos':'Valdivia',
+  'Amanecer del Sol':'Valdivia','Más Amigos':'Valdivia','El Principito':'Valdivia',
+  'Luz de los Ríos':'Valdivia','Pequeña Misión de Jesús':'Valdivia',
+  'Dulce Bebé':'Valdivia','Rinconcito Feliz':'Valdivia','Aneley':'Valdivia',
+  'Estrellita de los Rios':'Valdivia','Sueños de Colores':'Valdivia',
+  'Nube de Algodón':'Valdivia','Sonrisa de Colores':'Valdivia',
+  'Naguilán':'Corral','Palomitas':'Máfil',
+  'Nuevos Pasitos':'Lanco','Mi Mundo de Alegria':'Lanco','Alihuen':'Lanco',
+  'Girasol':'Los Lagos','Pasitos del Futuro':'Los Lagos','Gotitas del Rio':'Los Lagos',
+  'San José':'Mariquina','Trinidad':'Mariquina','Suyai':'Mariquina','Antu Kuyen':'Mariquina',
+  'Paillaquito':'Paillaco','Eluney':'Paillaco','Violeta Parra':'Paillaco',
+  'Blanca Nieves':'La Unión','Manitos Contentas':'La Unión','Acogida':'La Unión',
+  'Los Grillitos':'Futrono','Huellitas del Ranco':'Futrono',
+  'Arco Iris':'Río Bueno','Roja Flor':'Río Bueno','Pulgarcito':'Río Bueno','Pintitas de Ayelen':'Río Bueno',
+  'Rucantú':'Lago Ranco','Caminito de Luna':'Malalhue','Fuente de Luz':'Panguipulli'
+};
+
 // Días hábiles de Junio 2025 según la hoja AOC (L1, M2, M3, J4, V5, L8, M9, M10, J11, V12, L15, M16, M17, J18, V19)
 const DIAS_LABEL = ["01 Jun","02 Jun","03 Jun","04 Jun","05 Jun","08 Jun","09 Jun","10 Jun","11 Jun","12 Jun","15 Jun","16 Jun","17 Jun","18 Jun","19 Jun"];
 const DIAS_DIA   = ["Lun","Mar","Mié","Jue","Vie","Lun","Mar","Mié","Jue","Vie","Lun","Mar","Mié","Jue","Vie"];
 
 let J = [];
 let fil = 'todos';
+let comunaFil = '';
 let chartInst = null;
 let vistaActual = 'detalle';
 
@@ -401,6 +447,7 @@ function procesarCSV(csv) {
   let jardActivo = '';
   let jornActiva = 'NORMAL';
   let jsrCap = 0, jsrMat = 0, jsrLista = 0, jsrCupos = 0;
+  window._jsrList = [];
   let stopParsing = false;
 
   const ALIAS_NORMS = Object.keys(ALIAS);
@@ -434,14 +481,22 @@ function procesarCSV(csv) {
     const nivelU = nivel.toUpperCase();
 
     // HARD STOP: inicio sección resumen regional
-    if (colA === 'JARDIN SOBRE RUEDA') { stopParsing = true; }
+    if (colA.toUpperCase().startsWith('JARDIN SOBRE RUEDA') || colA.toUpperCase() === 'GRILLA' || colA.toUpperCase().startsWith('TOTAL ASISTENCIA')) { stopParsing = true; }
 
-    // JSR: acumular por separado para sumar a totales globales
-    if (normG === 'JSR' || colA.startsWith('JSR ')) {
-      jsrCap   += parseInt(fila[21]) || 0;
-      jsrMat   += parseInt(fila[22]) || 0;
-      jsrLista += parseInt(fila[24]) || 0;
-      jsrCupos += parseInt(fila[25]) || 0;
+    // JSR: capturar individualmente (G='JSR' o colA empieza 'JSR ' con cap>0)
+    if (normG === 'JSR' || (colA.toUpperCase().startsWith('JSR ') && parseInt(fila[21]) > 0)) {
+      const jsrCp = parseInt(fila[21])||0, jsrMt = parseInt(fila[22])||0;
+      const jsrLs = parseInt(fila[24])||0, jsrCq = parseInt(fila[25])||0;
+      if (colA) window._jsrList.push({n:colA, cap:jsrCp, mat:jsrMt, lista:jsrLs, cupos:jsrCq});
+      jsrCap+=jsrCp; jsrMat+=jsrMt; jsrLista+=jsrLs; jsrCupos+=jsrCq;
+      continue;
+    }
+    // JSR sin G='JSR' dentro del bloque stop
+    if (stopParsing && colA.toUpperCase().startsWith('JSR ') && parseInt(fila[21]) > 0) {
+      const jsrCp = parseInt(fila[21])||0, jsrMt = parseInt(fila[22])||0;
+      const jsrLs = parseInt(fila[24])||0, jsrCq = parseInt(fila[25])||0;
+      window._jsrList.push({n:colA, cap:jsrCp, mat:jsrMt, lista:jsrLs, cupos:jsrCq});
+      jsrCap+=jsrCp; jsrMat+=jsrMt; jsrLista+=jsrLs; jsrCupos+=jsrCq;
       continue;
     }
 
@@ -508,27 +563,24 @@ function procesarCSV(csv) {
     bloque.salas.push({ nivel, s: nSala, cap: capacidad, mat: matricula, lista, cupos, asist: asistencia, dias });
   }
 
-  // Post-procesamiento: asistencia prom y ocupación
+  // Post-procesamiento: asistencia real + ocupación
   J = Object.values(jardines);
   J.forEach(j => {
     ['jn','tjmj'].forEach(k => {
       const b = j[k];
-      // Suma total de asistidos en todos los días (blancos = 0)
-      // Fórmula: Σ(asistidos todos los días) / (15 días laborales × Σmat) × 100
-      let sumDias = 0;
+      // Fórmula: Σasistidos / (15 días laborales × Σmat) por salas con datos
       const salasConData = b.salas.filter(s => s.dias.some(v => v > 0));
-      salasConData.forEach(s => { sumDias += s.dias.reduce((a, v) => a + Math.max(0, v), 0); });
-      const denominador = salasConData.reduce((a, s) => a + 15 * s.mat, 0);
-      b.asistReal = denominador > 0 ? parseFloat((sumDias / denominador * 100).toFixed(1)) : 0;
-      b.asist = b.asistReal;
-      b.sumDias = sumDias;
-      b.denominador = denominador;
-      b.ocup  = b.cap ? Math.round((b.mat/b.cap)*100)+'%' : '0%';
+      const sumDias      = salasConData.reduce((a,s) => a + s.dias.reduce((x,v) => x+Math.max(0,v),0), 0);
+      const denominador  = salasConData.reduce((a,s) => a + 15 * s.mat, 0);
+      b.asist      = denominador > 0 ? parseFloat((sumDias/denominador*100).toFixed(1)) : 0;
+      b.sumDias    = sumDias;
+      b.denominador= denominador;
+      b.ocup       = b.cap ? Math.round((b.mat/b.cap)*100)+'%' : '0%';
     });
   });
 
   // JSR disponibles para render() en totales globales
-  window._jsrData = { cap: jsrCap, mat: jsrMat, lista: jsrLista, cupos: jsrCupos };
+  window._jsrData = { cap: jsrCap, mat: jsrMat, lista: jsrLista, cupos: jsrCupos, list: window._jsrList||[] };
 
   J.sort((a, b) => a.n.localeCompare(b.n, 'es'));
 
@@ -568,7 +620,6 @@ function sw(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
   el.classList.add('on');
   document.getElementById('tab-'+id).classList.add('on');
-  // Mostrar/ocultar barra de comunas solo en tab resumen
   const strip = document.getElementById('comunaStrip');
   if (strip) strip.style.display = id === 'resumen' ? '' : 'none';
 }
@@ -577,6 +628,14 @@ function setF(f, btn) {
   fil = f;
   document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
+  render();
+}
+
+function setComuna(c) {
+  comunaFil = c;
+  document.querySelectorAll('.cbtn').forEach(b => {
+    b.classList.toggle('on', b.dataset.c === (c||''));
+  });
   render();
 }
 
@@ -616,6 +675,7 @@ function render() {
   let data = J.filter(j => j.n.toLowerCase().includes(q));
   if (fil === 'cupos') data = data.filter(j => j.jn.cupos > 0);
   if (fil === 'lleno') data = data.filter(j => j.jn.cupos <= 0);
+  if (comunaFil) data = data.filter(j => (COMUNAS[j.n]||'') === comunaFil);
 
   const tCapJard   = data.reduce((s,j) => s+j.jn.cap, 0);
   const tMatJard   = data.reduce((s,j) => s+j.jn.mat, 0);
@@ -627,10 +687,9 @@ function render() {
   const tMat   = tMatJard   + jsr.mat;
   const tCupos = tCuposJard + jsr.cupos;
   const tLista = tListaJard + jsr.lista;
-  // Asistencia real: suma total asistidos / (dias×mat) de todos los jardines JN visibles
-  const totalSumDias = data.reduce((s,j) => s + (j.jn.sumDias||0), 0);
-  const totalDenom   = data.reduce((s,j) => s + (j.jn.denominador||0), 0);
-  const avgA = totalDenom > 0 ? parseFloat((totalSumDias / totalDenom * 100).toFixed(1)) : 0;
+  const totalSumDias = data.reduce((s,j) => s+(j.jn.sumDias||0), 0);
+  const totalDenom   = data.reduce((s,j) => s+(j.jn.denominador||0), 0);
+  const avgA = totalDenom > 0 ? parseFloat((totalSumDias/totalDenom*100).toFixed(1)) : 0;
 
   const fmt = n => n.toLocaleString('es-CL');
   document.getElementById('kJ').textContent    = data.length;
@@ -652,6 +711,24 @@ function render() {
     g.innerHTML = '<div class="nodata" style="grid-column:1/-1">Sin resultados</div>';
     return;
   }
+
+  // Bloque JSR (solo sin filtros activos)
+  const jsrWrap = document.getElementById('jsrBlock');
+  const jsr2 = window._jsrData;
+  if (jsrWrap && jsr2 && jsr2.list && jsr2.list.length && !comunaFil && !q && fil==='todos') {
+    jsrWrap.style.display = 'block';
+    const rows = jsr2.list.map(r => `<div class="cm" style="min-width:160px;flex:1">
+        <div class="cm-l" style="font-size:11px;color:#86efac;margin-bottom:4px">${r.n}</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:2px">
+          <div><div class="cm-l">Cap</div><div class="cm-v" style="font-size:13px">${r.cap}</div></div>
+          <div><div class="cm-l">Mat.</div><div class="cm-v" style="font-size:13px">${r.mat}</div></div>
+          <div><div class="cm-l">Cupos</div><div class="cm-v" style="font-size:13px;color:${r.cupos>0?'#34d399':r.cupos<0?'#f87171':'#5a677f'}">${r.cupos>0?'+'+r.cupos:r.cupos<0?'Sobrecupo':'Sin cupos'}</div></div>
+        </div></div>`).join('');
+    jsrWrap.innerHTML = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-size:11px;font-weight:700;color:#86efac;letter-spacing:.06em;background:#1d2d0f;padding:2px 10px;border-radius:4px">JSR</span>
+        <span style="font-size:12px;color:#5a677f">Jardines Sobre Ruedas · Cap ${jsr2.cap} · Mat ${jsr2.mat}</span>
+      </div><div style="display:flex;flex-wrap:wrap;gap:10px">${rows}</div>`;
+  } else if (jsrWrap) { jsrWrap.style.display = 'none'; }
 
   g.innerHTML = data.map(j => {
     const jn = j.jn, tj = j.tjmj;
@@ -940,7 +1017,7 @@ function renderGrafico() {
 // ══════════════════════════════════════════════════
 window.addEventListener('load', () => {
   cargarDatos();
-  setInterval(cargarDatos, 60000); // cada 1 minuto
+  setInterval(cargarDatos, 60000);
 });
 </script>
 </body>
