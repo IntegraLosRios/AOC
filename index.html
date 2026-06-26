@@ -11,12 +11,13 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 .brand{display:flex;align-items:center;gap:12px}
 .logo{width:38px;height:38px;background:linear-gradient(135deg,#00c896,#0077ff);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;flex-shrink:0}
 .brand h1{font-size:16px;font-weight:600;color:#fff}
-.brand p{font-size:11px;color:#5a677f}
+.brand p{font-size:12px;color:#8a97b0}
 .hchips{display:flex;gap:8px;flex-wrap:wrap}
-.hchip{font-size:11px;padding:4px 11px;border-radius:20px;font-weight:600}
+.hchip{font-size:12px;padding:4px 11px;border-radius:20px;font-weight:600}
 .hchip.g{background:#0d3326;color:#34d399}
 .hchip.b{background:#0d1f3c;color:#60a5fa}
 .hchip.a{background:#2d1a07;color:#fbbf24}
+.hchip.r{background:#2d0f0f;color:#f87171}
 .tabs{display:flex;background:#161b27;border-bottom:1px solid #21283a;padding:0 20px}
 .tab{padding:11px 20px;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:#5a677f;transition:all .2s;white-space:nowrap}
 .tab.on{color:#60a5fa;border-bottom-color:#60a5fa}
@@ -25,38 +26,40 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 .page.on{display:block}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
 .kpi{background:#161b27;border:1px solid #21283a;border-radius:10px;padding:13px 15px}
-.kl{font-size:11px;color:#5a677f;margin-bottom:3px}
+.kl{font-size:12px;color:#8a97b0;margin-bottom:3px}
 .kv{font-size:22px;font-weight:700}
-.kv.g{color:#34d399}.kv.b{color:#60a5fa}.kv.a{color:#fbbf24}.kv.w{color:#e2e8f0}
+.kv.g{color:#34d399}.kv.b{color:#60a5fa}.kv.a{color:#fbbf24}.kv.w{color:#e2e8f0}.kv.r{color:#f87171}
 .kbar{background:#0d1117;border-radius:3px;height:4px;margin-top:5px;overflow:hidden}
 .kbarf{height:4px;border-radius:3px;background:#34d399}
 .ctrl{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
 .ctrl input{flex:1;min-width:160px;padding:8px 13px;border-radius:8px;border:1px solid #21283a;background:#161b27;color:#e2e8f0;font-size:13px}
 .ctrl input:focus{outline:none;border-color:#60a5fa}
-.fbtn{padding:7px 14px;font-size:12px;font-weight:500;border-radius:8px;border:1px solid #21283a;background:#161b27;color:#5a677f;cursor:pointer}
+.fbtn{padding:7px 14px;font-size:12px;font-weight:500;border-radius:8px;border:1px solid #21283a;background:#161b27;color:#8a97b0;cursor:pointer}
 .fbtn.on{background:#0d1f3c;color:#60a5fa;border-color:#1d4ed8}
-.stat-row{font-size:12px;color:#5a677f;margin-bottom:12px}
+.stat-row{font-size:13px;color:#8a97b0;margin-bottom:12px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
 .card{background:#161b27;border:1px solid #21283a;border-radius:12px;overflow:hidden}
 .card-hdr{padding:14px 15px 10px;cursor:pointer;user-select:none}
 .card-hdr:hover{background:#1a2133}
-.card-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
-.card-name{font-size:14px;font-weight:700;color:#fff}
-.card-code{font-size:11px;color:#3d4f6a;margin-bottom:8px}
+.card-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;gap:6px;flex-wrap:wrap}
+.card-name{font-size:15px;font-weight:700;color:#ffffff}
+.card-code{font-size:12px;color:#5a677f;margin-bottom:8px}
 .badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600}
 .badge.g{background:#0d3326;color:#34d399}
 .badge.r{background:#2d0f0f;color:#f87171}
 .badge.a{background:#2d1a07;color:#fbbf24}
+/* badge-desist: rojo compacto al lado del badge cupos */
+.badge-desist{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#2d0f0f;color:#f87171}
 .card-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}
 .cm{background:#0d1117;border-radius:6px;padding:6px 8px;text-align:center;overflow:hidden;min-width:0}
-.cm-l{font-size:9px;color:#3d4f6a;white-space:nowrap}
-.cm-v{font-size:13px;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cm-l{font-size:10px;color:#5a677f;white-space:nowrap}
+.cm-v{font-size:14px;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .asist-bar-wrap{margin:6px 0 3px}
 .asist-bar-bg{background:#0d1117;border-radius:3px;height:5px;overflow:hidden}
 .asist-bar-f{height:5px;border-radius:3px;transition:width .4s}
 .asist-bar-f.g{background:#10b981}.asist-bar-f.a{background:#f59e0b}.asist-bar-f.r{background:#ef4444}
-.asist-label{font-size:10px;color:#5a677f;text-align:right}
-.card-toggle{font-size:10px;color:#3d4f6a;text-align:center;padding:4px 0 2px;cursor:pointer;transition:color .2s}
+.asist-label{font-size:11px;color:#8a97b0;text-align:right}
+.card-toggle{font-size:11px;color:#5a677f;text-align:center;padding:4px 0 2px;cursor:pointer;transition:color .2s}
 .card-body{display:none;border-top:1px solid #21283a}
 .card.open .card-body{display:block}
 .card.open{border-color:#2a3a5c;box-shadow:0 0 0 1px #1d3a6a}
@@ -68,10 +71,20 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 .bloque-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:.06em}
 .bloque-tag.jn{background:#0d1f3c;color:#60a5fa}
 .bloque-tag.tjmj{background:#1d2d0f;color:#86efac}
-.bloque-sum{font-size:12px;color:#5a677f}
-.nivel-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
-.nivel-table th{font-size:10px;color:#3d4f6a;font-weight:600;text-align:left;padding:4px 6px;border-bottom:1px solid #21283a}
-.nivel-table td{padding:5px 6px;border-bottom:1px solid #151c2a;color:#c4cfe0;vertical-align:middle}
+.bloque-sum{font-size:12px;color:#8a97b0}
+/* tabla niveles: ancho fijo para evitar corte en columna Asist */
+.nivel-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px;table-layout:fixed}
+.nivel-table th{font-size:10px;color:#5a677f;font-weight:600;padding:4px 4px;border-bottom:1px solid #21283a;text-align:center;overflow:hidden;white-space:nowrap}
+.nivel-table th:first-child{text-align:left}
+.nivel-table td{padding:5px 4px;border-bottom:1px solid #151c2a;color:#d0d8e8;vertical-align:middle;text-align:center;overflow:hidden}
+.nivel-table td:first-child{text-align:left;white-space:normal;word-break:break-word}
+.nivel-table col:nth-child(1){width:33%}
+.nivel-table col:nth-child(2){width:8%}
+.nivel-table col:nth-child(3){width:9%}
+.nivel-table col:nth-child(4){width:9%}
+.nivel-table col:nth-child(5){width:11%}
+.nivel-table col:nth-child(6){width:18%}
+.nivel-table col:nth-child(7){width:12%}
 .nivel-table tr:last-child td{border-bottom:none}
 .nivel-table tr:hover td{background:#1a2133}
 .tag-cupos{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600}
@@ -125,7 +138,16 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 .cbtn.on{background:#1d2d0f;color:#86efac;border-color:#166534}
 .cbtn:hover:not(.on){color:#e2e8f0;border-color:#3d4f6a}
 .comuna-strip{display:flex;gap:6px;flex-wrap:wrap;padding:10px 20px;background:#161b27;border-bottom:1px solid #21283a}
-.jsr-block{background:#1a2133;border:1px solid #21283a;border-radius:10px;padding:14px 16px;margin-bottom:14px;display:none}
+/* Bloque JSR */
+.jsr-block{background:#1a1f2e;border:1px solid #2a1f4a;border-radius:10px;padding:14px 16px;margin-bottom:14px;display:none}
+.jsr-block-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.jsr-tag{font-size:11px;font-weight:700;padding:2px 10px;border-radius:4px;letter-spacing:.06em;background:#1d1a2d;color:#a78bfa}
+.jsr-cards{display:flex;flex-wrap:wrap;gap:10px}
+.jsr-card{background:#0d1117;border:1px solid #2a1f4a;border-radius:8px;padding:10px 14px;flex:1;min-width:150px}
+.jsr-card-name{font-size:11px;font-weight:700;color:#a78bfa;margin-bottom:8px}
+.jsr-card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.jsr-cell-l{font-size:10px;color:#5a677f}
+.jsr-cell-v{font-size:14px;font-weight:700;color:#e2e8f0}
 .loading{text-align:center;padding:3rem;color:#5a677f;font-size:13px;grid-column:1/-1}
 .error-msg{background:#2d0f0f;border:1px solid #f87171;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#f87171;display:none}
 .debug-bar{background:#111827;border:1px solid #21283a;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#5a677f;display:none}
@@ -145,7 +167,8 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
     <span class="hchip b" id="hcJ">● — jardines</span>
     <span class="hchip b" id="hcC">● Cap. JN —</span>
     <span class="hchip g" id="hcQ">● Cupos JN —</span>
-    <span class="hchip a" id="hcA">● % Asist. —</span>
+    <span class="hchip a" id="hcA">● Asist. —</span>
+    <span class="hchip r" id="hcD">● Desist. —</span>
   </div>
 </div>
 
@@ -154,7 +177,6 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
   <div class="tab" onclick="sw('asistencia',this)">Asistencia diaria</div>
 </div>
 
-<!-- BARRA COMUNAS (solo visible en tab resumen) -->
 <div class="comuna-strip" id="comunaStrip">
   <button class="cbtn on" data-c="" onclick="setComuna('')">Todas las comunas</button>
   <button class="cbtn" data-c="Valdivia" onclick="setComuna('Valdivia')">Valdivia</button>
@@ -178,12 +200,16 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
   <div class="debug-bar" id="debugBar"></div>
   <div class="kpis">
     <div class="kpi"><div class="kl">Jardines</div><div class="kv w" id="kJ">—</div></div>
-    <div class="kpi"><div class="kl">Cap. Jornada Normal</div><div class="kv b" id="kCap">—</div>
-      <div class="kbar"><div class="kbarf" id="kCapB" style="width:0"></div></div></div>
+    <div class="kpi">
+      <div class="kl">Cap. Jornada Normal</div>
+      <div class="kv b" id="kCap">—</div>
+      <div class="kbar"><div class="kbarf" id="kCapB" style="width:0"></div></div>
+    </div>
     <div class="kpi"><div class="kl">Matrícula JN</div><div class="kv w" id="kMat">—</div></div>
     <div class="kpi"><div class="kl">Cupos disponibles JN</div><div class="kv g" id="kCupos">—</div></div>
     <div class="kpi"><div class="kl">Lista de espera JN</div><div class="kv a" id="kLista">—</div></div>
     <div class="kpi"><div class="kl">% Asistencia JN</div><div class="kv a" id="kAsist">—</div></div>
+    <div class="kpi"><div class="kl">Desistimientos JN</div><div class="kv r" id="kDesist">—</div></div>
   </div>
   <div class="ctrl">
     <input type="text" id="buscar" placeholder="Buscar jardín..." oninput="render()">
@@ -232,13 +258,8 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-// ══════════════════════════════════════════════════
-// CONFIGURACIÓN
-// ══════════════════════════════════════════════════
-// URL CSV publicado directamente (sin proxy necesario)
 const URL_SHEET = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSS-eDu5WFkMlyVSMPQDEIhlmC__dPNGZqAdSFAxU9eXZQSiMUIaSzSl_9YdDIKaSZk0ZgAij8b9Tw2/pub?gid=909729487&single=true&output=csv';
 
-// Lista oficial de 45 jardines AOC (nombres exactos proporcionados)
 const JARDINES_AOC = [
   'El Canelito','Cuncunita','Esperanza','Papelucho','Ensueño','Los Pinguinitos',
   'Amanecer del Sol','Más Amigos','El Principito','Luz de los Ríos',
@@ -252,8 +273,6 @@ const JARDINES_AOC = [
   'Fuente de Luz','Arco Iris','Roja Flor','Pulgarcito','Pintitas de Ayelen'
 ];
 
-
-// Mapa jardín → comuna
 const COMUNAS = {
   'El Canelito':'Valdivia','Cuncunita':'Valdivia','Esperanza':'Valdivia',
   'Papelucho':'Valdivia','Ensueño':'Valdivia','Los Pinguinitos':'Valdivia',
@@ -273,7 +292,6 @@ const COMUNAS = {
   'Rucantú':'Lago Ranco','Caminito de Luna':'Malalhue','Fuente de Luz':'Panguipulli'
 };
 
-// Días hábiles de Junio 2025 según la hoja AOC (L1, M2, M3, J4, V5, L8, M9, M10, J11, V12, L15, M16, M17, J18, V19)
 const DIAS_LABEL = ["01 Jun","02 Jun","03 Jun","04 Jun","05 Jun","08 Jun","09 Jun","10 Jun","11 Jun","12 Jun","15 Jun","16 Jun","17 Jun","18 Jun","19 Jun"];
 const DIAS_DIA   = ["Lun","Mar","Mié","Jue","Vie","Lun","Mar","Mié","Jue","Vie","Lun","Mar","Mié","Jue","Vie"];
 
@@ -283,48 +301,28 @@ let comunaFil = '';
 let chartInst = null;
 let vistaActual = 'detalle';
 
-// ══════════════════════════════════════════════════
-// PARSER CSV ROBUSTO — maneja comillas, comas internas, saltos de línea
-// ══════════════════════════════════════════════════
+// ── PARSER CSV ───────────────────────────────────────────────────────────────
 function parseCSV(text) {
   const rows = [];
-  // Normalizar saltos de línea
-  const src = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  let i = 0, row = [], cur = '';
-
+  const src = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  let i=0, row=[], cur='';
   while (i <= src.length) {
     const ch = i < src.length ? src[i] : null;
-
-    if (ch === '"') {
-      // Inicio de campo entre comillas
+    if (ch==='"') {
       i++;
       while (i < src.length) {
-        if (src[i] === '"') {
-          if (src[i+1] === '"') { cur += '"'; i += 2; } // comilla escapada
-          else { i++; break; } // fin del campo
-        } else {
-          cur += src[i++];
-        }
+        if (src[i]==='"') { if(src[i+1]==='"'){cur+='"';i+=2;}else{i++;break;} }
+        else { cur+=src[i++]; }
       }
-    } else if (ch === ',' || ch === '\n' || ch === null) {
-      row.push(cur.trim());
-      cur = '';
-      if (ch === '\n' || ch === null) {
-        if (row.some(c => c !== '')) rows.push(row);
-        row = [];
-      }
+    } else if (ch===','||ch==='\n'||ch===null) {
+      row.push(cur.trim()); cur='';
+      if (ch==='\n'||ch===null) { if(row.some(c=>c!==''))rows.push(row); row=[]; }
       i++;
-    } else {
-      cur += ch;
-      i++;
-    }
+    } else { cur+=ch; i++; }
   }
   return rows;
 }
 
-// ══════════════════════════════════════════════════
-// NORMALIZACIÓN para comparar nombres
-// ══════════════════════════════════════════════════
 function norm(s) {
   return (s||'').toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
@@ -334,332 +332,266 @@ function norm(s) {
     .replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ').trim();
 }
 
-// Alias: nombres en CSV -> nombre oficial
 const ALIAS = {
-  'pequena mision': 'Pequeña Misión de Jesús',
-  'pequeña mision': 'Pequeña Misión de Jesús',
-  'sc dulce bebe': 'Dulce Bebé',
-  'dulce bebe': 'Dulce Bebé',
-  's c dulce bebe': 'Dulce Bebé',
-  'sonrisas de colores': 'Sonrisa de Colores',
-  'sonrisa de colores': 'Sonrisa de Colores',
-  'arcoiris': 'Arco Iris',
-  'arco iris': 'Arco Iris',
-  'el canelito': 'El Canelito',
-  'kanelito': 'El Canelito',
-  'los pinguinitos': 'Los Pinguinitos',
-  'los pingüinitos': 'Los Pinguinitos',
-  'pinguinitos': 'Los Pinguinitos',
-  'mas amigos': 'Más Amigos',
-  'luz de los rios': 'Luz de los Ríos',
-  'nube de algodon': 'Nube de Algodón',
-  'naguilan': 'Naguilán',
-  'rucantu': 'Rucantú',
-  'rucant': 'Rucantú',
-  'caminito de luna': 'Caminito de Luna',
-  'san jose': 'San José',
-  'antu kuyen': 'Antu Kuyen',
-  'antü küyen': 'Antu Kuyen',
-  'eluney': 'Eluney',
-  'estrellita de los rios': 'Estrellita de los Rios',
-  'huellitas del ranco': 'Huellitas del Ranco',
-  'mi mundo de alegria': 'Mi Mundo de Alegria',
-  'gotitas del rio': 'Gotitas del Rio',
-  'pintitas de ayelen': 'Pintitas de Ayelen',
-  'pasitos del futuro': 'Pasitos del Futuro',
+  'pequena mision':'Pequeña Misión de Jesús','pequeña mision':'Pequeña Misión de Jesús',
+  'sc dulce bebe':'Dulce Bebé','dulce bebe':'Dulce Bebé','s c dulce bebe':'Dulce Bebé',
+  'sonrisas de colores':'Sonrisa de Colores','sonrisa de colores':'Sonrisa de Colores',
+  'arcoiris':'Arco Iris','arco iris':'Arco Iris',
+  'el canelito':'El Canelito','kanelito':'El Canelito',
+  'los pinguinitos':'Los Pinguinitos','los pingüinitos':'Los Pinguinitos','pinguinitos':'Los Pinguinitos',
+  'mas amigos':'Más Amigos','luz de los rios':'Luz de los Ríos',
+  'nube de algodon':'Nube de Algodón','naguilan':'Naguilán',
+  'rucantu':'Rucantú','rucant':'Rucantú',
+  'caminito de luna':'Caminito de Luna','san jose':'San José',
+  'antu kuyen':'Antu Kuyen','antü küyen':'Antu Kuyen',
+  'eluney':'Eluney','estrellita de los rios':'Estrellita de los Rios',
+  'huellitas del ranco':'Huellitas del Ranco','mi mundo de alegria':'Mi Mundo de Alegria',
+  'gotitas del rio':'Gotitas del Rio','pintitas de ayelen':'Pintitas de Ayelen',
+  'pasitos del futuro':'Pasitos del Futuro',
 };
 
-// Intenta emparejar con la lista oficial
 function matchNombre(nombre) {
   const n = norm(nombre);
-  // Primero busca en alias exactos
   if (ALIAS[n]) return ALIAS[n];
-  // Luego busca en alias por contención
-  for (const [k, v] of Object.entries(ALIAS)) {
-    if (n.includes(k) || k.includes(n)) return v;
-  }
-  // Luego busca en lista oficial
-  const found = JARDINES_AOC.find(j => norm(j) === n);
+  for (const [k,v] of Object.entries(ALIAS)) { if(n.includes(k)||k.includes(n)) return v; }
+  const found = JARDINES_AOC.find(j => norm(j)===n);
   if (found) return found;
-  // Busca coincidencia parcial (contención mutua)
-  const partial = JARDINES_AOC.find(j => {
-    const nj = norm(j);
-    return nj.includes(n) || n.includes(nj);
-  });
-  return partial || nombre;
+  return JARDINES_AOC.find(j=>{ const nj=norm(j); return nj.includes(n)||n.includes(nj); }) || nombre;
 }
 
-// ══════════════════════════════════════════════════
-// CARGA Y PROCESAMIENTO
-// ══════════════════════════════════════════════════
+// ── CARGA ─────────────────────────────────────────────────────────────────────
 async function cargarDatos() {
   try {
     const resp = await fetch(URL_SHEET);
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const csv = await resp.text();
-    procesarCSV(csv);
+    if (!resp.ok) throw new Error('HTTP '+resp.status);
+    procesarCSV(await resp.text());
   } catch(e) {
-    console.error('Error:', e);
+    console.error('Error:',e);
     const em = document.getElementById('errMsg');
-    em.textContent = 'No se pudieron cargar los datos: ' + e.message + '. Verifique que la hoja esté publicada en Google Sheets (Archivo → Publicar en la web → CSV) y que tenga acceso público.';
+    em.textContent = 'No se pudieron cargar los datos: '+e.message+'. Verifique que la hoja esté publicada en Google Sheets.';
     em.style.display = 'block';
     document.getElementById('grid').innerHTML = '<div class="nodata">Sin datos disponibles</div>';
   }
 }
 
+// ── PARSER PRINCIPAL ──────────────────────────────────────────────────────────
+// Estructura CSV AOC:
+// Col A(0): nombre jardín o etiquetas JH/TJMJ/Horario
+// Col G(6): marcador jornada NORMAL→JN | TJ*→TJMJ | JSR→jardín sobre rueda
+// Col H(7): nombre jardín repetido en todas las filas (patrón El Canelito)
+// Col M(12): nivel educativo
+// Col AC(28): desistimientos del mes (colA='TJMJ' es solo etiqueta horaria, NO cambia jornada)
+// HARD STOP en "JARDIN SOBRE RUEDA*"
 function procesarCSV(csv) {
   const filas = parseCSV(csv);
   if (!filas.length) { alert('CSV vacío'); return; }
 
-  // Buscar la fila de encabezado real (contiene "Nivel" en columna M, índice 12)
-  // La hoja AOC tiene encabezados en torno a la fila 11
   let headerIdx = -1;
-  for (let i = 0; i < Math.min(filas.length, 20); i++) {
+  for (let i=0; i<Math.min(filas.length,20); i++) {
     const f = filas[i];
-    // La fila de cabecera tiene "Nivel" en posición 12 y "Cap Sala" en posición 21
-    if (f.length > 25 && norm(f[12]) === 'nivel' && norm(f[6]).includes('j')) {
-      headerIdx = i;
-      break;
-    }
-    // Alternativa: busca fila con "Cap Sala" o "Matricula" en posición 22
-    if (f.length > 25 && (norm(f[21]).includes('cap') || norm(f[22]).includes('matricula'))) {
-      headerIdx = i;
-      break;
-    }
+    if (f.length>25 && norm(f[12])==='nivel' && norm(f[6]).includes('j')) { headerIdx=i; break; }
+    if (f.length>25 && (norm(f[21]).includes('cap')||norm(f[22]).includes('matricula'))) { headerIdx=i; break; }
   }
-  if (headerIdx === -1) headerIdx = 0; // fallback
+  if (headerIdx===-1) headerIdx=0;
 
   const cabecera = filas[headerIdx];
-  const N = cabecera.length;
-  console.log('Cabecera encontrada en fila', headerIdx, '· Columnas (' + N + '):', cabecera.slice(0,30));
-
-  // ── ESTRUCTURA CSV AOC ──────────────────────────────────────────────────────
-  // Col A (0): Nombre jardín (en primera fila) o etiquetas "JH"/"TJMJ"/"Horario..."
-  // Col G (6): Marcador jornada: "NORMAL"/"NOR" → inicio JN | "TJMJ"/"TJ..." → inicio TJMJ
-  //            "JSR" → Jardín Sobre Rueda (acumulado aparte en total global)
-  // Col H (7): Nombre jardín repetido en TODAS las filas (patrón El Canelito)
-  // REGLA CLAVE: colA='TJMJ' es etiqueta horaria, NO cambia bloque de jornada.
-  //              El cambio real JN→TJMJ ocurre ÚNICAMENTE cuando colG empieza con 'TJ'.
-  // STOP: Sección termina en fila "JARDIN SOBRE RUEDA" (colA). Después solo JSR y resumen.
-  // ────────────────────────────────────────────────────────────────────────────
-
-  const jardines = {};
-  let jardActivo = '';
-  let jornActiva = 'NORMAL';
-  let jsrCap = 0, jsrMat = 0, jsrLista = 0, jsrCupos = 0;
-  window._jsrList = [];
-  let stopParsing = false;
-
   const ALIAS_NORMS = Object.keys(ALIAS);
 
   const esNombreJardin = s => {
-    if (!s || s.length < 3) return false;
-    if (/^\d/.test(s)) return false;
-    if (/^(jh|tjmj|inicio|termino|tias|ninos|normal|mes|2025|horario|solo|total|localidad|detalle|https|grilla)/i.test(s)) return false;
+    if(!s||s.length<3) return false;
+    if(/^\d/.test(s)) return false;
+    if(/^(jh|tjmj|inicio|termino|tias|ninos|normal|mes|2025|horario|solo|total|localidad|detalle|https|grilla)/i.test(s)) return false;
     return true;
   };
-
   const esJardinConocido = s => {
-    const n = norm(s);
-    if (JARDINES_AOC.some(j => norm(j) === n)) return true;
-    if (ALIAS[n]) return true;
-    for (const k of ALIAS_NORMS) { if (n.includes(k) || k.includes(n)) return true; }
+    const n=norm(s);
+    if(JARDINES_AOC.some(j=>norm(j)===n)) return true;
+    if(ALIAS[n]) return true;
+    for(const k of ALIAS_NORMS){if(n.includes(k)||k.includes(n))return true;}
     return false;
   };
 
-  const filasDatos = filas.slice(headerIdx + 1);
+  const jardines = {};
+  let jardActivo='', jornActiva='NORMAL';
+  let jsrCap=0, jsrMat=0, jsrLista=0, jsrCupos=0;
+  window._jsrList = [];
+  let stopParsing = false;
 
-  for (let fi = 0; fi < filasDatos.length; fi++) {
+  // Totales desistimientos
+  let tDesist = 0;
+
+  const filasDatos = filas.slice(headerIdx+1);
+
+  for (let fi=0; fi<filasDatos.length; fi++) {
     const fila = filasDatos[fi];
-    if (fila.length < 12) continue;
+    if (fila.length<12) continue;
 
-    const colA  = (fila[0] || '').trim();
-    const colG  = (fila[6] || '').trim();
+    const colA  = (fila[0]||'').trim();
+    const colG  = (fila[6]||'').trim();
     const normG = colG.toUpperCase().replace(/\s/g,'');
-    const colH  = (fila[7] || '').trim();
-    const nivel = (fila[12] || '').trim();
+    const colH  = (fila[7]||'').trim();
+    const nivel = (fila[12]||'').trim();
     const nivelU = nivel.toUpperCase();
 
-    // HARD STOP: inicio sección resumen regional
-    if (colA.toUpperCase().startsWith('JARDIN SOBRE RUEDA') || colA.toUpperCase() === 'GRILLA' || colA.toUpperCase().startsWith('TOTAL ASISTENCIA')) { stopParsing = true; }
-
-    // JSR: capturar individualmente (G='JSR' o colA empieza 'JSR ' con cap>0)
-    if (normG === 'JSR' || (colA.toUpperCase().startsWith('JSR ') && parseInt(fila[21]) > 0)) {
-      const jsrCp = parseInt(fila[21])||0, jsrMt = parseInt(fila[22])||0;
-      const jsrLs = parseInt(fila[24])||0, jsrCq = parseInt(fila[25])||0;
-      if (colA) window._jsrList.push({n:colA, cap:jsrCp, mat:jsrMt, lista:jsrLs, cupos:jsrCq});
-      jsrCap+=jsrCp; jsrMat+=jsrMt; jsrLista+=jsrLs; jsrCupos+=jsrCq;
-      continue;
-    }
-    // JSR sin G='JSR' dentro del bloque stop
-    if (stopParsing && colA.toUpperCase().startsWith('JSR ') && parseInt(fila[21]) > 0) {
-      const jsrCp = parseInt(fila[21])||0, jsrMt = parseInt(fila[22])||0;
-      const jsrLs = parseInt(fila[24])||0, jsrCq = parseInt(fila[25])||0;
-      window._jsrList.push({n:colA, cap:jsrCp, mat:jsrMt, lista:jsrLs, cupos:jsrCq});
-      jsrCap+=jsrCp; jsrMat+=jsrMt; jsrLista+=jsrLs; jsrCupos+=jsrCq;
-      continue;
+    // HARD STOP
+    if (colA.toUpperCase().startsWith('JARDIN SOBRE RUEDA')||colA.toUpperCase()==='GRILLA'||colA.toUpperCase().startsWith('TOTAL ASISTENCIA')) {
+      stopParsing=true;
     }
 
+    // JSR
+    if (normG==='JSR'||(colA.toUpperCase().startsWith('JSR ')&&parseInt(fila[21])>0)) {
+      const cp=parseInt(fila[21])||0, mt=parseInt(fila[22])||0;
+      const ls=parseInt(fila[24])||0, cq=parseInt(fila[25])||0;
+      if(colA) window._jsrList.push({n:colA,cap:cp,mat:mt,lista:ls,cupos:cq});
+      jsrCap+=cp; jsrMat+=mt; jsrLista+=ls; jsrCupos+=cq;
+      continue;
+    }
+    if (stopParsing&&colA.toUpperCase().startsWith('JSR ')&&parseInt(fila[21])>0) {
+      const cp=parseInt(fila[21])||0, mt=parseInt(fila[22])||0;
+      const ls=parseInt(fila[24])||0, cq=parseInt(fila[25])||0;
+      window._jsrList.push({n:colA,cap:cp,mat:mt,lista:ls,cupos:cq});
+      jsrCap+=cp; jsrMat+=mt; jsrLista+=ls; jsrCupos+=cq;
+      continue;
+    }
     if (stopParsing) continue;
 
-    // Cambio de jornada (SOLO por colG — colA='TJMJ' es horario, no jornada)
+    // Cambio de jornada: SOLO por colG
     if (['NORMAL','NOR','NORMA','NROMAL'].includes(normG)) {
-      jornActiva = 'NORMAL';
-      if (esNombreJardin(colA) && esJardinConocido(colA)) {
-        jardActivo = matchNombre(colA);
-      }
+      jornActiva='NORMAL';
+      if(esNombreJardin(colA)&&esJardinConocido(colA)) jardActivo=matchNombre(colA);
     } else if (normG.startsWith('TJ')) {
-      jornActiva = 'TJMJ';
+      jornActiva='TJMJ';
     }
 
-    // Nombre de jardín: colH (patrón repetido) o colA sin marcador de jornada
-    if (esNombreJardin(colH) && esJardinConocido(colH)) {
-      const nom = matchNombre(colH);
-      if (nom !== jardActivo) { jardActivo = nom; jornActiva = 'NORMAL'; }
+    // Nombre jardín: colH (repetido) o colA sin marcador
+    if (esNombreJardin(colH)&&esJardinConocido(colH)) {
+      const nom=matchNombre(colH);
+      if(nom!==jardActivo){jardActivo=nom;jornActiva='NORMAL';}
     }
-    if (esNombreJardin(colA) && esJardinConocido(colA) && normG === '') {
-      const nom = matchNombre(colA);
-      if (nom !== jardActivo) { jardActivo = nom; jornActiva = 'NORMAL'; }
+    if (esNombreJardin(colA)&&esJardinConocido(colA)&&normG==='') {
+      const nom=matchNombre(colA);
+      if(nom!==jardActivo){jardActivo=nom;jornActiva='NORMAL';}
     }
 
     if (!jardActivo) continue;
+    if (!nivel||nivelU.includes('TOTAL')||nivelU.includes('PROMEDIO')||nivelU==='NIVEL') continue;
 
-    // Filtrar totales, encabezados y vacíos
-    if (!nivel || nivelU.includes('TOTAL') || nivelU.includes('PROMEDIO') || nivelU === 'NIVEL') continue;
+    const capacidad = parseInt(fila[21])||0;
+    const matricula = parseInt(fila[22])||0;
+    if (capacidad===0&&matricula===0) continue;
 
-    const capacidad = parseInt(fila[21]) || 0;
-    const matricula = parseInt(fila[22]) || 0;
-    if (capacidad === 0 && matricula === 0) continue;
+    const nSala      = parseInt(fila[13])||1;
+    const lista      = parseInt(fila[24])||0;
+    const cupos      = parseInt((fila[25]||'').replace(',','.'))||0;
+    const asistencia = parseFloat((fila[27]||'').replace('%','').replace(',','.'))||0;
 
-    const nSala      = parseInt(fila[13]) || 1;
-    const lista      = parseInt(fila[24]) || 0;
-    const cupos      = parseInt((fila[25] || '').replace(',','.')) || 0;
-    const asistencia = parseFloat((fila[27] || '').replace('%','').replace(',','.')) || 0;
+    // Desistimientos col AC (índice 28) — solo JN
+    const desist = jornActiva==='NORMAL' ? (parseInt(fila[28])||0) : 0;
 
-    // 15 días hábiles Junio (índices 29–43)
-    const dias = [];
-    for (let d = 29; d < 44 && d < fila.length; d++) {
-      const v = parseInt(fila[d]);
-      dias.push(isNaN(v) ? 0 : v);
-    }
-    while (dias.length < 15) dias.push(0);
+    const dias=[];
+    for(let d=29;d<44&&d<fila.length;d++){const v=parseInt(fila[d]);dias.push(isNaN(v)?0:v);}
+    while(dias.length<15)dias.push(0);
 
-    const codigo = (fila[9] || fila[8] || '').replace(/\D/g,'').substring(0,6);
+    const codigo=(fila[9]||fila[8]||'').replace(/\D/g,'').substring(0,6);
 
     if (!jardines[jardActivo]) {
-      jardines[jardActivo] = {
-        n: jardActivo, c: codigo,
-        jn:   { cap:0, mat:0, lista:0, cupos:0, ocup:'0%', asist:0, salas:[] },
-        tjmj: { cap:0, mat:0, lista:0, cupos:0, ocup:'0%', asist:0, salas:[] }
+      jardines[jardActivo]={
+        n:jardActivo, c:codigo,
+        jn:  {cap:0,mat:0,lista:0,cupos:0,desist:0,ocup:'0%',asist:0,sumDias:0,denominador:0,salas:[]},
+        tjmj:{cap:0,mat:0,lista:0,cupos:0,desist:0,ocup:'0%',asist:0,sumDias:0,denominador:0,salas:[]}
       };
     }
-    if (codigo && !jardines[jardActivo].c) jardines[jardActivo].c = codigo;
+    if(codigo&&!jardines[jardActivo].c) jardines[jardActivo].c=codigo;
 
-    const bloque = jornActiva === 'TJMJ' ? jardines[jardActivo].tjmj : jardines[jardActivo].jn;
-    bloque.cap   += capacidad;
-    bloque.mat   += matricula;
-    bloque.lista += lista;
-    bloque.cupos += cupos;
-    bloque.salas.push({ nivel, s: nSala, cap: capacidad, mat: matricula, lista, cupos, asist: asistencia, dias });
+    const bloque = jornActiva==='TJMJ' ? jardines[jardActivo].tjmj : jardines[jardActivo].jn;
+    bloque.cap+=capacidad; bloque.mat+=matricula;
+    bloque.lista+=lista; bloque.cupos+=cupos; bloque.desist+=desist;
+    if(jornActiva==='NORMAL') tDesist+=desist;
+    bloque.salas.push({nivel,s:nSala,cap:capacidad,mat:matricula,lista,cupos,desist,asist:asistencia,dias});
   }
 
-  // Post-procesamiento: asistencia real + ocupación
-  J = Object.values(jardines);
-  J.forEach(j => {
-    ['jn','tjmj'].forEach(k => {
-      const b = j[k];
-      // Fórmula: Σasistidos / (15 días laborales × Σmat) por salas con datos
-      const salasConData = b.salas.filter(s => s.dias.some(v => v > 0));
-      const sumDias      = salasConData.reduce((a,s) => a + s.dias.reduce((x,v) => x+Math.max(0,v),0), 0);
-      const denominador  = salasConData.reduce((a,s) => a + 15 * s.mat, 0);
-      b.asist      = denominador > 0 ? parseFloat((sumDias/denominador*100).toFixed(1)) : 0;
-      b.sumDias    = sumDias;
-      b.denominador= denominador;
-      b.ocup       = b.cap ? Math.round((b.mat/b.cap)*100)+'%' : '0%';
+  // Post-procesamiento
+  J=Object.values(jardines);
+  J.forEach(j=>{
+    ['jn','tjmj'].forEach(k=>{
+      const b=j[k];
+      const salasConData=b.salas.filter(s=>s.dias.some(v=>v>0));
+      const sumDias=salasConData.reduce((a,s)=>a+s.dias.reduce((x,v)=>x+Math.max(0,v),0),0);
+      const denom=salasConData.reduce((a,s)=>a+15*s.mat,0);
+      b.asist=denom>0?parseFloat((sumDias/denom*100).toFixed(1)):0;
+      b.sumDias=sumDias; b.denominador=denom;
+      b.ocup=b.cap?Math.round((b.mat/b.cap)*100)+'%':'0%';
     });
   });
 
-  // JSR disponibles para render() en totales globales
-  window._jsrData = { cap: jsrCap, mat: jsrMat, lista: jsrLista, cupos: jsrCupos, list: window._jsrList||[] };
+  window._jsrData={cap:jsrCap,mat:jsrMat,lista:jsrLista,cupos:jsrCupos,list:window._jsrList||[]};
+  window._tDesist=tDesist;
 
-  J.sort((a, b) => a.n.localeCompare(b.n, 'es'));
+  J.sort((a,b)=>a.n.localeCompare(b.n,'es'));
 
-  // Poblar selector de asistencia
-  const sel = document.getElementById('jSel');
-  sel.innerHTML = '<option value="">— Selecciona un jardín —</option>';
-  J.forEach((j, i) => {
-    const o = document.createElement('option');
-    o.value = i;
-    o.textContent = j.n;
-    sel.appendChild(o);
+  const sel=document.getElementById('jSel');
+  sel.innerHTML='<option value="">— Selecciona un jardín —</option>';
+  J.forEach((j,i)=>{
+    const o=document.createElement('option');
+    o.value=i; o.textContent=j.n; sel.appendChild(o);
   });
 
-  // Debug info
-  const db = document.getElementById('debugBar');
-  db.textContent = `✓ ${J.length} jardines cargados · ${filas.length-1} filas procesadas · ${cabecera.length} columnas · cabecera en fila ${headerIdx}`;
-  db.style.display = 'block';
+  const db=document.getElementById('debugBar');
+  db.textContent=`✓ ${J.length} jardines cargados · ${filas.length-1} filas procesadas · ${cabecera.length} columnas · cabecera en fila ${headerIdx}`;
+  db.style.display='block';
 
-  // Timestamp
-  let lbl = document.getElementById('ts');
-  if (!lbl) {
-    lbl = document.createElement('div');
-    lbl.id = 'ts';
-    lbl.style.cssText = 'position:fixed;bottom:10px;right:10px;background:#161b27;border:1px solid #21283a;padding:6px 10px;border-radius:6px;font-size:11px;color:#5a677f;z-index:9999';
+  let lbl=document.getElementById('ts');
+  if(!lbl){
+    lbl=document.createElement('div'); lbl.id='ts';
+    lbl.style.cssText='position:fixed;bottom:10px;right:10px;background:#161b27;border:1px solid #21283a;padding:6px 10px;border-radius:6px;font-size:11px;color:#5a677f;z-index:9999';
     document.body.appendChild(lbl);
   }
-  lbl.textContent = 'Última actualización: ' + new Date().toLocaleString('es-CL');
-
+  lbl.textContent='Última actualización: '+new Date().toLocaleString('es-CL');
   render();
 }
 
-// ══════════════════════════════════════════════════
-// UI - TABS / FILTROS
-// ══════════════════════════════════════════════════
-function sw(id, el) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+// ── UI ────────────────────────────────────────────────────────────────────────
+function sw(id,el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   el.classList.add('on');
   document.getElementById('tab-'+id).classList.add('on');
-  const strip = document.getElementById('comunaStrip');
-  if (strip) strip.style.display = id === 'resumen' ? '' : 'none';
+  const strip=document.getElementById('comunaStrip');
+  if(strip) strip.style.display=id==='resumen'?'':'none';
 }
-
-function setF(f, btn) {
-  fil = f;
-  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  render();
+function setF(f,btn) {
+  fil=f;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); render();
 }
-
 function setComuna(c) {
-  comunaFil = c;
-  document.querySelectorAll('.cbtn').forEach(b => {
-    b.classList.toggle('on', b.dataset.c === (c||''));
-  });
+  comunaFil=c;
+  document.querySelectorAll('.cbtn').forEach(b=>b.classList.toggle('on',b.dataset.c===(c||'')));
   render();
 }
-
-function bc(p) { return p >= 75 ? 'g' : p >= 55 ? 'a' : 'r'; }
-
-function tagCupos(c) {
-  if (c > 0) return `<span class="tag-cupos g">+${c} cupos</span>`;
-  if (c < 0) return `<span class="tag-cupos r">Sobre cupo</span>`;
+function bc(p){return p>=75?'g':p>=55?'a':'r';}
+function tagCupos(c){
+  if(c>0) return `<span class="tag-cupos g">+${c} cupos</span>`;
+  if(c<0) return `<span class="tag-cupos r">Sobre cupo</span>`;
   return `<span class="tag-cupos z">Sin cupos</span>`;
 }
 
 function nivelesHtml(salas) {
-  if (!salas.length) return '<p style="font-size:12px;color:#3d4f6a;padding:8px 0">Sin datos en esta jornada</p>';
+  if(!salas.length) return '<p style="font-size:12px;color:#3d4f6a;padding:8px 0">Sin datos en esta jornada</p>';
   return `<table class="nivel-table">
-    <thead><tr><th>Nivel</th><th>Sala</th><th>Cap</th><th>Mat</th><th>L.Espera</th><th>Cupos</th><th>Asist.</th></tr></thead>
-    <tbody>${salas.map(s => {
-      const ap = s.asist > 0 ? s.asist.toFixed(1)+'%' : '—';
-      const ac = s.asist >= 75 ? '#34d399' : s.asist >= 55 ? '#fbbf24' : '#f87171';
+    <colgroup><col><col><col><col><col><col><col></colgroup>
+    <thead><tr>
+      <th>Nivel</th><th>Sala</th><th>Cap</th><th>Mat</th><th>L.Espera</th><th>Cupos</th><th>Asist.</th>
+    </tr></thead>
+    <tbody>${salas.map(s=>{
+      const ap=s.asist>0?s.asist.toFixed(1)+'%':'—';
+      const ac=s.asist>=75?'#34d399':s.asist>=55?'#fbbf24':'#f87171';
       return `<tr>
         <td>${s.nivel||'—'}</td>
         <td style="color:#5a677f">${s.s}</td>
         <td>${s.cap}</td>
         <td>${s.mat}</td>
-        <td>${s.lista > 0 ? `<span style="color:#fbbf24">${s.lista}</span>` : '—'}</td>
+        <td>${s.lista>0?`<span style="color:#fbbf24">${s.lista}</span>`:'—'}</td>
         <td>${tagCupos(s.cupos)}</td>
         <td style="color:${ac}">${ap}</td>
       </tr>`;
@@ -667,83 +599,100 @@ function nivelesHtml(salas) {
   </table>`;
 }
 
-// ══════════════════════════════════════════════════
-// RENDER GRID
-// ══════════════════════════════════════════════════
+// ── RENDER PRINCIPAL ──────────────────────────────────────────────────────────
 function render() {
-  const q = (document.getElementById('buscar').value||'').toLowerCase();
-  let data = J.filter(j => j.n.toLowerCase().includes(q));
-  if (fil === 'cupos') data = data.filter(j => j.jn.cupos > 0);
-  if (fil === 'lleno') data = data.filter(j => j.jn.cupos <= 0);
-  if (comunaFil) data = data.filter(j => (COMUNAS[j.n]||'') === comunaFil);
+  const q=(document.getElementById('buscar').value||'').toLowerCase();
+  let data=J.filter(j=>j.n.toLowerCase().includes(q));
+  if(fil==='cupos') data=data.filter(j=>j.jn.cupos>0);
+  if(fil==='lleno') data=data.filter(j=>j.jn.cupos<=0);
+  if(comunaFil) data=data.filter(j=>(COMUNAS[j.n]||'')===comunaFil);
 
-  const tCapJard   = data.reduce((s,j) => s+j.jn.cap, 0);
-  const tMatJard   = data.reduce((s,j) => s+j.jn.mat, 0);
-  const tCuposJard = data.reduce((s,j) => s+j.jn.cupos, 0);
-  const tListaJard = data.reduce((s,j) => s+j.jn.lista, 0);
-  // Incluir JSR en totales globales cuando se muestran todos los jardines
-  const jsr = (fil === 'todos' && !q && window._jsrData) ? window._jsrData : { cap:0, mat:0, lista:0, cupos:0 };
-  const tCap   = tCapJard   + jsr.cap;
-  const tMat   = tMatJard   + jsr.mat;
-  const tCupos = tCuposJard + jsr.cupos;
-  const tLista = tListaJard + jsr.lista;
-  const totalSumDias = data.reduce((s,j) => s+(j.jn.sumDias||0), 0);
-  const totalDenom   = data.reduce((s,j) => s+(j.jn.denominador||0), 0);
-  const avgA = totalDenom > 0 ? parseFloat((totalSumDias/totalDenom*100).toFixed(1)) : 0;
+  const tCapJard  =data.reduce((s,j)=>s+j.jn.cap,0);
+  const tMatJard  =data.reduce((s,j)=>s+j.jn.mat,0);
+  const tCuposJard=data.reduce((s,j)=>s+j.jn.cupos,0);
+  const tListaJard=data.reduce((s,j)=>s+j.jn.lista,0);
+  const tDesistJard=data.reduce((s,j)=>s+j.jn.desist,0);
 
-  const fmt = n => n.toLocaleString('es-CL');
-  document.getElementById('kJ').textContent    = data.length;
-  document.getElementById('kCap').textContent  = fmt(tCap);
-  document.getElementById('kCapB').style.width = tCap ? Math.min(Math.round(tMat/tCap*100),100)+'%' : '0';
-  document.getElementById('kMat').textContent   = fmt(tMat);
-  document.getElementById('kCupos').textContent = fmt(tCupos);
-  document.getElementById('kLista').textContent = fmt(tLista);
-  document.getElementById('kAsist').textContent = avgA ? avgA.toFixed(1)+'%' : '—';
-  document.getElementById('hcJ').textContent = '● '+data.length+' jardines';
-  document.getElementById('hcC').textContent = '● Cap. JN '+fmt(tCap);
-  document.getElementById('hcQ').textContent = '● Cupos JN '+fmt(tCupos);
-  document.getElementById('hcA').textContent = '● Asist. prom. '+(avgA ? avgA.toFixed(1)+'%' : '—');
-  document.getElementById('statRow').textContent =
+  // Incluir JSR en totales globales solo cuando no hay filtros
+  const jsr=(fil==='todos'&&!q&&!comunaFil&&window._jsrData)?window._jsrData:{cap:0,mat:0,lista:0,cupos:0};
+  const tCap  =tCapJard  +jsr.cap;
+  const tMat  =tMatJard  +jsr.mat;
+  const tCupos=tCuposJard+jsr.cupos;
+  const tLista=tListaJard+jsr.lista;
+  // Matrícula total incluyendo desistimientos
+  const tMatConDesist = tMat + tDesistJard;
+
+  const totalSumDias=data.reduce((s,j)=>s+(j.jn.sumDias||0),0);
+  const totalDenom  =data.reduce((s,j)=>s+(j.jn.denominador||0),0);
+  const avgA=totalDenom>0?parseFloat((totalSumDias/totalDenom*100).toFixed(1)):0;
+
+  const fmt=n=>n.toLocaleString('es-CL');
+  document.getElementById('kJ').textContent   =data.length;
+  document.getElementById('kCap').textContent =fmt(tCap);
+  document.getElementById('kCapB').style.width=tCap?Math.min(Math.round(tMat/tCap*100),100)+'%':'0';
+  document.getElementById('kMat').textContent =fmt(tMatConDesist);
+  document.getElementById('kCupos').textContent=fmt(tCupos);
+  document.getElementById('kLista').textContent=fmt(tLista);
+  document.getElementById('kAsist').textContent=avgA?avgA.toFixed(1)+'%':'—';
+  document.getElementById('kDesist').textContent=tDesistJard||'—';
+
+  // Header chips
+  document.getElementById('hcJ').textContent='● '+data.length+' jardines';
+  document.getElementById('hcC').textContent='● Cap. JN '+fmt(tCap);
+  document.getElementById('hcQ').textContent='● Cupos JN '+fmt(tCupos);
+  document.getElementById('hcA').textContent='● Asist. '+(avgA?avgA.toFixed(1)+'%':'—');
+  document.getElementById('hcD').textContent='● Desist. '+(tDesistJard||'—');
+
+  document.getElementById('statRow').textContent=
     'Mostrando '+data.length+' jardines · '+data.filter(j=>j.jn.cupos>0).length+' con cupos disponibles en JN';
 
-  const g = document.getElementById('grid');
-  if (!data.length) {
-    g.innerHTML = '<div class="nodata" style="grid-column:1/-1">Sin resultados</div>';
-    return;
-  }
+  const g=document.getElementById('grid');
+  if(!data.length){g.innerHTML='<div class="nodata" style="grid-column:1/-1">Sin resultados</div>';return;}
 
-  // Bloque JSR (solo sin filtros activos)
-  const jsrWrap = document.getElementById('jsrBlock');
-  const jsr2 = window._jsrData;
-  if (jsrWrap && jsr2 && jsr2.list && jsr2.list.length && !comunaFil && !q && fil==='todos') {
-    jsrWrap.style.display = 'block';
-    const rows = jsr2.list.map(r => `<div class="cm" style="min-width:160px;flex:1">
-        <div class="cm-l" style="font-size:11px;color:#86efac;margin-bottom:4px">${r.n}</div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:2px">
-          <div><div class="cm-l">Cap</div><div class="cm-v" style="font-size:13px">${r.cap}</div></div>
-          <div><div class="cm-l">Mat.</div><div class="cm-v" style="font-size:13px">${r.mat}</div></div>
-          <div><div class="cm-l">Cupos</div><div class="cm-v" style="font-size:13px;color:${r.cupos>0?'#34d399':r.cupos<0?'#f87171':'#5a677f'}">${r.cupos>0?'+'+r.cupos:r.cupos<0?'Sobrecupo':'Sin cupos'}</div></div>
-        </div></div>`).join('');
-    jsrWrap.innerHTML = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <span style="font-size:11px;font-weight:700;color:#86efac;letter-spacing:.06em;background:#1d2d0f;padding:2px 10px;border-radius:4px">JSR</span>
-        <span style="font-size:12px;color:#5a677f">Jardines Sobre Ruedas · Cap ${jsr2.cap} · Mat ${jsr2.mat}</span>
-      </div><div style="display:flex;flex-wrap:wrap;gap:10px">${rows}</div>`;
-  } else if (jsrWrap) { jsrWrap.style.display = 'none'; }
+  // Bloque JSR
+  const jsrWrap=document.getElementById('jsrBlock');
+  const jsr2=window._jsrData;
+  if(jsrWrap&&jsr2&&jsr2.list&&jsr2.list.length&&!comunaFil&&!q&&fil==='todos'){
+    jsrWrap.style.display='block';
+    const jsrCards=jsr2.list.map(r=>`
+      <div class="jsr-card">
+        <div class="jsr-card-name">${r.n}</div>
+        <div class="jsr-card-grid">
+          <div><div class="jsr-cell-l">Cap</div><div class="jsr-cell-v">${r.cap}</div></div>
+          <div><div class="jsr-cell-l">Mat.</div><div class="jsr-cell-v">${r.mat}</div></div>
+          <div><div class="jsr-cell-l">Cupos</div><div class="jsr-cell-v" style="color:${r.cupos>0?'#34d399':r.cupos<0?'#f87171':'#5a677f'}">${r.cupos>0?'+'+r.cupos:r.cupos<0?'Sobre':'0'}</div></div>
+        </div>
+      </div>`).join('');
+    jsrWrap.innerHTML=`
+      <div class="jsr-block-hdr">
+        <span class="jsr-tag">JSR</span>
+        <span style="font-size:13px;color:#c4cfe0;font-weight:600">Jardines Sobre Ruedas</span>
+        <span style="font-size:12px;color:#5a677f">Cap ${jsr2.cap} · Mat ${jsr2.mat}</span>
+      </div>
+      <div class="jsr-cards">${jsrCards}</div>`;
+  } else if(jsrWrap){jsrWrap.style.display='none';}
 
-  g.innerHTML = data.map(j => {
-    const jn = j.jn, tj = j.tjmj;
-    const bj = bc(jn.asist);
-    const badgeJN = jn.cupos > 0
-      ? `<span class="badge g">+${jn.cupos} cupos JN</span>`
-      : jn.cupos < 0
-      ? `<span class="badge r">Sobre cupo JN</span>`
-      : `<span class="badge a">Sin cupos JN</span>`;
-    const cidx = 'card-' + data.indexOf(j);
+  // Cards jardines
+  g.innerHTML=data.map(j=>{
+    const jn=j.jn, tj=j.tjmj;
+    const bj=bc(jn.asist);
+    const badgeJN=jn.cupos>0
+      ?`<span class="badge g">+${jn.cupos} cupos JN</span>`
+      :jn.cupos<0
+      ?`<span class="badge r">Sobre cupo JN</span>`
+      :`<span class="badge a">Sin cupos JN</span>`;
+    // Badge desistimiento por jardín (solo si tiene)
+    const badgeDesist=jn.desist>0
+      ?`<span class="badge-desist">Desist. -${jn.desist}</span>`:'';
+    const cidx='card-'+data.indexOf(j);
 
     return `<div class="card" id="${cidx}">
       <div class="card-hdr" onclick="toggleCard('${cidx}')">
         <div class="card-title-row">
-          <span class="card-name">${j.n}</span>${badgeJN}
+          <span class="card-name">${j.n}</span>
+          <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
+            ${badgeJN}${badgeDesist}
+          </div>
         </div>
         <div class="card-code">${j.c}</div>
         <div class="card-meta">
@@ -755,7 +704,7 @@ function render() {
         <div class="asist-bar-wrap">
           <div class="asist-bar-bg"><div class="asist-bar-f ${bj}" style="width:${Math.min(jn.asist||0,100)}%"></div></div>
         </div>
-        <div class="asist-label">Asistencia JN: ${jn.asist > 0 ? jn.asist+'%' : '—'}</div>
+        <div class="asist-label">% Asistencia JN: ${jn.asist>0?jn.asist+'%':'—'}</div>
         <div class="card-toggle">▾ ver desglose por nivel y TJMJ</div>
       </div>
       <div class="card-body">
@@ -766,92 +715,86 @@ function render() {
           </div>
           ${nivelesHtml(jn.salas)}
         </div>
-        ${tj.salas.length > 0 ? `<div class="bloque">
+        ${tj.salas.length>0?`<div class="bloque">
           <div class="bloque-hdr">
             <span class="bloque-tag tjmj">TJMJ</span>
             <span class="bloque-sum">Cap ${tj.cap} · Mat ${tj.mat} · ${tj.cupos>0?'+'+tj.cupos+' cupos':tj.cupos<0?'sobrecupo':'sin cupos'} · Asist ${tj.asist>0?tj.asist+'%':'—'}</span>
           </div>
           ${nivelesHtml(tj.salas)}
-        </div>` : ''}
+        </div>`:''}
       </div>
     </div>`;
   }).join('');
 }
 
 function toggleCard(cid) {
-  const el = document.getElementById(cid);
-  if (!el) return;
-  const willOpen = !el.classList.contains('open');
-  document.querySelectorAll('.card.open').forEach(c => {
-    if (c.id !== cid) {
+  const el=document.getElementById(cid);
+  if(!el) return;
+  const willOpen=!el.classList.contains('open');
+  // Cerrar todas las demás
+  document.querySelectorAll('.card.open').forEach(c=>{
+    if(c.id!==cid){
       c.classList.remove('open');
-      const t = c.querySelector('.card-toggle');
-      if (t) t.textContent = '▾ ver desglose por nivel y TJMJ';
+      const t=c.querySelector('.card-toggle');
+      if(t) t.textContent='▾ ver desglose por nivel y TJMJ';
     }
   });
-  el.classList.toggle('open', willOpen);
-  const tog = el.querySelector('.card-toggle');
-  if (tog) tog.textContent = willOpen ? '▴ ocultar desglose' : '▾ ver desglose por nivel y TJMJ';
+  el.classList.toggle('open',willOpen);
+  const tog=el.querySelector('.card-toggle');
+  if(tog) tog.textContent=willOpen?'▴ ocultar desglose':'▾ ver desglose por nivel y TJMJ';
 }
 
-// ══════════════════════════════════════════════════
-// TAB ASISTENCIA
-// ══════════════════════════════════════════════════
-function setView(v, btn) {
-  vistaActual = v;
-  document.querySelectorAll('.vbtn').forEach(b => b.classList.remove('on'));
+// ── TAB ASISTENCIA ────────────────────────────────────────────────────────────
+function setView(v,btn) {
+  vistaActual=v;
+  document.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
-  document.getElementById('v-detalle').style.display = v==='detalle'?'block':'none';
-  document.getElementById('v-semana').style.display  = v==='semana'?'block':'none';
-  document.getElementById('v-grafico').style.display = v==='grafico'?'block':'none';
+  document.getElementById('v-detalle').style.display=v==='detalle'?'block':'none';
+  document.getElementById('v-semana').style.display =v==='semana'?'block':'none';
+  document.getElementById('v-grafico').style.display=v==='grafico'?'block':'none';
   renderVista();
 }
-
 function renderAsist() {
-  const idx = document.getElementById('jSel').value;
-  if (idx === '') {
-    document.getElementById('aContent').style.display = 'none';
-    document.getElementById('aEmpty').style.display   = 'block';
+  const idx=document.getElementById('jSel').value;
+  if(idx===''){
+    document.getElementById('aContent').style.display='none';
+    document.getElementById('aEmpty').style.display='block';
     return;
   }
-  document.getElementById('aContent').style.display = 'block';
-  document.getElementById('aEmpty').style.display   = 'none';
-  renderKpis();
-  renderVista();
+  document.getElementById('aContent').style.display='block';
+  document.getElementById('aEmpty').style.display='none';
+  renderKpis(); renderVista();
 }
-
 function getSalas() {
-  const idx  = document.getElementById('jSel').value;
-  const jorn = document.getElementById('jornSel').value;
-  if (idx === '') return [];
-  const j = J[parseInt(idx)];
-  if (!j) return [];
-  let salas = [];
-  if (jorn==='ambas'||jorn==='jn')   salas = salas.concat(j.jn.salas.map(s=>({...s,_jorn:'jn'})));
-  if (jorn==='ambas'||jorn==='tjmj') salas = salas.concat(j.tjmj.salas.map(s=>({...s,_jorn:'tjmj'})));
+  const idx=document.getElementById('jSel').value;
+  const jorn=document.getElementById('jornSel').value;
+  if(idx==='') return [];
+  const j=J[parseInt(idx)];
+  if(!j) return [];
+  let salas=[];
+  if(jorn==='ambas'||jorn==='jn')   salas=salas.concat(j.jn.salas.map(s=>({...s,_jorn:'jn'})));
+  if(jorn==='ambas'||jorn==='tjmj') salas=salas.concat(j.tjmj.salas.map(s=>({...s,_jorn:'tjmj'})));
   return salas;
 }
-
 function renderKpis() {
-  const idx = document.getElementById('jSel').value;
-  const jorn = document.getElementById('jornSel').value;
-  const j = J[parseInt(idx)];
-  if (!j) return;
-  const salas = getSalas();
-  const totD  = Array(15).fill(0);
-  salas.forEach(s => s.dias.forEach((v,i) => { if(v>0) totD[i]+=v; }));
-  const tMat   = salas.reduce((a,s)=>a+s.mat,0);
-  const tCap   = salas.reduce((a,s)=>a+s.cap,0);
-  const tCupos = salas.reduce((a,s)=>a+s.cupos,0);
-  const tLista = salas.reduce((a,s)=>a+s.lista,0);
-  const valid  = totD.filter(v=>v>0);
-  const mx  = valid.length ? Math.max(...valid) : 0;
-  const mn  = valid.length ? Math.min(...valid) : 0;
-  const avg = valid.length ? Math.round(valid.reduce((a,b)=>a+b,0)/valid.length) : 0;
-  const lbl = jorn==='jn'?'Jornada Normal':jorn==='tjmj'?'TJMJ':'JN + TJMJ';
-  const clr = jorn==='jn'?'#60a5fa':jorn==='tjmj'?'#86efac':'#fbbf24';
-
-  document.getElementById('aKpis').innerHTML = `
+  const idx=document.getElementById('jSel').value;
+  const jorn=document.getElementById('jornSel').value;
+  const j=J[parseInt(idx)];
+  if(!j) return;
+  const salas=getSalas();
+  const totD=Array(15).fill(0);
+  salas.forEach(s=>s.dias.forEach((v,i)=>{if(v>0)totD[i]+=v;}));
+  const tMat=salas.reduce((a,s)=>a+s.mat,0);
+  const tCap=salas.reduce((a,s)=>a+s.cap,0);
+  const tCupos=salas.reduce((a,s)=>a+s.cupos,0);
+  const tLista=salas.reduce((a,s)=>a+s.lista,0);
+  const valid=totD.filter(v=>v>0);
+  const mx=valid.length?Math.max(...valid):0;
+  const mn=valid.length?Math.min(...valid):0;
+  const avg=valid.length?Math.round(valid.reduce((a,b)=>a+b,0)/valid.length):0;
+  const lbl=jorn==='jn'?'Jornada Normal':jorn==='tjmj'?'TJMJ':'JN + TJMJ';
+  const clr=jorn==='jn'?'#60a5fa':jorn==='tjmj'?'#86efac':'#fbbf24';
+  document.getElementById('aKpis').innerHTML=`
     <div class="ak"><div class="ak-l">Jardín</div><div class="ak-v" style="font-size:12px;color:#fff">${j.n}</div></div>
     <div class="ak"><div class="ak-l">Jornada</div><div class="ak-v" style="font-size:12px;color:${clr}">${lbl}</div></div>
     <div class="ak"><div class="ak-l">Salas</div><div class="ak-v">${salas.length}</div></div>
@@ -863,143 +806,105 @@ function renderKpis() {
     <div class="ak"><div class="ak-l">Mín. día</div><div class="ak-v" style="color:#f87171">${mn||'—'}</div></div>
     <div class="ak"><div class="ak-l">Prom. día</div><div class="ak-v" style="color:#fbbf24">${avg||'—'}</div></div>`;
 }
-
-function cellHtml(v, mat) {
-  if (!v) return `<span class="cell-v z">—</span>`;
-  const p = mat > 0 ? Math.round(v/mat*100) : 0;
+function cellHtml(v,mat){
+  if(!v) return `<span class="cell-v z">—</span>`;
+  const p=mat>0?Math.round(v/mat*100):0;
   return `<span class="cell-v ${p>=75?'g':p>=55?'a':'r'}" title="${p}%">${v}</span>`;
 }
-
-function renderVista() {
-  if (vistaActual==='detalle') renderDetalle();
-  else if (vistaActual==='semana') renderSemana();
+function renderVista(){
+  if(vistaActual==='detalle') renderDetalle();
+  else if(vistaActual==='semana') renderSemana();
   else renderGrafico();
 }
-
-function renderDetalle() {
-  const salas = getSalas();
-  if (!salas.length) return;
-
-  let thead = `<thead><tr>
-    <th class="left" style="min-width:130px">Nivel</th>
-    <th>Cap</th><th>Mat</th><th>Cupos</th>`;
-  DIAS_LABEL.forEach((d,i) => {
-    thead += `<th>${DIAS_DIA[i]}<br><span style="font-size:9px;color:#3d4f6a">${d.replace(' Jun','')}</span></th>`;
-  });
-  thead += `<th>Total</th><th>Prom</th></tr></thead>`;
-
-  const grupos = {};
-  salas.forEach(s => { if(!grupos[s._jorn]) grupos[s._jorn]=[]; grupos[s._jorn].push(s); });
-
-  let tbody = '<tbody>';
-  const totDias = Array(15).fill(0);
-  const totMat  = salas.reduce((a,s)=>a+s.mat,0);
-
-  Object.keys(grupos).forEach(jk => {
-    const lbl = jk==='jn'?'JORNADA NORMAL':'TJMJ';
-    tbody += `<tr class="nivel-hdr"><td colspan="${4+15+2}" class="left">
-      <span class="sala-tag ${jk}">${lbl}</span></td></tr>`;
-
-    const jSalas = grupos[jk];
-    const jDias  = Array(15).fill(0);
-    const jMat   = jSalas.reduce((a,s)=>a+s.mat,0);
-
-    jSalas.forEach(s => {
-      const totalS = s.dias.reduce((a,v)=>a+(v||0),0);
-      const ok     = s.dias.filter(v=>v>0);
-      const promS  = ok.length ? Math.round(totalS/ok.length) : 0;
-      const cTag   = s.cupos>0?`<span class="tag-cupos g">+${s.cupos}</span>`
-                    :s.cupos<0?`<span class="tag-cupos r">${s.cupos}</span>`
-                    :`<span class="tag-cupos z">0</span>`;
-      tbody += `<tr>
-        <td class="left">${s.nivel||'—'} <span style="color:#3d4f6a">S${s.s}</span></td>
-        <td style="color:#5a677f">${s.cap}</td><td>${s.mat}</td><td>${cTag}</td>`;
-      s.dias.forEach((v,i) => { jDias[i]+=(v||0); totDias[i]+=(v||0); tbody+=`<td>${cellHtml(v,s.mat)}</td>`; });
-      tbody += `<td style="font-weight:600;color:#e2e8f0">${totalS||'—'}</td><td style="color:#fbbf24">${promS||'—'}</td></tr>`;
+function renderDetalle(){
+  const salas=getSalas();
+  if(!salas.length) return;
+  let thead=`<thead><tr><th class="left" style="min-width:130px">Nivel</th><th>Cap</th><th>Mat</th><th>Cupos</th>`;
+  DIAS_LABEL.forEach((d,i)=>thead+=`<th>${DIAS_DIA[i]}<br><span style="font-size:9px;color:#3d4f6a">${d.replace(' Jun','')}</span></th>`);
+  thead+=`<th>Total</th><th>Prom</th></tr></thead>`;
+  const grupos={};
+  salas.forEach(s=>{if(!grupos[s._jorn])grupos[s._jorn]=[];grupos[s._jorn].push(s);});
+  let tbody='<tbody>';
+  const totDias=Array(15).fill(0);
+  const totMat=salas.reduce((a,s)=>a+s.mat,0);
+  Object.keys(grupos).forEach(jk=>{
+    const lbl=jk==='jn'?'JORNADA NORMAL':'TJMJ';
+    tbody+=`<tr class="nivel-hdr"><td colspan="${4+15+2}" class="left"><span class="sala-tag ${jk}">${lbl}</span></td></tr>`;
+    const jSalas=grupos[jk];
+    const jDias=Array(15).fill(0);
+    const jMat=jSalas.reduce((a,s)=>a+s.mat,0);
+    jSalas.forEach(s=>{
+      const totalS=s.dias.reduce((a,v)=>a+(v||0),0);
+      const ok=s.dias.filter(v=>v>0);
+      const promS=ok.length?Math.round(totalS/ok.length):0;
+      const cTag=s.cupos>0?`<span class="tag-cupos g">+${s.cupos}</span>`:s.cupos<0?`<span class="tag-cupos r">${s.cupos}</span>`:`<span class="tag-cupos z">0</span>`;
+      tbody+=`<tr><td class="left">${s.nivel||'—'} <span style="color:#3d4f6a">S${s.s}</span></td><td style="color:#5a677f">${s.cap}</td><td>${s.mat}</td><td>${cTag}</td>`;
+      s.dias.forEach((v,i)=>{jDias[i]+=(v||0);totDias[i]+=(v||0);tbody+=`<td>${cellHtml(v,s.mat)}</td>`;});
+      tbody+=`<td style="font-weight:600;color:#e2e8f0">${totalS||'—'}</td><td style="color:#fbbf24">${promS||'—'}</td></tr>`;
     });
-
-    const jt = jDias.reduce((a,v)=>a+v,0);
-    const jp = jDias.filter(v=>v>0).length ? Math.round(jt/jDias.filter(v=>v>0).length) : 0;
-    tbody += `<tr class="total-row"><td class="left" style="color:#60a5fa">TOTAL ${lbl}</td><td colspan="3" style="color:#5a677f">${jMat} mat.</td>`;
-    jDias.forEach(v => { const p=jMat>0?Math.round(v/jMat*100):0; tbody+=`<td><span class="cell-v ${v>0?(p>=75?'g':p>=55?'a':'r'):'z'}">${v||'—'}</span></td>`; });
-    tbody += `<td style="font-weight:700;color:#60a5fa">${jt||'—'}</td><td style="color:#fbbf24">${jp||'—'}</td></tr>`;
+    const jt=jDias.reduce((a,v)=>a+v,0);
+    const jp=jDias.filter(v=>v>0).length?Math.round(jt/jDias.filter(v=>v>0).length):0;
+    tbody+=`<tr class="total-row"><td class="left" style="color:#60a5fa">TOTAL ${lbl}</td><td colspan="3" style="color:#5a677f">${jMat} mat.</td>`;
+    jDias.forEach(v=>{const p=jMat>0?Math.round(v/jMat*100):0;tbody+=`<td><span class="cell-v ${v>0?(p>=75?'g':p>=55?'a':'r'):'z'}">${v||'—'}</span></td>`;});
+    tbody+=`<td style="font-weight:700;color:#60a5fa">${jt||'—'}</td><td style="color:#fbbf24">${jp||'—'}</td></tr>`;
   });
-
-  if (Object.keys(grupos).length > 1) {
-    const gt = totDias.reduce((a,v)=>a+v,0);
-    const gp = totDias.filter(v=>v>0).length ? Math.round(gt/totDias.filter(v=>v>0).length) : 0;
-    tbody += `<tr class="total-row" style="border-top:2px solid #21283a"><td class="left" style="color:#fbbf24">TOTAL JARDÍN</td><td colspan="3" style="color:#5a677f">${totMat} mat.</td>`;
-    totDias.forEach(v => { const p=totMat>0?Math.round(v/totMat*100):0; tbody+=`<td><span class="cell-v ${v>0?(p>=75?'g':p>=55?'a':'r'):'z'}">${v||'—'}</span></td>`; });
-    tbody += `<td style="font-weight:700;color:#fbbf24">${gt||'—'}</td><td style="color:#fbbf24">${gp||'—'}</td></tr>`;
+  if(Object.keys(grupos).length>1){
+    const gt=totDias.reduce((a,v)=>a+v,0);
+    const gp=totDias.filter(v=>v>0).length?Math.round(gt/totDias.filter(v=>v>0).length):0;
+    tbody+=`<tr class="total-row" style="border-top:2px solid #21283a"><td class="left" style="color:#fbbf24">TOTAL JARDÍN</td><td colspan="3" style="color:#5a677f">${totMat} mat.</td>`;
+    totDias.forEach(v=>{const p=totMat>0?Math.round(v/totMat*100):0;tbody+=`<td><span class="cell-v ${v>0?(p>=75?'g':p>=55?'a':'r'):'z'}">${v||'—'}</span></td>`;});
+    tbody+=`<td style="font-weight:700;color:#fbbf24">${gt||'—'}</td><td style="color:#fbbf24">${gp||'—'}</td></tr>`;
   }
-  tbody += '</tbody>';
-  document.getElementById('detTable').innerHTML = thead + tbody;
+  tbody+='</tbody>';
+  document.getElementById('detTable').innerHTML=thead+tbody;
 }
-
-function renderSemana() {
-  const salas = getSalas();
-  if (!salas.length) return;
-  const SEMANAS = [
-    {label:'Semana 1',idx:[0,1,2,3,4]},
-    {label:'Semana 2',idx:[5,6,7,8,9]},
-    {label:'Semana 3',idx:[10,11,12,13,14]},
-  ];
-  const html = SEMANAS.map(sem => {
-    const cols = sem.idx.map(i=>DIAS_DIA[i]+' '+DIAS_LABEL[i].replace(' Jun',''));
-    let rows='', totSem=Array(5).fill(0);
-    const totMat = salas.reduce((a,s)=>a+s.mat,0);
+function renderSemana(){
+  const salas=getSalas();
+  if(!salas.length) return;
+  const SEMANAS=[{label:'Semana 1',idx:[0,1,2,3,4]},{label:'Semana 2',idx:[5,6,7,8,9]},{label:'Semana 3',idx:[10,11,12,13,14]}];
+  const html=SEMANAS.map(sem=>{
+    const cols=sem.idx.map(i=>DIAS_DIA[i]+' '+DIAS_LABEL[i].replace(' Jun',''));
+    let rows='',totSem=Array(5).fill(0);
+    const totMat=salas.reduce((a,s)=>a+s.mat,0);
     let lastJ='';
-    salas.forEach(s => {
-      if (s._jorn !== lastJ) {
-        lastJ=s._jorn;
-        rows+=`<tr><td class="left" colspan="${5+3}" style="background:#111827;font-size:10px;font-weight:700;color:#5a677f;text-transform:uppercase;padding:4px 10px;"><span class="sala-tag ${s._jorn}">${s._jorn==='jn'?'JORNADA NORMAL':'TJMJ'}</span></td></tr>`;
-      }
-      const cTag = s.cupos>0?`<span class="tag-cupos g">+${s.cupos}</span>`:s.cupos<0?`<span class="tag-cupos r">${s.cupos}</span>`:`<span class="tag-cupos z">0</span>`;
-      const ts = sem.idx.reduce((a,i)=>a+(s.dias[i]||0),0);
-      const ps = sem.idx.filter(i=>s.dias[i]>0).length ? Math.round(ts/sem.idx.filter(i=>s.dias[i]>0).length) : 0;
+    salas.forEach(s=>{
+      if(s._jorn!==lastJ){lastJ=s._jorn;rows+=`<tr><td class="left" colspan="${5+3}" style="background:#111827;font-size:10px;font-weight:700;color:#5a677f;text-transform:uppercase;padding:4px 10px;"><span class="sala-tag ${s._jorn}">${s._jorn==='jn'?'JORNADA NORMAL':'TJMJ'}</span></td></tr>`;}
+      const cTag=s.cupos>0?`<span class="tag-cupos g">+${s.cupos}</span>`:s.cupos<0?`<span class="tag-cupos r">${s.cupos}</span>`:`<span class="tag-cupos z">0</span>`;
+      const ts=sem.idx.reduce((a,i)=>a+(s.dias[i]||0),0);
+      const ps=sem.idx.filter(i=>s.dias[i]>0).length?Math.round(ts/sem.idx.filter(i=>s.dias[i]>0).length):0;
       rows+=`<tr><td class="left">${s.nivel||'—'} <span style="color:#3d4f6a">S${s.s}</span></td><td>${s.mat}</td><td>${cTag}</td>`;
-      sem.idx.forEach((di,k) => { const v=s.dias[di]||0; totSem[k]+=v; rows+=`<td>${cellHtml(v,s.mat)}</td>`; });
+      sem.idx.forEach((di,k)=>{const v=s.dias[di]||0;totSem[k]+=v;rows+=`<td>${cellHtml(v,s.mat)}</td>`;});
       rows+=`<td style="color:#fbbf24">${ps||'—'}</td></tr>`;
     });
     const tS=totSem.reduce((a,v)=>a+v,0);
     rows+=`<tr class="total-sem"><td class="left" style="color:#fbbf24">TOTAL</td><td>${totMat}</td><td>—</td>`;
-    totSem.forEach(v=>{ const p=totMat>0?Math.round(v/totMat*100):0; rows+=`<td><span class="cell-v ${v>0?(p>=75?'g':p>=55?'a':'r'):'z'}">${v||'—'}</span></td>`; });
+    totSem.forEach(v=>{const p=totMat>0?Math.round(v/totMat*100):0;rows+=`<td><span class="cell-v ${v>0?(p>=75?'g':p>=55?'a':'r'):'z'}">${v||'—'}</span></td>`;});
     rows+=`<td style="color:#fbbf24">${tS||'—'}</td></tr>`;
-    return `<div class="sem-blk">
-      <div class="sem-hdr">${sem.label} &nbsp;${sem.idx.map(i=>`<span>${DIAS_LABEL[i]}</span>`).join(' · ')}</div>
-      <div class="sem-body"><table class="sem-table">
-        <thead><tr><th class="left">Nivel / Sala</th><th>Mat</th><th>Cupos</th>${cols.map(c=>`<th>${c}</th>`).join('')}<th>Prom</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table></div>
-    </div>`;
+    return `<div class="sem-blk"><div class="sem-hdr">${sem.label}&nbsp;${sem.idx.map(i=>`<span>${DIAS_LABEL[i]}</span>`).join(' · ')}</div><div class="sem-body"><table class="sem-table"><thead><tr><th class="left">Nivel / Sala</th><th>Mat</th><th>Cupos</th>${cols.map(c=>`<th>${c}</th>`).join('')}<th>Prom</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
   }).join('');
-  document.getElementById('semGrid').innerHTML = html;
+  document.getElementById('semGrid').innerHTML=html;
 }
-
-function renderGrafico() {
-  const salas = getSalas();
-  if (!salas.length) return;
-  const totMat = salas.reduce((a,s)=>a+s.mat,0);
-  if (chartInst) { chartInst.destroy(); chartInst=null; }
-  const C = ['#60a5fa','#34d399','#fbbf24','#f87171','#a78bfa','#fb923c','#38bdf8','#4ade80'];
-  const datasets = salas.map((s,i)=>({
+function renderGrafico(){
+  const salas=getSalas();
+  if(!salas.length) return;
+  const totMat=salas.reduce((a,s)=>a+s.mat,0);
+  if(chartInst){chartInst.destroy();chartInst=null;}
+  const C=['#60a5fa','#34d399','#fbbf24','#f87171','#a78bfa','#fb923c','#38bdf8','#4ade80'];
+  const datasets=salas.map((s,i)=>({
     label:`${s.nivel||'?'} S${s.s}${s._jorn==='tjmj'?' (TJMJ)':''}`,
-    data: s.dias.map(v=>v||null),
-    backgroundColor: C[i%C.length]+'99',
-    borderColor: C[i%C.length],
-    borderWidth:1, borderRadius:3, stack:'stack'
+    data:s.dias.map(v=>v||null),
+    backgroundColor:C[i%C.length]+'99',borderColor:C[i%C.length],
+    borderWidth:1,borderRadius:3,stack:'stack'
   }));
   datasets.push({
-    label:'Matrícula total',
-    data: Array(15).fill(totMat),
-    type:'line', borderColor:'rgba(255,255,255,.3)',
-    borderWidth:1.5, borderDash:[5,3], pointRadius:0, fill:false, stack:undefined
+    label:'Matrícula total',data:Array(15).fill(totMat),type:'line',
+    borderColor:'rgba(255,255,255,.3)',borderWidth:1.5,borderDash:[5,3],
+    pointRadius:0,fill:false,stack:undefined
   });
-  chartInst = new Chart(document.getElementById('aChart'), {
-    type:'bar',
-    data:{ labels:DIAS_LABEL, datasets },
+  chartInst=new Chart(document.getElementById('aChart'),{
+    type:'bar',data:{labels:DIAS_LABEL,datasets},
     options:{
-      responsive:true, maintainAspectRatio:false,
+      responsive:true,maintainAspectRatio:false,
       plugins:{
         legend:{display:true,position:'bottom',labels:{color:'#5a677f',font:{size:10},boxWidth:10,padding:8}},
         tooltip:{mode:'index',intersect:false}
@@ -1012,12 +917,9 @@ function renderGrafico() {
   });
 }
 
-// ══════════════════════════════════════════════════
-// INICIO
-// ══════════════════════════════════════════════════
-window.addEventListener('load', () => {
+window.addEventListener('load',()=>{
   cargarDatos();
-  setInterval(cargarDatos, 60000);
+  setInterval(cargarDatos,60000);
 });
 </script>
 </body>
