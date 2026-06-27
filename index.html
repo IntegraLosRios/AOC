@@ -1123,12 +1123,20 @@ function renderEvolucion(){
       if(conA.length) pct=parseFloat((conA.reduce((a,s)=>a+s.asist*s.mat,0)/conA.reduce((a,s)=>a+s.mat,0)).toFixed(1));
     }
 
+    // Causales: contar por DÍA único (no por sala×nivel)
+    // Si en el día di varias salas tienen la misma causal, cuenta solo 1
     const causales={};
-    diasMes.forEach(d=>d.forEach(v=>{
-      if(typeof v==='string'&&v&&CAUSALES_KEYS.includes(v.toUpperCase())){
-        const c=v.toUpperCase(); causales[c]=(causales[c]||0)+1;
-      }
-    }));
+    const nDiasBlk = blk.diasCols.length;
+    for(let di=0; di<nDiasBlk; di++){
+      // Recolectar causales distintas que aparecen en cualquier sala para ese día
+      const causalesDelDia = new Set();
+      diasMes.forEach(d=>{
+        const v = d[di];
+        if(typeof v==='string' && v && CAUSALES_KEYS.includes(v.toUpperCase()))
+          causalesDelDia.add(v.toUpperCase());
+      });
+      causalesDelDia.forEach(c=>{ causales[c]=(causales[c]||0)+1; });
+    }
     return {mes:blk.nombre, pct, sumA, causales, esActual:mi===mesActivo};
   });
 
