@@ -473,51 +473,46 @@ function esNombreJardin(s) {
 }
 
 // ── DETECTAR BLOQUES DE MES DINÁMICAMENTE ───────────────────────────────────
+// ── BLOQUES DE MES — estructura fija AOC ──────────────────────────────────────
+// Cada mes ocupa 32 columnas. La col del nombre en row1 = col de Matricula.
+// Offset desde mat: +0=Mat, +1=MNA, +2=Lista, +3=Cupos, +4=%Uso, +5=%Asist, +6=D(desist), +7..=días
+// Los días hábiles van desde mat+7 hasta la próxima columna Matricula - 1,
+// filtrando solo las que coincidan con el patrón L/M/J/V + número.
 function detectarBloques(row1, hdr) {
-  const normH = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
   const bloques = [];
+  const normH = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
 
-  // Encontrar posiciones de cada mes en row1
-  MESES_NOMBRES.forEach(mes => {
-    row1.forEach((v, i) => {
-      if (v.trim().toUpperCase() === mes) {
-        // El mes name está en la col del Matricula del bloque
-        const matCol = i;
-        const mnaCol = matCol + 1;
-        const listaCol = matCol + 2;
-        const cuposCol = matCol + 3;
-        const asistCol = matCol + 5; // % Asistencia (skip %Uso)
-        const desistCol = matCol + 6; // D = desistimientos
-        const diasStartCol = matCol + 7;
+  row1.forEach((v, matCol) => {
+    if (!MESES_NOMBRES.includes(v.trim().toUpperCase())) return;
+    const nombre   = v.trim().toUpperCase();
+    const asistCol = matCol + 5;
+    const desistCol= matCol + 6;
+    const diasStart= matCol + 7;
 
-        // Encontrar dias hábiles: columnas con formato "L/M/J/V + espacio + número"
-        const diasCols = [];
-        const diasLabels = [];
-        for (let dc = diasStartCol; dc < diasStartCol + 28 && dc < hdr.length; dc++) {
-          const h = normH(hdr[dc]);
-          if (/^[lmjv]\s*\d/.test(h)) {
-            diasCols.push(dc);
-            diasLabels.push(hdr[dc].trim());
-          } else if (diasCols.length > 0) break; // pasamos el bloque
-        }
+    // Siguiente bloque Matricula = límite superior
+    let nextMat = hdr.length;
+    for (let c = matCol + 1; c < hdr.length; c++) {
+      if (normH(hdr[c]) === 'matricula') { nextMat = c; break; }
+    }
 
-        bloques.push({
-          nombre: mes,
-          mat: matCol, mna: mnaCol, lista: listaCol,
-          cupos: cuposCol, asist: asistCol, desist: desistCol,
-          diasStart: diasStartCol, diasEnd: diasCols.length ? diasCols[diasCols.length-1] : diasStartCol+14,
-          diasCols, diasLabels
-        });
+    // Días: todas las cols entre diasStart y nextMat con patrón día-hábil
+    const diasCols   = [];
+    const diasLabels = [];
+    for (let c = diasStart; c < nextMat && c < hdr.length; c++) {
+      if (/^[lmjv]\s*\d/i.test(normH(hdr[c]))) {
+        diasCols.push(c);
+        diasLabels.push(hdr[c].trim().replace(/\s+/g,' '));
       }
-    });
+    }
+
+    bloques.push({ nombre, mat:matCol, lista:matCol+2, cupos:matCol+3,
+                   asist:asistCol, desist:desistCol, diasCols, diasLabels });
   });
 
-  // Ordenar por posición en el CSV (col menor = mes más reciente)
   bloques.sort((a,b) => a.mat - b.mat);
   return bloques;
 }
 
-// ── CARGA Y PARSE ─────────────────────────────────────────────────────────────
 async function cargarDatos() {
   try {
     const resp = await fetch(URL_SHEET);
@@ -957,13 +952,14 @@ function toggleCard(cid) {
 }
 
 // ── ASISTENCIA ────────────────────────────────────────────────────────────────
+// ── TAB ASISTENCIA ────────────────────────────────────────────────────────────
 function setView(v,btn){
   vistaActual=v;
   document.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
-  document.getElementById('v-detalle').style.display=v==='detalle'?'block':'none';
-  document.getElementById('v-semana').style.display =v==='semana'?'block':'none';
-  document.getElementById('v-grafico').style.display=v==='grafico'?'block':'none';
+  document.getElementById('v-detalle').style.display = v==='detalle'?'block':'none';
+  document.getElementById('v-semana').style.display  = v==='semana'?'block':'none';
+  document.getElementById('v-grafico').style.display = v==='grafico'?'block':'none';
   renderVista();
 }
 
@@ -974,8 +970,7 @@ function renderAsist(){
     document.getElementById('aEmpty').style.display='block';
     return;
   }
-  // Asegurar que mesFiltro esté inicializado al mes activo
-  if (mesFiltro === undefined || mesFiltro === null) mesFiltro = mesActivo;
+  if(mesFiltro===undefined||mesFiltro===null) mesFiltro=mesActivo;
   document.getElementById('aContent').style.display='block';
   document.getElementById('aEmpty').style.display='none';
   renderKpis();
@@ -983,40 +978,45 @@ function renderAsist(){
   renderVista();
 }
 
+// Retorna salas según jornada seleccionada
 function getSalas(){
   const idx=document.getElementById('jSel').value;
-  const jorn=document.getElementById('jornSel').value;
   if(idx==='') return [];
-  const j=J[parseInt(idx)];if(!j)return[];
-  let salas=[];
-  if(jorn==='ambas'||jorn==='jn')   salas=salas.concat(j.jn.salas.map(s=>({...s,_jorn:'jn'})));
-  if(jorn==='ambas'||jorn==='tjmj') salas=salas.concat(j.tjmj.salas.map(s=>({...s,_jorn:'tjmj'})));
-  return salas;
+  const j=J[parseInt(idx)]; if(!j) return [];
+  const jorn=document.getElementById('jornSel').value;
+  let s=[];
+  if(jorn==='ambas'||jorn==='jn')   s=s.concat(j.jn.salas.map(s=>({...s,_jorn:'jn'})));
+  if(jorn==='ambas'||jorn==='tjmj') s=s.concat(j.tjmj.salas.map(s=>({...s,_jorn:'tjmj'})));
+  return s;
 }
 
-function getDiasActuales(salas){
-  // dias del mes seleccionado (mesFiltro) para cada sala
-  return salas.map(s=>s.diasPorMes[mesFiltro]||[]);
+// Días del mesFiltro para cada sala
+function getDias(salas){
+  return salas.map(s=>(s.diasPorMes&&s.diasPorMes[mesFiltro])||[]);
 }
 
+// KPIs del jardín para el mes seleccionado
 function renderKpis(){
   const idx=document.getElementById('jSel').value;
-  const j=J[parseInt(idx)];if(!j)return;
+  const j=J[parseInt(idx)]; if(!j) return;
   const salas=getSalas();
   const blk=MESES_BLOQUES[mesFiltro];
-  const dias=getDiasActuales(salas);
-  const totD=Array(blk.diasCols.length).fill(0);
-  dias.forEach((d,si)=>d.forEach((v,i)=>{if(typeof v==='number'&&v>0)totD[i]+=v;}));
-  const tMat=salas.reduce((a,s)=>a+s.mat,0);
-  const tCap=salas.reduce((a,s)=>a+s.cap,0);
+  const dias=getDias(salas);
+
+  const tMat  =salas.reduce((a,s)=>a+s.mat,0);
+  const tCap  =salas.reduce((a,s)=>a+s.cap,0);
   const tCupos=salas.reduce((a,s)=>a+s.cupos,0);
+  const totD  =Array(blk.diasCols.length).fill(0);
+  dias.forEach((d,si)=>d.forEach((v,i)=>{if(typeof v==='number'&&v>0)totD[i]+=v;}));
   const valid=totD.filter(v=>v>0);
   const mx=valid.length?Math.max(...valid):0;
   const mn=valid.length?Math.min(...valid):0;
-  const avg=valid.length?Math.round(valid.reduce((a,b)=>a+b,0)/valid.length):0;
+  const avg=valid.length?Math.round(valid.reduce((a,b)=>a+b)/valid.length):0;
+  const mesNom=blk.nombre.charAt(0)+blk.nombre.slice(1).toLowerCase();
+
   document.getElementById('aKpis').innerHTML=`
     <div class="ak"><div class="ak-l">Jardín</div><div class="ak-v" style="font-size:12px;color:#fff">${j.n}</div></div>
-    <div class="ak"><div class="ak-l">Mes</div><div class="ak-v" style="font-size:12px;color:#60a5fa">${blk.nombre.charAt(0)+blk.nombre.slice(1).toLowerCase()}</div></div>
+    <div class="ak"><div class="ak-l">Mes</div><div class="ak-v" style="font-size:12px;color:#60a5fa">${mesNom}</div></div>
     <div class="ak"><div class="ak-l">Salas</div><div class="ak-v">${salas.length}</div></div>
     <div class="ak"><div class="ak-l">Cap.</div><div class="ak-v">${tCap}</div></div>
     <div class="ak"><div class="ak-l">Matrícula</div><div class="ak-v">${tMat}</div></div>
@@ -1026,53 +1026,50 @@ function renderKpis(){
     <div class="ak"><div class="ak-l">Prom. día</div><div class="ak-v" style="color:#fbbf24">${avg||'—'}</div></div>`;
 }
 
-// ── EVOLUCIÓN MENSUAL ─────────────────────────────────────────────────────────
+// Evolución con cards clicables y gráfico sin línea meta
 function renderEvolucion(){
   const idx=document.getElementById('jSel').value;
-  const j=J[parseInt(idx)];if(!j)return;
+  const j=J[parseInt(idx)]; if(!j) return;
   const jorn=document.getElementById('jornSel').value;
 
-  const evolData = MESES_BLOQUES.map((blk, mi) => {
-    let salas = [];
+  const evolData=MESES_BLOQUES.map((blk,mi)=>{
+    let salas=[];
     if(jorn==='ambas'||jorn==='jn')   salas=salas.concat(j.jn.salas.map(s=>({...s,_jorn:'jn'})));
     if(jorn==='ambas'||jorn==='tjmj') salas=salas.concat(j.tjmj.salas.map(s=>({...s,_jorn:'tjmj'})));
 
-    const diasMes = salas.map(s => s.diasPorMes[mi] || []);
-    const nDias   = blk.diasCols.length || 1;
-
-    // Suma de asistencia numérica del mes
-    const sumA = diasMes.reduce((a,d) => a + d.reduce((b,v) => b + (typeof v==='number'&&v>0 ? v : 0), 0), 0);
-
-    // Denominador = matrícula * días hábiles del mes
-    // Usar la matrícula del mes activo (col fija 22) ya que es la que tenemos en el parser
-    const totMat = salas.reduce((a,s) => a + s.mat, 0);
-    const denom  = totMat * nDias;
-
-    // % desde col % Asistencia si sumA=0 (cuando los días no están en diasPorMes)
-    let pct = denom > 0 ? parseFloat((sumA / denom * 100).toFixed(1)) : 0;
-    if (pct === 0 && sumA === 0) {
-      // Intentar usar % asistencia almacenado por sala
-      const conA = salas.filter(s => s.asist > 0);
-      if (conA.length) pct = parseFloat((conA.reduce((a,s)=>a+s.asist*s.mat,0)/conA.reduce((a,s)=>a+s.mat,0)).toFixed(1));
+    const diasMes=salas.map(s=>(s.diasPorMes&&s.diasPorMes[mi])||[]);
+    const nDias=blk.diasCols.length||1;
+    const totMat=salas.reduce((a,s)=>a+s.mat,0);
+    const sumA=diasMes.reduce((a,d)=>a+d.reduce((b,v)=>b+(typeof v==='number'&&v>0?v:0),0),0);
+    const denom=totMat*nDias;
+    let pct=denom>0?parseFloat((sumA/denom*100).toFixed(1)):0;
+    // Fallback a % asistencia directo si no hay dias
+    if(!pct){
+      const conA=salas.filter(s=>s.asist>0);
+      if(conA.length) pct=parseFloat((conA.reduce((a,s)=>a+s.asist*s.mat,0)/conA.reduce((a,s)=>a+s.mat,0)).toFixed(1));
     }
 
-    const causales = {};
-    diasMes.forEach(d => d.forEach(v => {
-      if (typeof v==='string' && v && CAUSALES_KEYS.includes(v.toUpperCase())) {
-        const c = v.toUpperCase(); causales[c] = (causales[c]||0) + 1;
+    const causales={};
+    diasMes.forEach(d=>d.forEach(v=>{
+      if(typeof v==='string'&&v&&CAUSALES_KEYS.includes(v.toUpperCase())){
+        const c=v.toUpperCase(); causales[c]=(causales[c]||0)+1;
       }
     }));
-
-    return {mes: blk.nombre, pct, sumA, denom, causales, esActual: mi === mesActivo};
+    return {mes:blk.nombre, pct, sumA, causales, esActual:mi===mesActivo};
   });
 
-  // Cards de evolución — clicables para seleccionar mes
-  document.getElementById('evolGrid').innerHTML = evolData.map((e,i)=>{
-    const clr = e.pct>=75?'#34d399':e.pct>=55?'#fbbf24':'#f87171';
-    const isSelected = (i === mesFiltro);
-    const causStr = Object.entries(e.causales).map(([k,n])=>`<span style="font-size:10px;color:#a78bfa">${k}:${n}</span>`).join(' ');
-    return `<div class="evol-mes-card${isSelected?' selected':''}" onclick="selectMes(${i})" style="cursor:pointer;${isSelected?'border-color:#1d4ed8;box-shadow:0 0 0 1px #1d4ed8;':''}">
-      <div class="evol-mes-name ${e.esActual?'actual':''}">${e.mes.charAt(0)+e.mes.slice(1).toLowerCase()}${e.esActual?' ●':''}</div>
+  // Actualizar tabs
+  renderMesTabs();
+
+  // Cards
+  document.getElementById('evolGrid').innerHTML=evolData.map((e,i)=>{
+    const clr=e.pct>=75?'#34d399':e.pct>=55?'#fbbf24':'#f87171';
+    const sel=i===mesFiltro;
+    const causStr=Object.entries(e.causales).map(([k,n])=>`<span style="font-size:10px;color:#a78bfa">${k}:${n}</span>`).join(' ');
+    return `<div class="evol-mes-card${sel?' selected':''}"
+      onclick="selectMes(${i})"
+      style="cursor:pointer;${sel?'border-color:#1d4ed8;box-shadow:0 0 0 1px #1d4ed8;':''}">
+      <div class="evol-mes-name${e.esActual?' actual':''}">${e.mes.charAt(0)+e.mes.slice(1).toLowerCase()}${e.esActual?' ●':''}</div>
       <div class="evol-asist" style="color:${clr}">${e.pct>0?e.pct.toFixed(1)+'%':'—'}</div>
       <div class="evol-meta">${e.sumA>0?e.sumA+' niños/día':'Sin datos'}</div>
       ${causStr?`<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center">${causStr}</div>`:''}
@@ -1080,9 +1077,9 @@ function renderEvolucion(){
     </div>`;
   }).join('');
 
-  // Gráfico evolución
+  // Gráfico evolución — SIN línea meta
   if(evolChartInst){evolChartInst.destroy();evolChartInst=null;}
-  const mesesOrdenados=[...evolData].reverse(); // cronológico
+  const mesesOrdenados=[...evolData].reverse();
   evolChartInst=new Chart(document.getElementById('evolChart'),{
     type:'line',
     data:{
@@ -1092,160 +1089,225 @@ function renderEvolucion(){
         data:mesesOrdenados.map(e=>e.pct>0?e.pct:null),
         borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,.1)',
         borderWidth:2,pointRadius:5,pointBackgroundColor:'#60a5fa',tension:.3,fill:true,spanGaps:true
-      },{
-        label:'Meta (70%)',
-        data:mesesOrdenados.map(()=>70),type:'line',
-        borderColor:'rgba(251,191,36,.5)',borderWidth:1,borderDash:[5,3],
-        pointRadius:0,fill:false
       }]
     },
     options:{
       responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,position:'bottom',labels:{color:'#5a677f',font:{size:10},padding:8}}},
+      plugins:{legend:{display:false}},
       scales:{
         x:{ticks:{color:'#8a97b0',font:{size:11}},grid:{color:'rgba(255,255,255,.04)'}},
-        y:{ticks:{color:'#8a97b0',font:{size:11},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.06)'},min:0,max:100,suggestedMax:100}
+        y:{ticks:{color:'#8a97b0',font:{size:11},callback:v=>v+'%'},
+           grid:{color:'rgba(255,255,255,.06)'},min:0,max:100}
       }
     }
   });
 }
 
-// ── VISTAS DE DETALLE ─────────────────────────────────────────────────────────
 function renderVista(){
   if(vistaActual==='detalle') renderDetalle();
   else if(vistaActual==='semana') renderSemana();
   else renderGrafico();
 }
 
-function cellHtml(val, mat){
-  if(typeof val==='string'&&val) {
-    // Es un causal
+const CAUSAL_DESCS={'C':'Capacitación','CA':'Corte Agua','P':'Planificación','CE':'Corte Electricidad',
+  'BM':'Asistencia Cero','REC':'Resp. Empresa Concesionaria','PR':'Previo Inicio Actividades',
+  'M':'Movilización Tías','DI':'Decisión Institucional','T':'Temporal','F':'Fumigación','DIA':'Cuidado de Equipo'};
+const CAUSALES_KEYS=Object.keys(CAUSAL_DESCS);
+function CAUSAL_DESC(c){return CAUSAL_DESCS[(c||'').toUpperCase()]||c;}
+
+function cellHtml(val,mat){
+  if(typeof val==='string'&&val.trim())
     return `<span class="cell-v c" title="${CAUSAL_DESC(val)}">${val}</span>`;
-  }
   const v=typeof val==='number'?val:0;
   if(!v) return `<span class="cell-v z">—</span>`;
   const p=mat>0?Math.round(v/mat*100):0;
   return `<span class="cell-v ${p>=75?'g':p>=55?'a':'r'}" title="${p}%">${v}</span>`;
 }
 
-const CAUSAL_DESCS={'C':'Capacitación','CA':'Corte Agua','P':'Planificación','CE':'Corte Electricidad','BM':'Asistencia Cero','REC':'Resp. Empresa Concesionaria','PR':'Previo Inicio Actividades','M':'Movilización Tías','DI':'Decisión Institucional','T':'Temporal','F':'Fumigación','DIA':'Cuidado de Equipo','W':'Sin dato'};
-function CAUSAL_DESC(c){return CAUSAL_DESCS[(c||'').toUpperCase()]||c;}
-
+// Tabla detalle por nivel/día
 function renderDetalle(){
-  const salas=getSalas();if(!salas.length)return;
+  const salas=getSalas(); if(!salas.length) return;
   const blk=MESES_BLOQUES[mesFiltro];
-  const diasAll=getDiasActuales(salas);
+  const diasAll=getDias(salas);
   const N=blk.diasCols.length;
-
-  let thead=`<thead><tr><th class="left" style="min-width:130px">Nivel</th><th>Cap</th><th>Mat</th><th>Cupos</th>`;
-  blk.diasLabels.forEach((d,i)=>{
-    const dia=d.trim().replace(/^([LMJV])\s+/,'$1');
-    thead+=`<th>${dia}</th>`;
-  });
-  thead+=`<th>Total</th><th>Prom%</th></tr></thead>`;
-
-  const grupos={};
-  salas.forEach((s,si)=>{if(!grupos[s._jorn])grupos[s._jorn]=[];grupos[s._jorn].push({s,dias:diasAll[si]});});
-  let tbody='<tbody>';
-  const totDias=Array(N).fill(0);
   const totMat=salas.reduce((a,s)=>a+s.mat,0);
 
+  // Labels compactos: "L1", "M2", etc.
+  const dayLabels=blk.diasLabels.map(d=>d.replace(/^([LMJVlmjv])\s+/,'$1'));
+
+  let thead=`<thead><tr>
+    <th class="left" style="min-width:110px">Nivel</th>
+    <th>Cap</th><th>Mat</th><th>Cupos</th>
+    ${dayLabels.map(d=>`<th>${d}</th>`).join('')}
+    <th>Total</th><th>%</th>
+  </tr></thead>`;
+
+  const grupos={};
+  salas.forEach((s,si)=>{
+    if(!grupos[s._jorn]) grupos[s._jorn]=[];
+    grupos[s._jorn].push({s,dias:diasAll[si]});
+  });
+
+  const totDias=Array(N).fill(0);
+  let tbody='<tbody>';
+
   Object.keys(grupos).forEach(jk=>{
-    tbody+=`<tr class="nivel-hdr"><td colspan="${4+N+2}" class="left"><span class="sala-tag ${jk}">${jk==='jn'?'JORNADA NORMAL':'TJMJ'}</span></td></tr>`;
+    tbody+=`<tr class="nivel-hdr"><td colspan="${4+N+2}" class="left">
+      <span class="sala-tag ${jk}">${jk==='jn'?'JORNADA NORMAL':'TJMJ'}</span>
+    </td></tr>`;
     const jSalas=grupos[jk];
     const jDias=Array(N).fill(0);
     const jMat=jSalas.reduce((a,{s})=>a+s.mat,0);
+
     jSalas.forEach(({s,dias})=>{
-      const numVals=dias.filter(v=>typeof v==='number'&&v>0);
-      const totalS=numVals.reduce((a,b)=>a+b,0);
-      const promS=numVals.length&&s.mat>0?Math.round(totalS/(numVals.length*s.mat)*100):0;
-      const cTag=s.cupos>0?`<span class="tag-cupos g">+${s.cupos}</span>`:s.cupos<0?`<span class="tag-cupos r">${s.cupos}</span>`:`<span class="tag-cupos z">0</span>`;
-      tbody+=`<tr><td class="left">${s.nivel} <span style="color:#3d4f6a">S${s.s}</span></td><td style="color:#5a677f">${s.cap}</td><td>${s.mat}</td><td>${cTag}</td>`;
+      const numV=dias.filter(v=>typeof v==='number'&&v>0);
+      const totalS=numV.reduce((a,b)=>a+b,0);
+      const pctS=numV.length&&s.mat>0?Math.round(totalS/(numV.length*s.mat)*100):0;
+      const cTag=s.cupos>0?`<span class="tag-cupos g">+${s.cupos}</span>`:
+                 s.cupos<0?`<span class="tag-cupos r">${s.cupos}</span>`:
+                 `<span class="tag-cupos z">0</span>`;
+      tbody+=`<tr>
+        <td class="left">${s.nivel} <span style="color:#3d4f6a">S${s.s}</span></td>
+        <td style="color:#5a677f">${s.cap}</td><td>${s.mat}</td><td>${cTag}</td>`;
       dias.forEach((v,i)=>{
-        if(typeof v==='number'&&v>0) jDias[i]+=v;
-        totDias[i]+=(typeof v==='number'&&v>0?v:0);
+        if(typeof v==='number'&&v>0){jDias[i]+=v;totDias[i]+=v;}
         tbody+=`<td>${cellHtml(v,s.mat)}</td>`;
       });
-      tbody+=`<td style="font-weight:600;color:#e2e8f0">${totalS||'—'}</td><td style="color:${promS>=75?'#34d399':promS>=55?'#fbbf24':'#f87171'}">${totalS?promS+'%':'—'}</td></tr>`;
+      tbody+=`<td style="font-weight:600;color:#e2e8f0">${totalS||'—'}</td>
+              <td style="color:${pctS>=75?'#34d399':pctS>=55?'#fbbf24':'#f87171'}">${totalS?pctS+'%':'—'}</td></tr>`;
     });
+
+    // Subtotal jornada
     const jt=jDias.reduce((a,v)=>a+v,0);
-    const jp=jMat>0&&jDias.filter(v=>v>0).length?Math.round(jt/(jDias.filter(v=>v>0).length*jMat)*100):0;
-    tbody+=`<tr class="total-row"><td class="left" style="color:#60a5fa">TOTAL ${jk.toUpperCase()}</td><td colspan="3" style="color:#5a677f">${jMat} mat.</td>`;
-    jDias.forEach(v=>{const p=jMat>0?Math.round(v/jMat*100):0;tbody+=`<td><span class="cell-v ${v>0?(p>=75?'g':p>=55?'a':'r'):'z'}">${v||'—'}</span></td>`;});
-    tbody+=`<td style="color:#60a5fa;font-weight:700">${jt||'—'}</td><td style="color:#fbbf24">${jt&&jp?jp+'%':'—'}</td></tr>`;
+    const jp=jMat&&jDias.filter(v=>v>0).length?Math.round(jt/(jDias.filter(v=>v>0).length*jMat)*100):0;
+    tbody+=`<tr class="total-row">
+      <td class="left" style="color:#60a5fa">TOTAL ${jk.toUpperCase()}</td>
+      <td colspan="3" style="color:#5a677f">${jMat} mat.</td>
+      ${jDias.map(v=>{const p=jMat?Math.round(v/jMat*100):0;return`<td><span class="cell-v ${v>0?(p>=75?'g':p>=55?'a':'r'):'z'}">${v||'—'}</span></td>`;}).join('')}
+      <td style="color:#60a5fa;font-weight:700">${jt||'—'}</td>
+      <td style="color:#fbbf24">${jt&&jp?jp+'%':'—'}</td></tr>`;
   });
 
+  // Total global
   if(Object.keys(grupos).length>1){
     const gt=totDias.reduce((a,v)=>a+v,0);
-    const gp=totMat>0&&totDias.filter(v=>v>0).length?Math.round(gt/(totDias.filter(v=>v>0).length*totMat)*100):0;
-    tbody+=`<tr class="total-row" style="border-top:2px solid #21283a"><td class="left" style="color:#fbbf24">TOTAL JARDÍN</td><td colspan="3" style="color:#5a677f">${totMat} mat.</td>`;
-    totDias.forEach(v=>{const p=totMat>0?Math.round(v/totMat*100):0;tbody+=`<td><span class="cell-v ${v>0?(p>=75?'g':p>=55?'a':'r'):'z'}">${v||'—'}</span></td>`;});
-    tbody+=`<td style="color:#fbbf24;font-weight:700">${gt||'—'}</td><td style="color:#fbbf24">${gt&&gp?gp+'%':'—'}</td></tr>`;
+    const gp=totMat&&totDias.filter(v=>v>0).length?Math.round(gt/(totDias.filter(v=>v>0).length*totMat)*100):0;
+    tbody+=`<tr class="total-row" style="border-top:2px solid #21283a">
+      <td class="left" style="color:#fbbf24">TOTAL JARDÍN</td>
+      <td colspan="3" style="color:#5a677f">${totMat} mat.</td>
+      ${totDias.map(v=>{const p=totMat?Math.round(v/totMat*100):0;return`<td><span class="cell-v ${v>0?(p>=75?'g':p>=55?'a':'r'):'z'}">${v||'—'}</span></td>`;}).join('')}
+      <td style="color:#fbbf24;font-weight:700">${gt||'—'}</td>
+      <td style="color:#fbbf24">${gt&&gp?gp+'%':'—'}</td></tr>`;
   }
   tbody+='</tbody>';
   document.getElementById('detTable').innerHTML=thead+tbody;
 }
 
+// Vista por semana
 function renderSemana(){
-  const salas=getSalas();if(!salas.length)return;
+  const salas=getSalas(); if(!salas.length) return;
   const blk=MESES_BLOQUES[mesFiltro];
-  const diasAll=getDiasActuales(salas);
+  const diasAll=getDias(salas);
   const N=blk.diasCols.length;
+  const totMat=salas.reduce((a,s)=>a+s.mat,0);
+  const dayLabels=blk.diasLabels.map(d=>d.replace(/^([LMJVlmjv])\s+/,'$1'));
 
-  // Agrupar días en semanas (grupos de 5)
+  // Agrupar en semanas de 5 días
   const semanas=[];
   for(let i=0;i<N;i+=5){
-    const idxs=[];for(let j=i;j<Math.min(i+5,N);j++)idxs.push(j);
-    semanas.push({label:'Semana '+(semanas.length+1),idxs,labels:idxs.map(k=>blk.diasLabels[k].trim())});
+    const idxs=[];
+    for(let j=i;j<Math.min(i+5,N);j++) idxs.push(j);
+    semanas.push({label:`Semana ${semanas.length+1}`,idxs,labels:idxs.map(k=>dayLabels[k])});
   }
 
-  const totMat=salas.reduce((a,s)=>a+s.mat,0);
   const html=semanas.map(sem=>{
     const totSem=Array(sem.idxs.length).fill(0);
-    let rows='';let lastJ='';
+    let rows=''; let lastJ='';
     salas.forEach((s,si)=>{
       const dias=diasAll[si];
-      if(s._jorn!==lastJ){lastJ=s._jorn;rows+=`<tr><td class="left" colspan="${3+sem.idxs.length+1}" style="background:#111827;font-size:10px;font-weight:700;color:#5a677f;padding:4px 8px;"><span class="sala-tag ${s._jorn}">${s._jorn==='jn'?'JN':'TJMJ'}</span></td></tr>`;}
-      const cTag=s.cupos>0?`<span class="tag-cupos g">+${s.cupos}</span>`:s.cupos<0?`<span class="tag-cupos r">${s.cupos}</span>`:`<span class="tag-cupos z">0</span>`;
+      if(s._jorn!==lastJ){
+        lastJ=s._jorn;
+        rows+=`<tr><td colspan="${3+sem.idxs.length+1}" class="left" style="background:#111827;font-size:10px;font-weight:700;color:#5a677f;padding:4px 8px;">
+          <span class="sala-tag ${s._jorn}">${s._jorn==='jn'?'JN':'TJMJ'}</span></td></tr>`;
+      }
+      const cTag=s.cupos>0?`<span class="tag-cupos g">+${s.cupos}</span>`:
+                 s.cupos<0?`<span class="tag-cupos r">${s.cupos}</span>`:
+                 `<span class="tag-cupos z">0</span>`;
       const tS=sem.idxs.reduce((a,k)=>a+(typeof dias[k]==='number'&&dias[k]>0?dias[k]:0),0);
-      const pS=s.mat>0&&tS>0?Math.round(tS/(sem.idxs.filter(k=>typeof dias[k]==='number'&&dias[k]>0).length*s.mat)*100):0;
-      rows+=`<tr><td class="left">${s.nivel} <span style="color:#3d4f6a">S${s.s}</span></td><td>${s.mat}</td><td>${cTag}</td>`;
+      const dConD=sem.idxs.filter(k=>typeof dias[k]==='number'&&dias[k]>0).length;
+      const pS=s.mat&&dConD?Math.round(tS/(dConD*s.mat)*100):0;
+      rows+=`<tr>
+        <td class="left">${s.nivel} <span style="color:#3d4f6a">S${s.s}</span></td>
+        <td>${s.mat}</td><td>${cTag}</td>`;
       sem.idxs.forEach((k,ki)=>{
         const v=dias[k];
-        if(typeof v==='number'&&v>0)totSem[ki]+=v;
+        if(typeof v==='number'&&v>0) totSem[ki]+=v;
         rows+=`<td>${cellHtml(v,s.mat)}</td>`;
       });
       rows+=`<td style="color:#fbbf24">${tS&&pS?pS+'%':'—'}</td></tr>`;
     });
+
     const tT=totSem.reduce((a,v)=>a+v,0);
-    rows+=`<tr class="total-sem"><td class="left" style="color:#fbbf24">TOTAL</td><td>${totMat}</td><td>—</td>`;
-    totSem.forEach(v=>{const p=totMat>0?Math.round(v/totMat*100):0;rows+=`<td><span class="cell-v ${v>0?(p>=75?'g':p>=55?'a':'r'):'z'}">${v||'—'}</span></td>`;});
-    rows+=`<td style="color:#fbbf24">${tT||'—'}</td></tr>`;
-    return `<div class="sem-blk"><div class="sem-hdr">${sem.label} <span>${sem.labels.join(' · ')}</span></div><div class="sem-body"><table class="sem-table"><thead><tr><th class="left">Nivel / Sala</th><th>Mat</th><th>Cupos</th>${sem.labels.map(l=>`<th>${l.replace(/^([LMJV])\s+/,'$1')}</th>`).join('')}<th>Prom%</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+    const dConT=totSem.filter(v=>v>0).length;
+    const gP=totMat&&dConT?Math.round(tT/(dConT*totMat)*100):0;
+    rows+=`<tr class="total-sem">
+      <td class="left" style="color:#fbbf24">TOTAL</td><td>${totMat}</td><td>—</td>
+      ${totSem.map(v=>{const p=totMat?Math.round(v/totMat*100):0;return`<td><span class="cell-v ${v>0?(p>=75?'g':p>=55?'a':'r'):'z'}">${v||'—'}</span></td>`;}).join('')}
+      <td style="color:#fbbf24">${tT&&gP?gP+'%':'—'}</td></tr>`;
+
+    return `<div class="sem-blk">
+      <div class="sem-hdr">${sem.label} <span>${sem.labels.join(' · ')}</span></div>
+      <div class="sem-body"><table class="sem-table">
+        <thead><tr>
+          <th class="left">Nivel/Sala</th><th>Mat</th><th>Cupos</th>
+          ${sem.labels.map(l=>`<th>${l}</th>`).join('')}<th>%</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+    </div>`;
   }).join('');
   document.getElementById('semGrid').innerHTML=html;
 }
 
+// Gráfico barras apiladas por sala
 function renderGrafico(){
-  const salas=getSalas();if(!salas.length)return;
+  const salas=getSalas(); if(!salas.length) return;
   const blk=MESES_BLOQUES[mesFiltro];
-  const diasAll=getDiasActuales(salas);
+  const diasAll=getDias(salas);
   const totMat=salas.reduce((a,s)=>a+s.mat,0);
+  const dayLabels=blk.diasLabels.map(d=>d.replace(/^([LMJVlmjv])\s+/,'$1'));
+
   if(chartInst){chartInst.destroy();chartInst=null;}
   const C=['#60a5fa','#34d399','#fbbf24','#f87171','#a78bfa','#fb923c','#38bdf8','#4ade80'];
+
   const datasets=salas.map((s,i)=>({
     label:`${s.nivel} S${s.s}${s._jorn==='tjmj'?' (TJ)':''}`,
-    data:diasAll[i].map(v=>typeof v==='number'?v:null),
-    backgroundColor:C[i%C.length]+'99',borderColor:C[i%C.length],
-    borderWidth:1,borderRadius:3,stack:'stack'
+    data:diasAll[i].map(v=>typeof v==='number'&&v>0?v:0),
+    backgroundColor:C[i%C.length]+'bb',borderColor:C[i%C.length],
+    borderWidth:1,borderRadius:2,stack:'salas'
   }));
-  datasets.push({label:'Matrícula',data:Array(blk.diasCols.length).fill(totMat),type:'line',borderColor:'rgba(255,255,255,.3)',borderWidth:1.5,borderDash:[5,3],pointRadius:0,fill:false,stack:undefined});
+
+  // Línea de matrícula total como referencia (sin etiqueta "meta")
+  datasets.push({
+    label:'Matrícula',
+    data:Array(blk.diasCols.length).fill(totMat),
+    type:'line',borderColor:'rgba(255,255,255,.25)',
+    borderWidth:1.5,borderDash:[4,3],pointRadius:0,fill:false,stack:undefined
+  });
+
   chartInst=new Chart(document.getElementById('aChart'),{
-    type:'bar',data:{labels:blk.diasLabels.map(d=>d.trim().replace(/^([LMJV])\s+/,'$1')),datasets},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,position:'bottom',labels:{color:'#5a677f',font:{size:10},boxWidth:10,padding:6}}},
-      scales:{x:{stacked:true,ticks:{color:'#8a97b0',font:{size:10}},grid:{color:'rgba(255,255,255,.04)'}},
-              y:{stacked:true,ticks:{color:'#8a97b0',font:{size:10}},grid:{color:'rgba(255,255,255,.06)'},min:0}}
+    type:'bar',
+    data:{labels:dayLabels,datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true,position:'bottom',
+          labels:{color:'#5a677f',font:{size:10},boxWidth:10,padding:6}}
+      },
+      scales:{
+        x:{stacked:true,ticks:{color:'#8a97b0',font:{size:10}},grid:{color:'rgba(255,255,255,.04)'}},
+        y:{stacked:true,min:0,ticks:{color:'#8a97b0',font:{size:10}},grid:{color:'rgba(255,255,255,.06)'}}
+      }
     }
   });
 }
