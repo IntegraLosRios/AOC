@@ -68,10 +68,10 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 .card{background:#161b27;border:1px solid #21283a;border-radius:12px;overflow:hidden;transition:border-color .2s}
 .card-hdr{padding:14px 15px 10px;cursor:pointer;user-select:none}
 .card-hdr:hover{background:#1a2133}
-.card-title-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px;gap:6px}
-.card-name{font-size:15px;font-weight:700;color:#ffffff;line-height:1.2}
+.card-title-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px;gap:8px}
+.card-name{font-size:15px;font-weight:700;color:#ffffff;line-height:1.2;flex:1;min-width:0}
 .card-code{font-size:11px;color:#5a677f;margin-bottom:8px}
-.badge-row{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-bottom:2px}
+.badge-row{display:flex;gap:5px;align-items:center;flex-wrap:wrap;flex-shrink:0}
 .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600}
 .badge.g{background:#0d3326;color:#34d399}
 .badge.r{background:#2d0f0f;color:#f87171}
@@ -919,8 +919,8 @@ function render() {
       <div class="card-hdr" onclick="toggleCard('${cid}')">
         <div class="card-title-row">
           <span class="card-name">${j.n}</span>
+          <div class="badge-row">${badgeJN}${badgeDesist}</div>
         </div>
-        <div class="badge-row">${badgeJN}${badgeDesist}</div>
         <div class="card-code">${j.c}</div>
         <div class="card-meta">
           <div class="cm"><div class="cm-l">Cap. JN</div><div class="cm-v">${jn.cap||'—'}</div></div>
