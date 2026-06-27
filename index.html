@@ -721,6 +721,9 @@ function procesarCSV(csv) {
 
   J.sort((a,b)=>a.n.localeCompare(b.n,'es'));
 
+  // Detectar cambios y actualizar timestamps en localStorage
+  _snaps = actualizarSnaps();
+
   // Poblar selector jardines
   const sel = document.getElementById('jSel');
   sel.innerHTML = '<option value="">— Selecciona un jardín —</option>';
@@ -833,45 +836,41 @@ function nivelesHtml(salas) {
 }
 
 // ── ÚLTIMA ACTUALIZACIÓN POR JARDÍN ─────────────────────────────────────────
-const MESES_IDX = {ENERO:0,FEBRERO:1,MARZO:2,ABRIL:3,MAYO:4,JUNIO:5,
-                   JULIO:6,AGOSTO:7,SEPTIEMBRE:8,OCTUBRE:9,NOVIEMBRE:10,DICIEMBRE:11};
+// ── SNAPSHOT: detectar cambios y registrar fecha de última modificación ──────
+// Guarda en localStorage un hash de las variables clave de cada jardín.
+// Cuando cambia alguna, actualiza la fecha. El contador muestra días desde ese momento.
 
-function ultimaEntrada(j) {
-  // Recorre todos los bloques de mes (más reciente primero) buscando
-  // el último día-columna con dato numérico en cualquier sala JN o TJMJ
-  const allSalas = j.jn.salas.concat(j.tjmj.salas);
-  const hoy = new Date();
-  const añoActual = hoy.getFullYear();
+const SNAP_KEY = 'aoc_snap_v1'; // cambiar versión para resetear todo
 
-  for (let mi = 0; mi < MESES_BLOQUES.length; mi++) {
-    const blk = MESES_BLOQUES[mi];
-    const mesIdx = MESES_IDX[blk.nombre] ?? -1;
-    if (mesIdx < 0) continue;
+function snapFingerprint(j) {
+  // Resumir variables observadas: mat, cupos, lista, desist, % asistencia de JN y TJMJ
+  const s = (b) => `${b.mat}|${b.cupos}|${b.lista}|${b.desist}|${b.asist}`;
+  return `${s(j.jn)}::${s(j.tjmj)}`;
+}
 
-    // Recorrer días de derecha a izquierda
-    for (let di = blk.diasLabels.length - 1; di >= 0; di--) {
-      const label = blk.diasLabels[di] || '';
-      const dayNum = parseInt((label.match(/\d+/) || [])[0]);
-      if (!dayNum) continue;
-
-      // Verificar si alguna sala tiene dato numérico en este día
-      const tienesDato = allSalas.some(s => {
-        const d = s.diasPorMes[mi];
-        return d && typeof d[di] === 'number' && d[di] > 0;
-      });
-
-      if (tienesDato) {
-        // Construir fecha — si el mes es > mes actual asumimos año anterior
-        let año = añoActual;
-        if (mesIdx > hoy.getMonth()) año = añoActual - 1;
-        const fecha = new Date(año, mesIdx, dayNum);
-        const diffMs = hoy - fecha;
-        const dias = Math.floor(diffMs / 86400000);
-        return dias;
-      }
+function actualizarSnaps() {
+  let snaps = {};
+  try { snaps = JSON.parse(localStorage.getItem(SNAP_KEY) || '{}'); } catch(e) {}
+  const ahora = Date.now();
+  J.forEach(j => {
+    const fp = snapFingerprint(j);
+    const prev = snaps[j.n];
+    if (!prev || prev.fp !== fp) {
+      // Cambio detectado (o primera vez) → registrar fecha
+      snaps[j.n] = { fp, ts: ahora };
     }
-  }
-  return null; // sin datos
+  });
+  try { localStorage.setItem(SNAP_KEY, JSON.stringify(snaps)); } catch(e) {}
+  return snaps;
+}
+
+let _snaps = {};
+
+function diasSinCambio(j) {
+  const snap = _snaps[j.n];
+  if (!snap) return null;
+  const dias = Math.floor((Date.now() - snap.ts) / 86400000);
+  return dias;
 }
 
 function staleBadgeHtml(dias) {
@@ -879,8 +878,8 @@ function staleBadgeHtml(dias) {
   if (dias === 0)    return '<span class="stale-badge ok">Hoy</span>';
   if (dias === 1)    return '<span class="stale-badge ok">Ayer</span>';
   if (dias <= 4)     return `<span class="stale-badge ok">Hace ${dias}d</span>`;
-  if (dias <= 9)     return `<span class="stale-badge warn">⚠ ${dias}d sin datos</span>`;
-  return             `<span class="stale-badge alert">🔴 ${dias}d sin datos</span>`;
+  if (dias <= 9)     return `<span class="stale-badge warn">⚠ ${dias}d sin cambios</span>`;
+  return             `<span class="stale-badge alert">🔴 ${dias}d sin cambios</span>`;
 }
 
 // ── RENDER PRINCIPAL ──────────────────────────────────────────────────────────
@@ -980,7 +979,7 @@ function render() {
         </div>
         <div class="card-meta-row">
           <span class="card-code" style="margin-bottom:0">${j.c}</span>
-          ${staleBadgeHtml(ultimaEntrada(j))}
+          ${staleBadgeHtml(diasSinCambio(j))}
         </div>
         <div class="card-meta">
           <div class="cm"><div class="cm-l">Cap. JN</div><div class="cm-v">${jn.cap||'—'}</div></div>
