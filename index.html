@@ -582,7 +582,8 @@ function procesarCSV(csv) {
   mesActivo = conteoMat[0] >= maxSuma * 0.5 ? 0 : conteoMat.indexOf(maxSuma);
   mesFiltro = mesActivo;
 
-  renderMesStrip();
+  // mesTabs se renderiza cuando se abre la tab de asistencia
+  // NO llamar aquí porque el elemento puede no existir aún
 
   // Parser jardines
   const jardines = {};
@@ -727,7 +728,14 @@ function procesarCSV(csv) {
   if(!ts){ts=document.createElement('div');ts.id='ts';ts.style.cssText='position:fixed;bottom:10px;right:10px;background:#161b27;border:1px solid #21283a;padding:6px 10px;border-radius:6px;font-size:11px;color:#5a677f;z-index:9999';document.body.appendChild(ts);}
   ts.textContent='Última actualización: '+new Date().toLocaleString('es-CL');
 
-  render();
+  try {
+    render();
+  } catch(err) {
+    console.error('render() error:', err);
+    const em = document.getElementById('errMsg');
+    if(em){ em.textContent = 'Error renderizando: '+err.message; em.style.display='block'; }
+    document.getElementById('grid').innerHTML = '<div class="nodata">Error al mostrar datos: '+err.message+'</div>';
+  }
 }
 
 // ── MES STRIP ─────────────────────────────────────────────────────────────────
