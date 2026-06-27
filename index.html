@@ -312,7 +312,6 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
       <div class="evol-section">
         <div class="evol-title-row">
           <span class="evol-title-text">📅 Evolución mensual</span>
-          <div class="mes-tabs" id="mesTabs"><!-- populated by JS --></div>
         </div>
         <div class="evol-grid" id="evolGrid"></div>
         <div class="evol-chart-box"><canvas id="evolChart"></canvas></div>
@@ -482,12 +481,20 @@ function detectarBloques(row1, hdr) {
   const bloques = [];
   const normH = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
 
-  row1.forEach((v, matCol) => {
-    if (!MESES_NOMBRES.includes(v.trim().toUpperCase())) return;
-    const nombre   = v.trim().toUpperCase();
-    const asistCol = matCol + 5;
-    const desistCol= matCol + 6;
-    const diasStart= matCol + 7;
+  row1.forEach((v, approxCol) => {
+    if (!MESES_NOMBRES.includes((v||'').trim().toUpperCase())) return;
+    const nombre = v.trim().toUpperCase();
+
+    // El nombre del mes en row1 puede estar en MNA en vez de Matrícula.
+    // Buscar la columna Matricula más cercana ANTES o EN approxCol dentro de ±3 cols.
+    let matCol = approxCol;
+    for (let c = approxCol - 2; c <= approxCol + 1; c++) {
+      if (c >= 0 && normH(hdr[c]) === 'matricula') { matCol = c; break; }
+    }
+
+    const asistCol  = matCol + 5;
+    const desistCol = matCol + 6;
+    const diasStart = matCol + 7;
 
     // Siguiente bloque Matricula = límite superior
     let nextMat = hdr.length;
