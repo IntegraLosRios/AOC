@@ -541,31 +541,50 @@ function procesarCSV(csv) {
   }
   if (headerIdx===-1) headerIdx=0;
 
-  const hdr = filas[headerIdx];
-  const row1 = filas[0]; // mes names row
+  const hdr  = filas[headerIdx];
+  const row1 = filas[0];
 
-  // Detectar bloques de mes y mes activo (con más datos reales)
-  MESES_BLOQUES = detectarBloques(row1, hdr);
-  mesActualIdx = 0; // por defecto el primer bloque (col menor = más reciente en sheet)
+  // filasDatos declarado ANTES de usarse
+  const filasDatos = filas.slice(headerIdx + 1);
 
-  // Determinar el mes ACTIVO: aquel con mayor suma de matrículas en los datos
-  // Esto resuelve el caso donde el mes nuevo (ej. Julio) está vacío/parcial
-  const conteoMat = MESES_BLOQUES.map(blk => {
-    let suma = 0, count = 0;
-    for (let fi = 0; fi < filasDatos.length && fi < 200; fi++) {
-      const v = parseInt(filasDatos[fi][blk.mat]);
-      if (!isNaN(v) && v > 0) { suma += v; count++; }
+  // ── Columnas FIJAS (A→AC, nunca cambian) ─────────────────────────────────
+  // Col 21=Cap Sala, 22=Matricula, 23=MNA, 24=Lista espera,
+  // 25=Cupos disponibles, 26=%Uso, 27=%Asistencia, 28=D(desist)
+  // Col 29+ = días hábiles del mes actual hasta que aparece 'Matricula' del bloque siguiente
+  const COL_CAP=21, COL_MAT=22, COL_LISTA=24, COL_CUPOS=25, COL_ASIST=27, COL_DESIST=28;
+  const normH2 = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+
+  // Detectar días del mes actual dinámicamente
+  const diasActualesCols = [];
+  const diasActualesLabels = [];
+  for (let ci = 29; ci < hdr.length; ci++) {
+    const h = normH2(hdr[ci]);
+    if (h === 'matricula' || h === 'cap sala') break; // inicio del bloque siguiente
+    if (/^[lmjv]\s*\d/.test(h)) {
+      diasActualesCols.push(ci);
+      diasActualesLabels.push(hdr[ci].trim());
     }
-    return {suma, count};
+  }
+
+  // Detectar bloques históricos para asistencia multi-mes
+  MESES_BLOQUES = detectarBloques(row1, hdr);
+
+  // Mes ACTIVO = bloque con más matrículas (por si el mes nuevo está vacío)
+  const conteoMat = MESES_BLOQUES.map(blk => {
+    let suma = 0;
+    for (let fi = 0; fi < Math.min(filasDatos.length, 300); fi++) {
+      const v = parseInt(filasDatos[fi][blk.mat]);
+      if (!isNaN(v) && v > 0) suma += v;
+    }
+    return suma;
   });
-  // El mes activo es el de mayor suma; si el primer bloque tiene datos, úsalo
-  const maxSuma = Math.max(...conteoMat.map(c=>c.suma));
-  mesActivo = conteoMat[0].suma >= maxSuma * 0.5 ? 0 : conteoMat.findIndex(c=>c.suma===maxSuma);
-  mesFiltro = mesActivo; // asistencia empieza mostrando el mes activo
+  const maxSuma = Math.max(...conteoMat, 1);
+  mesActivo = conteoMat[0] >= maxSuma * 0.5 ? 0 : conteoMat.indexOf(maxSuma);
+  mesFiltro = mesActivo;
 
   renderMesStrip();
 
-  // Parser de jardines
+  // Parser jardines
   const jardines = {};
   let jardActivo='', jornActiva='NORMAL';
   let jsrCap=0, jsrMat=0, jsrLista=0, jsrCupos=0;
@@ -573,9 +592,6 @@ function procesarCSV(csv) {
   let stopParsing = false;
   let tDesist = 0;
 
-  const ALIAS_NORMS = Object.keys(ALIAS);
-
-  const filasDatos = filas.slice(headerIdx+1);
   for (let fi=0; fi<filasDatos.length; fi++) {
     const fila = filasDatos[fi];
     if (fila.length < 12) continue;
@@ -620,30 +636,34 @@ function procesarCSV(csv) {
     if (!jardActivo) continue;
     if (!nivel||nivelU.includes('TOTAL')||nivelU.includes('PROMEDIO')||nivelU==='NIVEL') continue;
 
-    // Usar el bloque del mes ACTIVO para cap/mat del resumen
-    const blk0 = MESES_BLOQUES[mesActivo];
-
-    const capacidad = parseInt(fila[21])||0; // Cap Sala siempre col 21
-    const matricula = parseInt(fila[blk0.mat])||0;
+    // Columnas FIJAS del mes actual (A→AC, siempre en la misma posición)
+    const capacidad = parseInt(fila[COL_CAP])||0;
+    const matricula = parseInt(fila[COL_MAT])||0;
     if (capacidad===0&&matricula===0) continue;
 
-    const nSala = parseInt(fila[13])||1;
-    const lista = parseInt(fila[blk0.lista])||0;
-    const cupos = parseInt((fila[blk0.cupos]||'').replace(',','.'))||0;
-    const asistRaw = (fila[blk0.asist]||'').replace('%','').replace(',','.');
-    const asistencia = parseFloat(asistRaw)||0;
-    const desist = jornActiva==='NORMAL'?(parseInt(fila[blk0.desist])||0):0;
+    const nSala      = parseInt(fila[13])||1;
+    const lista      = parseInt(fila[COL_LISTA])||0;
+    const cupos      = parseInt((fila[COL_CUPOS]||'').replace(',','.'))||0;
+    const asistencia = parseFloat((fila[COL_ASIST]||'').replace('%','').replace(',','.'))||0;
+    const desist     = jornActiva==='NORMAL'?(parseInt(fila[COL_DESIST])||0):0;
 
-    // Dias para TODOS los meses
-    const diasPorMes = MESES_BLOQUES.map(blk => {
-      const dias = [];
-      for (const dc of blk.diasCols) {
+    // Días del mes actual (cols detectadas dinámicamente desde col 29)
+    const diasActuales = diasActualesCols.length > 0
+      ? diasActualesCols.map(dc => {
+          const raw = (fila[dc]||'').trim();
+          const n = parseInt(raw);
+          return isNaN(n) ? (raw||'') : n;
+        })
+      : Array(15).fill(0);
+
+    // Días de meses históricos (para asistencia multi-mes)
+    const diasPorMes = MESES_BLOQUES.map((blk, mi) => {
+      if (mi === mesActivo) return diasActuales; // reusar ya calculado
+      return blk.diasCols.map(dc => {
         const raw = (fila[dc]||'').trim();
-        // Puede ser número o causal (texto)
         const n = parseInt(raw);
-        dias.push(isNaN(n) ? (raw||'') : n);
-      }
-      return dias;
+        return isNaN(n) ? (raw||'') : n;
+      });
     });
 
     const codigo = (fila[9]||fila[8]||'').replace(/\D/g,'').substring(0,6);
@@ -672,10 +692,12 @@ function procesarCSV(csv) {
       // Calcular asistencia desde col % directamente
       const salasConA = b.salas.filter(s=>s.asist>0);
       b.asist = salasConA.length ? parseFloat((salasConA.reduce((a,s)=>a+(s.asist*s.mat),0)/salasConA.reduce((a,s)=>a+s.mat,0)).toFixed(1)) : 0;
-      // sumDias para KPI global — usa el mes activo
-      const salasConDias = b.salas.filter(s=>s.diasPorMes[mesActivo]&&s.diasPorMes[mesActivo].some(v=>typeof v==='number'&&v>0));
-      b.sumDias = salasConDias.reduce((a,s)=>a+s.diasPorMes[mesActivo].reduce((x,v)=>x+(typeof v==='number'&&v>0?v:0),0),0);
-      b.denom   = salasConDias.reduce((a,s)=>a+s.mat*MESES_BLOQUES[mesActivo].diasCols.length,0);
+      // sumDias para KPI global — dias del mes activo
+      const miActivo = mesActivo; // índice dentro de diasPorMes
+      const salasConDias = b.salas.filter(s => s.diasPorMes[miActivo] && s.diasPorMes[miActivo].some(v=>typeof v==='number'&&v>0));
+      const nDias = (MESES_BLOQUES[miActivo]?.diasCols.length) || diasActualesCols.length || 15;
+      b.sumDias = salasConDias.reduce((a,s)=>a+s.diasPorMes[miActivo].reduce((x,v)=>x+(typeof v==='number'&&v>0?v:0),0),0);
+      b.denom   = salasConDias.reduce((a,s)=>a+s.mat*nDias,0);
       b.ocup = b.cap?Math.round((b.mat/b.cap)*100)+'%':'0%';
     });
   });
