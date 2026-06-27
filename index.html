@@ -170,7 +170,13 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 
 /* ── EVOLUCIÓN MENSUAL ── */
 .evol-section{background:#161b27;border:1px solid #21283a;border-radius:12px;padding:16px;margin-bottom:14px}
-.evol-title{font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.evol-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.evol-title-text{font-size:13px;font-weight:700;color:#e2e8f0}
+.mes-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.mes-tab-btn{padding:4px 14px;font-size:12px;font-weight:600;border-radius:20px;border:1px solid #21283a;background:#0d1117;color:#5a677f;cursor:pointer;transition:all .15s;white-space:nowrap}
+.mes-tab-btn.on{background:#0d1f3c;color:#60a5fa;border-color:#1d4ed8}
+.mes-tab-btn.activo::after{content:' ●';font-size:8px;color:#34d399;vertical-align:super}
+.mes-tab-btn:hover:not(.on){color:#e2e8f0;border-color:#3d4f6a}
 .evol-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px}
 .evol-mes-card{background:#0d1117;border:1px solid #21283a;border-radius:8px;padding:12px;text-align:center}
 .evol-mes-name{font-size:11px;font-weight:700;color:#8a97b0;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
@@ -230,11 +236,7 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
   </div>
 </div>
 
-<!-- MES STRIP — solo visible en Asistencia -->
-<div class="mes-strip" id="mesStrip" style="display:none">
-  <span class="mes-label">Ver mes:</span>
-  <!-- populated by JS -->
-</div>
+<!-- MES STRIP eliminado — los meses se seleccionan dentro de la sección Evolución mensual -->
 
 <!-- TABS -->
 <div class="tabs">
@@ -306,14 +308,27 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
       <!-- KPIs jardín -->
       <div class="a-kpis" id="aKpis"></div>
 
-      <!-- Evolución mensual -->
+      <!-- Evolución mensual con selector de mes integrado -->
       <div class="evol-section">
-        <div class="evol-title">📅 Evolución mensual</div>
+        <div class="evol-title-row">
+          <span class="evol-title-text">📅 Evolución mensual</span>
+          <div class="mes-tabs" id="mesTabs"><!-- populated by JS --></div>
+        </div>
         <div class="evol-grid" id="evolGrid"></div>
         <div class="evol-chart-box"><canvas id="evolChart"></canvas></div>
       </div>
 
-      <!-- Causales -->
+      <!-- Vistas del mes seleccionado -->
+      <div class="view-toggle">
+        <button class="vbtn on" onclick="setView('detalle',this)">📋 Detalle por nivel/día</button>
+        <button class="vbtn" onclick="setView('semana',this)">📅 Por semana</button>
+        <button class="vbtn" onclick="setView('grafico',this)">📊 Gráfico</button>
+      </div>
+      <div id="v-detalle"><div class="det-wrap"><table class="det-table" id="detTable"></table></div></div>
+      <div id="v-semana" style="display:none"><div class="sem-grid" id="semGrid"></div></div>
+      <div id="v-grafico" style="display:none"><div class="chart-box"><canvas id="aChart"></canvas></div></div>
+
+      <!-- Causales al final -->
       <div class="causales-legend">
         <div class="causales-title">Causales días sin actividad</div>
         <div class="causales-grid">
@@ -331,16 +346,6 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
           <div class="causal-item"><span class="causal-code">DIA</span><span class="causal-desc">Cuidado de Equipo</span></div>
         </div>
       </div>
-
-      <!-- Vistas -->
-      <div class="view-toggle">
-        <button class="vbtn on" onclick="setView('detalle',this)">📋 Detalle por nivel/día</button>
-        <button class="vbtn" onclick="setView('semana',this)">📅 Por semana</button>
-        <button class="vbtn" onclick="setView('grafico',this)">📊 Gráfico</button>
-      </div>
-      <div id="v-detalle"><div class="det-wrap"><table class="det-table" id="detTable"></table></div></div>
-      <div id="v-semana" style="display:none"><div class="sem-grid" id="semGrid"></div></div>
-      <div id="v-grafico" style="display:none"><div class="chart-box"><canvas id="aChart"></canvas></div></div>
     </div>
     <div class="nodata" id="aEmpty">Selecciona un jardín para ver su asistencia</div>
   </div>
@@ -731,26 +736,45 @@ function procesarCSV(csv) {
 }
 
 // ── MES STRIP ─────────────────────────────────────────────────────────────────
-function renderMesStrip() {
-  const strip = document.getElementById('mesStrip');
-  strip.innerHTML = '<span class="mes-label">Ver mes:</span>';
-  MESES_BLOQUES.forEach((b,i) => {
+function renderMesTabs() {
+  const container = document.getElementById('mesTabs');
+  if (!container) return;
+  container.innerHTML = '';
+  MESES_BLOQUES.forEach((b, i) => {
     const btn = document.createElement('button');
-    const esActivo = i === mesActivo;
-    btn.className = 'mes-btn' + (esActivo?' actual':'') + (i===mesFiltro?' on':'');
-    const nomMes = b.nombre.charAt(0)+b.nombre.slice(1).toLowerCase();
-    btn.textContent = nomMes;
+    const esActivo = (i === mesActivo);
+    btn.className = 'mes-tab-btn' + (esActivo ? ' activo' : '') + (i === mesFiltro ? ' on' : '');
+    btn.textContent = b.nombre.charAt(0) + b.nombre.slice(1).toLowerCase();
     if (esActivo) btn.title = 'Mes con datos activos';
     btn.onclick = () => {
       mesFiltro = i;
-      document.querySelectorAll('.mes-btn').forEach((b,bi)=>b.classList.toggle('on',bi===i));
-      renderAsist();
+      document.querySelectorAll('.mes-tab-btn').forEach((b2, bi) => b2.classList.toggle('on', bi === i));
+      renderKpis();
+      renderEvolucion();
+      renderVista();
     };
-    strip.appendChild(btn);
+    container.appendChild(btn);
   });
 }
 
+function renderMesStrip() { renderMesTabs(); }
+
+}
+
 // ── UI HELPERS ────────────────────────────────────────────────────────────────
+function selectMes(i) {
+  mesFiltro = i;
+  // Actualizar pestañas en evolución
+  document.querySelectorAll('.mes-tab-btn').forEach((b, bi) => b.classList.toggle('on', bi === i));
+  // Re-render evolución (para marcar la card seleccionada) y vistas
+  renderEvolucion();
+  renderKpis();
+  renderVista();
+  // Scroll suave al detalle
+  const det = document.getElementById('v-detalle');
+  if (det && det.style.display !== 'none') det.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
 function sw(id,el) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
@@ -758,8 +782,8 @@ function sw(id,el) {
   document.getElementById('tab-'+id).classList.add('on');
   const cs = document.getElementById('comunaStrip');
   if(cs) cs.style.display = id==='resumen'?'':'none';
-  const ms = document.getElementById('mesStrip');
-  if(ms) ms.style.display = id==='asistencia'?'':'none';
+  // Cuando se abre asistencia, renderizar las pestañas de mes
+  if (id==='asistencia') renderMesTabs();
 }
 function setF(f,btn){fil=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');render();}
 function setComuna(c){comunaFil=c;document.querySelectorAll('.cbtn').forEach(b=>b.classList.toggle('on',b.dataset.c===(c||'')));render();}
@@ -1009,36 +1033,49 @@ function renderEvolucion(){
   const j=J[parseInt(idx)];if(!j)return;
   const jorn=document.getElementById('jornSel').value;
 
-  // Para cada mes, calcular asistencia promedio del jardín
-  const evolData = MESES_BLOQUES.map((blk,mi)=>{
-    let salas=[];
+  const evolData = MESES_BLOQUES.map((blk, mi) => {
+    let salas = [];
     if(jorn==='ambas'||jorn==='jn')   salas=salas.concat(j.jn.salas.map(s=>({...s,_jorn:'jn'})));
     if(jorn==='ambas'||jorn==='tjmj') salas=salas.concat(j.tjmj.salas.map(s=>({...s,_jorn:'tjmj'})));
-    const diasMes = salas.map(s=>s.diasPorMes[mi]||[]);
-    const totMat = salas.reduce((a,s)=>a+s.mat,0);
-    const sumA = diasMes.reduce((a,d)=>a+d.reduce((b,v)=>b+(typeof v==='number'&&v>0?v:0),0),0);
-    const dias_con_dato = blk.diasCols.length;
-    const denom = totMat * dias_con_dato;
-    const pct = denom>0?parseFloat((sumA/denom*100).toFixed(1)):0;
-    // Contar causales
+
+    const diasMes = salas.map(s => s.diasPorMes[mi] || []);
+    const nDias   = blk.diasCols.length || 1;
+
+    // Suma de asistencia numérica del mes
+    const sumA = diasMes.reduce((a,d) => a + d.reduce((b,v) => b + (typeof v==='number'&&v>0 ? v : 0), 0), 0);
+
+    // Denominador = matrícula * días hábiles del mes
+    // Usar la matrícula del mes activo (col fija 22) ya que es la que tenemos en el parser
+    const totMat = salas.reduce((a,s) => a + s.mat, 0);
+    const denom  = totMat * nDias;
+
+    // % desde col % Asistencia si sumA=0 (cuando los días no están en diasPorMes)
+    let pct = denom > 0 ? parseFloat((sumA / denom * 100).toFixed(1)) : 0;
+    if (pct === 0 && sumA === 0) {
+      // Intentar usar % asistencia almacenado por sala
+      const conA = salas.filter(s => s.asist > 0);
+      if (conA.length) pct = parseFloat((conA.reduce((a,s)=>a+s.asist*s.mat,0)/conA.reduce((a,s)=>a+s.mat,0)).toFixed(1));
+    }
+
     const causales = {};
-    diasMes.forEach(d=>d.forEach(v=>{
-      if (typeof v==='string'&&v&&CAUSALES_KEYS.includes(v.toUpperCase())) {
-        const c=v.toUpperCase();causales[c]=(causales[c]||0)+1;
+    diasMes.forEach(d => d.forEach(v => {
+      if (typeof v==='string' && v && CAUSALES_KEYS.includes(v.toUpperCase())) {
+        const c = v.toUpperCase(); causales[c] = (causales[c]||0) + 1;
       }
     }));
-    return {mes:blk.nombre, pct, sumA, denom, causales, esActual:mi===0};
+
+    return {mes: blk.nombre, pct, sumA, denom, causales, esActual: mi === mesActivo};
   });
 
-  // Cards de evolución
-  const COLORES_EVOL=['#60a5fa','#34d399','#fbbf24','#a78bfa'];
+  // Cards de evolución — clicables para seleccionar mes
   document.getElementById('evolGrid').innerHTML = evolData.map((e,i)=>{
-    const clr=e.pct>=75?'#34d399':e.pct>=55?'#fbbf24':'#f87171';
-    const causStr=Object.entries(e.causales).map(([k,n])=>`<span style="font-size:10px;color:#a78bfa">${k}:${n}</span>`).join(' ');
-    return `<div class="evol-mes-card">
+    const clr = e.pct>=75?'#34d399':e.pct>=55?'#fbbf24':'#f87171';
+    const isSelected = (i === mesFiltro);
+    const causStr = Object.entries(e.causales).map(([k,n])=>`<span style="font-size:10px;color:#a78bfa">${k}:${n}</span>`).join(' ');
+    return `<div class="evol-mes-card${isSelected?' selected':''}" onclick="selectMes(${i})" style="cursor:pointer;${isSelected?'border-color:#1d4ed8;box-shadow:0 0 0 1px #1d4ed8;':''}">
       <div class="evol-mes-name ${e.esActual?'actual':''}">${e.mes.charAt(0)+e.mes.slice(1).toLowerCase()}${e.esActual?' ●':''}</div>
       <div class="evol-asist" style="color:${clr}">${e.pct>0?e.pct.toFixed(1)+'%':'—'}</div>
-      <div class="evol-meta">${e.sumA} niños/día</div>
+      <div class="evol-meta">${e.sumA>0?e.sumA+' niños/día':'Sin datos'}</div>
       ${causStr?`<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center">${causStr}</div>`:''}
       <div class="evol-bar"><div class="evol-bar-f" style="width:${Math.min(e.pct,100)}%;background:${clr}"></div></div>
     </div>`;
