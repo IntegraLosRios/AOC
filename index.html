@@ -237,6 +237,7 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
     <span class="hchip b" id="hcJ">● — jardines</span>
     <span class="hchip b" id="hcC">● Cap. JN —</span>
     <span class="hchip g" id="hcQ">● Cupos JN —</span>
+    <span class="hchip v" id="hcU">● %Uso —</span>
     <span class="hchip a" id="hcA">● Asist. —</span>
     <span class="hchip r" id="hcD">● Desist. —</span>
   </div>
@@ -930,6 +931,8 @@ function render() {
   document.getElementById('hcJ').textContent = '● '+data.length+' jardines';
   document.getElementById('hcC').textContent = '● Cap. JN '+fmt(tCap)+' ('+mesNom+')';
   document.getElementById('hcQ').textContent = '● Cupos JN '+fmt(tCupos);
+  const pUso = tCap>0 ? (tMat/tCap*100).toFixed(1)+'%' : '—';
+  document.getElementById('hcU').textContent = '● %Uso '+pUso;
   document.getElementById('hcA').textContent = '● Asist. '+(avgAFinal?avgAFinal.toFixed(1)+'%':'—');
   document.getElementById('hcD').textContent = '● Desist. '+(tDesistJard||'—');
 
