@@ -218,7 +218,7 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
     <div class="logo">AOC</div>
     <div>
       <h1>Dashboard Jardines AOC</h1>
-      <p>45 Jardines AOC · Datos actualizados desde Google Sheets</p>
+      <p id="hdrSubtitle">45 Jardines AOC · Datos actualizados desde Google Sheets</p>
     </div>
   </div>
   <div class="hchips">
@@ -230,9 +230,9 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
   </div>
 </div>
 
-<!-- MES STRIP -->
-<div class="mes-strip" id="mesStrip">
-  <span class="mes-label">Mes:</span>
+<!-- MES STRIP — solo visible en Asistencia -->
+<div class="mes-strip" id="mesStrip" style="display:none">
+  <span class="mes-label">Ver mes:</span>
   <!-- populated by JS -->
 </div>
 
@@ -403,9 +403,10 @@ const CAUSALES_KEYS = ['C','CA','P','CE','BM','REC','PR','M','DI','T','F','DIA',
 
 // Estado global
 let J = [];
-let MESES_BLOQUES = []; // [{nombre, mat, mna, lista, cupos, asist, desist, diasStart, diasEnd, diasCols, diasLabels}]
-let mesActualIdx = 0;   // índice en MESES_BLOQUES del mes más reciente
-let mesFiltro = 0;      // índice del mes seleccionado para mostrar
+let MESES_BLOQUES = [];
+let mesActualIdx = 0;   // índice del bloque en col menor (más reciente en sheet)
+let mesActivo = 0;      // índice del mes con datos reales (puede diferir si mes nuevo está vacío)
+let mesFiltro = 0;      // mes seleccionado en asistencia tab
 let fil = 'todos';
 let comunaFil = '';
 let vistaActual = 'detalle';
@@ -543,12 +544,25 @@ function procesarCSV(csv) {
   const hdr = filas[headerIdx];
   const row1 = filas[0]; // mes names row
 
-  // Detectar bloques de mes
+  // Detectar bloques de mes y mes activo (con más datos reales)
   MESES_BLOQUES = detectarBloques(row1, hdr);
-  mesActualIdx = 0; // índice 0 = mes más reciente (menor col)
-  mesFiltro = 0;
+  mesActualIdx = 0; // por defecto el primer bloque (col menor = más reciente en sheet)
 
-  // Render selector de meses
+  // Determinar el mes ACTIVO: aquel con mayor suma de matrículas en los datos
+  // Esto resuelve el caso donde el mes nuevo (ej. Julio) está vacío/parcial
+  const conteoMat = MESES_BLOQUES.map(blk => {
+    let suma = 0, count = 0;
+    for (let fi = 0; fi < filasDatos.length && fi < 200; fi++) {
+      const v = parseInt(filasDatos[fi][blk.mat]);
+      if (!isNaN(v) && v > 0) { suma += v; count++; }
+    }
+    return {suma, count};
+  });
+  // El mes activo es el de mayor suma; si el primer bloque tiene datos, úsalo
+  const maxSuma = Math.max(...conteoMat.map(c=>c.suma));
+  mesActivo = conteoMat[0].suma >= maxSuma * 0.5 ? 0 : conteoMat.findIndex(c=>c.suma===maxSuma);
+  mesFiltro = mesActivo; // asistencia empieza mostrando el mes activo
+
   renderMesStrip();
 
   // Parser de jardines
@@ -606,10 +620,10 @@ function procesarCSV(csv) {
     if (!jardActivo) continue;
     if (!nivel||nivelU.includes('TOTAL')||nivelU.includes('PROMEDIO')||nivelU==='NIVEL') continue;
 
-    // Usar bloque del mes actual (mesFiltro) para cap/mat
-    const blk0 = MESES_BLOQUES[0]; // bloque más reciente siempre en posición 0 (menor col)
+    // Usar el bloque del mes ACTIVO para cap/mat del resumen
+    const blk0 = MESES_BLOQUES[mesActivo];
 
-    const capacidad = parseInt(fila[21])||0; // Cap Sala siempre en col 21
+    const capacidad = parseInt(fila[21])||0; // Cap Sala siempre col 21
     const matricula = parseInt(fila[blk0.mat])||0;
     if (capacidad===0&&matricula===0) continue;
 
@@ -658,10 +672,10 @@ function procesarCSV(csv) {
       // Calcular asistencia desde col % directamente
       const salasConA = b.salas.filter(s=>s.asist>0);
       b.asist = salasConA.length ? parseFloat((salasConA.reduce((a,s)=>a+(s.asist*s.mat),0)/salasConA.reduce((a,s)=>a+s.mat,0)).toFixed(1)) : 0;
-      // sumDias para cálculo global (mes actual = índice 0 en diasPorMes)
-      const salasConDias = b.salas.filter(s=>s.diasPorMes[0].some(v=>typeof v==='number'&&v>0));
-      b.sumDias = salasConDias.reduce((a,s)=>a+s.diasPorMes[0].reduce((x,v)=>x+(typeof v==='number'&&v>0?v:0),0),0);
-      b.denom   = salasConDias.reduce((a,s)=>a+s.mat*MESES_BLOQUES[0].diasCols.length,0);
+      // sumDias para KPI global — usa el mes activo
+      const salasConDias = b.salas.filter(s=>s.diasPorMes[mesActivo]&&s.diasPorMes[mesActivo].some(v=>typeof v==='number'&&v>0));
+      b.sumDias = salasConDias.reduce((a,s)=>a+s.diasPorMes[mesActivo].reduce((x,v)=>x+(typeof v==='number'&&v>0?v:0),0),0);
+      b.denom   = salasConDias.reduce((a,s)=>a+s.mat*MESES_BLOQUES[mesActivo].diasCols.length,0);
       b.ocup = b.cap?Math.round((b.mat/b.cap)*100)+'%':'0%';
     });
   });
@@ -675,6 +689,11 @@ function procesarCSV(csv) {
   const sel = document.getElementById('jSel');
   sel.innerHTML = '<option value="">— Selecciona un jardín —</option>';
   J.forEach((j,i)=>{const o=document.createElement('option');o.value=i;o.textContent=j.n;sel.appendChild(o);});
+
+  // Actualizar subtítulo con mes activo
+  const mesNomActivo = MESES_BLOQUES[mesActivo].nombre.charAt(0)+MESES_BLOQUES[mesActivo].nombre.slice(1).toLowerCase();
+  const sub = document.getElementById('hdrSubtitle');
+  if (sub) sub.textContent = `45 Jardines AOC · Datos actualizados desde Google Sheets · ${mesNomActivo} ${new Date().getFullYear()}`;
 
   // Debug bar
   const db = document.getElementById('debugBar');
@@ -692,13 +711,19 @@ function procesarCSV(csv) {
 // ── MES STRIP ─────────────────────────────────────────────────────────────────
 function renderMesStrip() {
   const strip = document.getElementById('mesStrip');
-  strip.innerHTML = '<span class="mes-label">Mes:</span>';
+  strip.innerHTML = '<span class="mes-label">Ver mes:</span>';
   MESES_BLOQUES.forEach((b,i) => {
     const btn = document.createElement('button');
-    btn.className = 'mes-btn' + (i===0?' actual':'') + (i===mesFiltro?' on':'');
-    btn.textContent = b.nombre.charAt(0)+b.nombre.slice(1).toLowerCase();
-    if (i===0) btn.title = 'Mes actual';
-    btn.onclick = () => { mesFiltro=i; document.querySelectorAll('.mes-btn').forEach((b,bi)=>b.classList.toggle('on',bi===i)); render(); renderAsist(); };
+    const esActivo = i === mesActivo;
+    btn.className = 'mes-btn' + (esActivo?' actual':'') + (i===mesFiltro?' on':'');
+    const nomMes = b.nombre.charAt(0)+b.nombre.slice(1).toLowerCase();
+    btn.textContent = nomMes;
+    if (esActivo) btn.title = 'Mes con datos activos';
+    btn.onclick = () => {
+      mesFiltro = i;
+      document.querySelectorAll('.mes-btn').forEach((b,bi)=>b.classList.toggle('on',bi===i));
+      renderAsist();
+    };
     strip.appendChild(btn);
   });
 }
@@ -711,6 +736,8 @@ function sw(id,el) {
   document.getElementById('tab-'+id).classList.add('on');
   const cs = document.getElementById('comunaStrip');
   if(cs) cs.style.display = id==='resumen'?'':'none';
+  const ms = document.getElementById('mesStrip');
+  if(ms) ms.style.display = id==='asistencia'?'':'none';
 }
 function setF(f,btn){fil=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');render();}
 function setComuna(c){comunaFil=c;document.querySelectorAll('.cbtn').forEach(b=>b.classList.toggle('on',b.dataset.c===(c||'')));render();}
@@ -747,7 +774,8 @@ function nivelesHtml(salas) {
 // ── RENDER PRINCIPAL ──────────────────────────────────────────────────────────
 function render() {
   if (!J.length||!MESES_BLOQUES.length) return;
-  const blk = MESES_BLOQUES[mesFiltro];
+  // Resumen SIEMPRE muestra el mes activo (con datos reales)
+  const blk = MESES_BLOQUES[mesActivo];
   const mesNom = blk.nombre.charAt(0)+blk.nombre.slice(1).toLowerCase();
   const q = (document.getElementById('buscar').value||'').toLowerCase();
 
@@ -795,7 +823,7 @@ function render() {
   document.getElementById('hcD').textContent = '● Desist. '+(tDesistJard||'—');
 
   document.getElementById('statRow').textContent =
-    'Mostrando '+data.length+' jardines — '+data.filter(j=>j.jn.cupos>0).length+' con cupos JN · Mes: '+mesNom;
+    `Mostrando ${data.length} jardines — ${data.filter(j=>j.jn.cupos>0).length} con cupos JN · ${mesNom} ${new Date().getFullYear()}`;
 
   // JSR block
   const jsrWrap = document.getElementById('jsrBlock');
@@ -901,6 +929,8 @@ function renderAsist(){
     document.getElementById('aEmpty').style.display='block';
     return;
   }
+  // Asegurar que mesFiltro esté inicializado al mes activo
+  if (mesFiltro === undefined || mesFiltro === null) mesFiltro = mesActivo;
   document.getElementById('aContent').style.display='block';
   document.getElementById('aEmpty').style.display='none';
   renderKpis();
