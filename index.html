@@ -94,15 +94,11 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 .asist-bar-f.g{background:#10b981}.asist-bar-f.a{background:#f59e0b}.asist-bar-f.r{background:#ef4444}
 .asist-label{font-size:11px;color:#8a97b0;text-align:right;margin-bottom:2px}
 .card-toggle{font-size:11px;color:#5a677f;text-align:center;padding:3px 0;cursor:pointer}
-.card-body{max-height:0;overflow:hidden;border-top:0px solid #21283a;transition:max-height .35s ease,border-top .35s ease}
-.card.open .card-body{max-height:1200px;border-top:1px solid #21283a}
-.card-hdr-detail{max-height:0;overflow:hidden;transition:max-height .35s ease,opacity .25s ease;opacity:0}
-.card.open .card-hdr-detail{max-height:200px;opacity:1}
+.card-body{max-height:0;overflow:hidden;border-top:0px solid #21283a;transition:max-height .35s ease,border-top .35s ease,padding .35s ease}
+.card.open .card-body{max-height:900px;border-top:1px solid #21283a}
 .card.open{border-color:#2a3a5c}
 .card.open .card-hdr{background:#1a2133}
 .card.open .card-toggle{color:#60a5fa}
-.card-toggle{font-size:11px;color:#3d4f6a;margin-top:6px;cursor:pointer;user-select:none;transition:color .2s}
-.card-toggle:hover{color:#60a5fa}
 
 /* ── BLOQUE DESGLOSE ── */
 .bloque{padding:12px 15px}
@@ -1005,8 +1001,6 @@ function render() {
           <span class="card-code" style="margin-bottom:0">${j.c}</span>
           ${staleBadgeHtml(diasSinCambio(j))}
         </div>
-        <div class="card-toggle">▾ ver desglose por nivel y TJMJ</div>
-        <div class="card-hdr-detail">
         <div class="card-meta">
           <div class="cm"><div class="cm-l">Cap. JN</div><div class="cm-v">${jn.cap||'—'}</div></div>
           <div class="cm"><div class="cm-l">Matrícula</div><div class="cm-v">${jn.mat||'—'}</div></div>
@@ -1017,7 +1011,7 @@ function render() {
           <div class="asist-bar-bg"><div class="asist-bar-f ${bj}" style="width:${Math.min(jn.asist||0,100)}%"></div></div>
         </div>
         <div class="asist-label">% Asistencia JN: ${jn.asist>0?jn.asist+'%':'—'}</div>
-        </div>
+        <div class="card-toggle">▾ ver desglose por nivel y TJMJ</div>
       </div>
       <div class="card-body">
         <div class="bloque">
@@ -1043,14 +1037,7 @@ function toggleCard(cid) {
   const el = document.getElementById(cid);
   if (!el) return;
   const opening = !el.classList.contains('open');
-  // Cerrar todos los demás con animación
-  document.querySelectorAll('.card.open').forEach(c => {
-    if (c.id !== cid) {
-      c.classList.remove('open');
-      const t = c.querySelector('.card-toggle');
-      if (t) t.textContent = '▾ ver desglose por nivel y TJMJ';
-    }
-  });
+  // Permitir múltiples cards abiertos simultáneamente
   el.classList.toggle('open', opening);
   const tog = el.querySelector('.card-toggle');
   if (tog) tog.textContent = opening ? '▴ ocultar desglose' : '▾ ver desglose por nivel y TJMJ';
