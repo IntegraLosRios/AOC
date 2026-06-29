@@ -308,9 +308,9 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
     <button class="fbtn" onclick="setF('lleno',this)">Sin cupos JN</button>
   </div>
   <div class="stat-row" id="statRow"></div>
-  <div class="comuna-chart-box" id="comunaChart"></div>
   <div class="jsr-block" id="jsrBlock"></div>
   <div class="grid" id="grid"><div class="loading">⏳ Cargando datos…</div></div>
+  <div class="comuna-chart-box" id="comunaChart"></div>
 </div>
 
 <!-- ── TAB ASISTENCIA ── -->
@@ -832,125 +832,210 @@ function exportarPDF() {
   const mesNom = blk.nombre.charAt(0)+blk.nombre.slice(1).toLowerCase();
   const salas = getSalas();
   const ahora = new Date().toLocaleString('es-CL');
+  const comuna = COMUNAS[j.n]||'—';
+  const ocup = j.jn.cap>0?(j.jn.mat/j.jn.cap*100).toFixed(1)+'%':'—';
 
-  // Datos evolución
-  const evolRows = MESES_BLOQUES.map((b,mi) => {
-    let sl = [];
-    if(jorn==='ambas'||jorn==='jn')   sl=sl.concat(j.jn.salas.map(s=>({...s,_jorn:'jn'})));
-    if(jorn==='ambas'||jorn==='tjmj') sl=sl.concat(j.tjmj.salas.map(s=>({...s,_jorn:'tjmj'})));
-    const diasM = sl.map(s=>(s.diasPorMes&&s.diasPorMes[mi])||[]);
-    const totM = sl.reduce((a,s)=>a+s.mat,0);
-    const sumA = diasM.reduce((a,d)=>a+d.reduce((x,v)=>x+(typeof v==='number'&&v>0?v:0),0),0);
-    const denom = totM*(b.diasCols.length||1);
-    const pct = denom>0?parseFloat((sumA/denom*100).toFixed(1)):0;
-    return { mes:b.nombre.charAt(0)+b.nombre.slice(1).toLowerCase(), pct, esActual:mi===mesActivo };
-  }).filter(e=>e.pct>0);
-
-  // Detalle niveles JN
+  // ── Sección 1: Resumen por jardín ──────────────────────────────────────────
   const tablaJN = j.jn.salas.map(s=>`
     <tr>
       <td>${s.nivel}</td><td>${s.s}</td><td>${s.cap}</td><td>${s.mat}</td>
-      <td>${s.lista||'—'}</td><td>${s.cupos>0?'+'+s.cupos:s.cupos}</td>
-      <td style="color:${s.asist>=75?'#16a34a':s.asist>=55?'#d97706':'#dc2626'}">${s.asist>0?s.asist.toFixed(1)+'%':'—'}</td>
+      <td>${s.lista||'—'}</td>
+      <td style="color:${s.cupos>0?'#16a34a':s.cupos<0?'#dc2626':'#64748b'};font-weight:600">${s.cupos>0?'+'+s.cupos:s.cupos}</td>
+      <td style="color:${s.asist>=75?'#16a34a':s.asist>=55?'#d97706':s.asist>0?'#dc2626':'#94a3b8'};font-weight:600">${s.asist>0?s.asist.toFixed(1)+'%':'—'}</td>
     </tr>`).join('');
 
   const tablaJNTJMJ = j.tjmj.salas.length ? j.tjmj.salas.map(s=>`
     <tr>
       <td>${s.nivel}</td><td>${s.s}</td><td>${s.cap}</td><td>${s.mat}</td>
-      <td>${s.lista||'—'}</td><td>${s.cupos>0?'+'+s.cupos:s.cupos}</td>
-      <td style="color:${s.asist>=75?'#16a34a':s.asist>=55?'#d97706':'#dc2626'}">${s.asist>0?s.asist.toFixed(1)+'%':'—'}</td>
+      <td>${s.lista||'—'}</td>
+      <td style="color:${s.cupos>0?'#16a34a':s.cupos<0?'#dc2626':'#64748b'};font-weight:600">${s.cupos>0?'+'+s.cupos:s.cupos}</td>
+      <td style="color:${s.asist>=75?'#16a34a':s.asist>=55?'#d97706':s.asist>0?'#dc2626':'#94a3b8'};font-weight:600">${s.asist>0?s.asist.toFixed(1)+'%':'—'}</td>
     </tr>`).join('') : '';
 
-  const evolTabla = evolRows.map(e=>{
-    const clr=e.pct>=75?'#16a34a':e.pct>=55?'#d97706':'#dc2626';
-    return `<tr><td>${e.mes}${e.esActual?' ●':''}</td><td style="color:${clr};font-weight:600">${e.pct>0?e.pct+'%':'—'}</td></tr>`;
+  // ── Sección 2: Asistencia diaria del mes seleccionado ──────────────────────
+  // Construir cabecera de días
+  const diasLabels = blk.diasLabels || [];
+  const diasCols = blk.diasCols || [];
+  const salasFiltradas = [];
+  if(jorn==='ambas'||jorn==='jn')   j.jn.salas.forEach(s=>salasFiltradas.push({...s,_jorn:'JN'}));
+  if(jorn==='ambas'||jorn==='tjmj') j.tjmj.salas.forEach(s=>salasFiltradas.push({...s,_jorn:'TJMJ'}));
+
+  const miBlk = MESES_BLOQUES.indexOf(blk);
+
+  // Agrupar días por semana para que no quede demasiado ancho
+  // Crear filas de la tabla: una por sala, columnas = días
+  const thDias = diasLabels.map(l=>`<th style="min-width:28px;text-align:center;font-size:9px;padding:4px 2px">${l.trim().replace(/\s+/,' ')}</th>`).join('');
+
+  const trSalas = salasFiltradas.map(s=>{
+    const dias = (s.diasPorMes && s.diasPorMes[miBlk]) || [];
+    const celdas = diasLabels.map((_,di)=>{
+      const v = dias[di];
+      if(typeof v==='string'&&v) return `<td style="text-align:center;background:#fef9c3;color:#78350f;font-weight:700;font-size:9px">${v}</td>`;
+      if(typeof v==='number'&&v>0){
+        const pctD = s.mat>0?v/s.mat*100:0;
+        const bg = pctD>=75?'#f0fdf4':pctD>=55?'#fefce8':'#fef2f2';
+        const clr= pctD>=75?'#15803d':pctD>=55?'#a16207':'#b91c1c';
+        return `<td style="text-align:center;background:${bg};color:${clr};font-size:10px;font-weight:600">${v}</td>`;
+      }
+      return `<td style="text-align:center;color:#cbd5e1;font-size:10px">—</td>`;
+    }).join('');
+    const jorTag = s._jorn==='TJMJ'?'<span style="font-size:8px;background:#ede9fe;color:#6d28d9;border-radius:3px;padding:1px 4px;margin-left:3px">TJMJ</span>':'';
+    return `<tr>
+      <td style="font-size:10px;white-space:nowrap;padding:4px 6px;font-weight:600">${s.nivel}${jorTag}</td>
+      <td style="font-size:10px;color:#64748b;padding:4px 6px">${s.s}</td>
+      <td style="text-align:center;font-size:10px;padding:4px 6px">${s.mat}</td>
+      ${celdas}
+      <td style="text-align:center;font-size:10px;font-weight:700;padding:4px 6px;color:${s.asist>=75?'#15803d':s.asist>=55?'#a16207':s.asist>0?'#b91c1c':'#94a3b8'}">${s.asist>0?s.asist.toFixed(1)+'%':'—'}</td>
+    </tr>`;
   }).join('');
 
-  const comuna = COMUNAS[j.n]||'—';
-  const ocup = j.jn.cap>0?(j.jn.mat/j.jn.cap*100).toFixed(1)+'%':'—';
+  // ── Sección 3: Evolución mensual ───────────────────────────────────────────
+  const evolRows = MESES_BLOQUES.map((b,mi) => {
+    let sl = [];
+    if(jorn==='ambas'||jorn==='jn')   sl=sl.concat(j.jn.salas.map(s=>({...s})));
+    if(jorn==='ambas'||jorn==='tjmj') sl=sl.concat(j.tjmj.salas.map(s=>({...s})));
+    const diasM = sl.map(s=>(s.diasPorMes&&s.diasPorMes[mi])||[]);
+    const totM = sl.reduce((a,s)=>a+s.mat,0);
+    const sumA = diasM.reduce((a,d)=>a+d.reduce((x,v)=>x+(typeof v==='number'&&v>0?v:0),0),0);
+    const denom = totM*(b.diasCols.length||1);
+    const pct = denom>0?parseFloat((sumA/denom*100).toFixed(1)):0;
+    // Causales
+    const causales={};
+    for(let di=0;di<b.diasCols.length;di++){
+      const set=new Set();
+      diasM.forEach(d=>{const v=d[di];if(typeof v==='string'&&v&&CAUSALES_KEYS.includes(v.toUpperCase()))set.add(v.toUpperCase());});
+      set.forEach(c=>{causales[c]=(causales[c]||0)+1;});
+    }
+    const causStr=Object.entries(causales).map(([k,n])=>`${k}:${n}`).join(', ');
+    return { mes:b.nombre.charAt(0)+b.nombre.slice(1).toLowerCase(), pct, causStr, esActual:mi===mesActivo };
+  });
+  const evolTabla = evolRows.map(e=>{
+    const clr=e.pct>=75?'#15803d':e.pct>=55?'#a16207':e.pct>0?'#b91c1c':'#94a3b8';
+    return `<tr>
+      <td>${e.mes}${e.esActual?' ●':''}</td>
+      <td style="text-align:center;color:${clr};font-weight:700">${e.pct>0?e.pct+'%':'Sin datos'}</td>
+      <td style="color:#64748b;font-size:11px">${e.causStr||'—'}</td>
+    </tr>`;
+  }).filter((_,i)=>evolRows[i].pct>0||evolRows[i].esActual).join('');
 
   const html = `<!DOCTYPE html><html lang="es"><head>
     <meta charset="UTF-8">
-    <title>Reporte ${j.n}</title>
+    <title>Reporte ${j.n} — ${mesNom}</title>
     <style>
       *{box-sizing:border-box;margin:0;padding:0}
-      body{font-family:Arial,sans-serif;color:#1a1a2e;padding:28px;font-size:13px}
-      .header{border-bottom:3px solid #1d4ed8;padding-bottom:16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start}
-      .logo-box{background:linear-gradient(135deg,#00c896,#0077ff);border-radius:8px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;flex-shrink:0}
-      h1{font-size:20px;color:#1a1a2e;margin-bottom:3px}
-      .sub{font-size:12px;color:#64748b}
-      .meta{text-align:right;font-size:11px;color:#64748b;line-height:1.8}
-      .section{margin-bottom:20px}
-      .section-title{font-size:13px;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e2e8f0}
-      .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
-      .kpi{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;text-align:center}
-      .kpi-l{font-size:10px;color:#64748b;margin-bottom:4px;font-weight:600;text-transform:uppercase}
-      .kpi-v{font-size:18px;font-weight:700;color:#1a1a2e}
-      table{width:100%;border-collapse:collapse;font-size:12px}
-      th{background:#1d4ed8;color:#fff;padding:7px 10px;text-align:left;font-size:11px;font-weight:600}
-      td{padding:6px 10px;border-bottom:1px solid #f1f5f9}
+      body{font-family:Arial,sans-serif;color:#1a1a2e;padding:24px 28px;font-size:12px}
+      .header{border-bottom:3px solid #1d4ed8;padding-bottom:14px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:flex-start}
+      .logo-box{background:linear-gradient(135deg,#00c896,#0077ff);border-radius:8px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;flex-shrink:0}
+      h1{font-size:19px;color:#1a1a2e;margin-bottom:2px}
+      .sub{font-size:11px;color:#64748b}
+      .meta{text-align:right;font-size:10px;color:#64748b;line-height:1.9}
+      .section{margin-bottom:18px;page-break-inside:avoid}
+      .section-title{font-size:12px;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:3px;border-bottom:2px solid #dbeafe;display:flex;align-items:center;gap:8px}
+      .kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px}
+      .kpi{background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;padding:8px;text-align:center}
+      .kpi-l{font-size:9px;color:#64748b;margin-bottom:3px;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+      .kpi-v{font-size:16px;font-weight:700;color:#1a1a2e}
+      .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+      table{width:100%;border-collapse:collapse;font-size:11px}
+      th{background:#1d4ed8;color:#fff;padding:6px 8px;text-align:left;font-size:10px;font-weight:600}
+      td{padding:5px 8px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
       tr:nth-child(even) td{background:#f8fafc}
-      .tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+      .tag{display:inline-block;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700}
       .tag-jn{background:#dbeafe;color:#1d4ed8}
       .tag-tjmj{background:#ede9fe;color:#6d28d9}
-      .evol-row{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
-      .evol-cell{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px;text-align:center}
-      .evol-mes{font-size:10px;color:#64748b;margin-bottom:3px}
-      .evol-pct{font-size:14px;font-weight:700}
-      .footer{margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}
-      @media print{body{padding:16px}.header{margin-bottom:14px}}
+      .page-break{page-break-before:always;margin-top:0}
+      .footer{margin-top:20px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:9px;color:#94a3b8;display:flex;justify-content:space-between}
+      .asist-table-wrap{overflow-x:auto}
+      @media print{
+        body{padding:12px 16px}
+        .page-break{page-break-before:always}
+        table{page-break-inside:auto}
+        tr{page-break-inside:avoid}
+      }
     </style>
   </head><body>
+
+    <!-- CABECERA -->
     <div class="header">
-      <div style="display:flex;gap:14px;align-items:center">
+      <div style="display:flex;gap:12px;align-items:center">
         <div class="logo-box">AOC</div>
         <div>
           <h1>${j.n}</h1>
-          <div class="sub">Código: ${j.c||'—'} · Comuna: ${comuna} · Jornada: ${jorn==='ambas'?'JN + TJMJ':jorn==='jn'?'Jornada Normal':'TJMJ'}</div>
+          <div class="sub">Código: <strong>${j.c||'—'}</strong> &nbsp;·&nbsp; Comuna: <strong>${comuna}</strong> &nbsp;·&nbsp; Jornada: <strong>${jorn==='ambas'?'JN + TJMJ':jorn==='jn'?'Jornada Normal':'TJMJ'}</strong></div>
         </div>
       </div>
-      <div class="meta">Reporte generado: ${ahora}<br>Mes de referencia: ${mesNom}</div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">Resumen Jornada Normal</div>
-      <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-l">Capacidad JN</div><div class="kpi-v">${j.jn.cap||'—'}</div></div>
-        <div class="kpi"><div class="kpi-l">Matrícula JN</div><div class="kpi-v">${j.jn.mat||'—'}</div></div>
-        <div class="kpi"><div class="kpi-l">Cupos disp.</div><div class="kpi-v" style="color:${j.jn.cupos>0?'#16a34a':j.jn.cupos<0?'#dc2626':'#64748b'}">${j.jn.cupos>0?'+'+j.jn.cupos:j.jn.cupos}</div></div>
-        <div class="kpi"><div class="kpi-l">% Ocupación</div><div class="kpi-v">${ocup}</div></div>
-        <div class="kpi"><div class="kpi-l">% Asistencia</div><div class="kpi-v" style="color:${j.jn.asist>=75?'#16a34a':j.jn.asist>=55?'#d97706':'#dc2626'}">${j.jn.asist>0?j.jn.asist+'%':'—'}</div></div>
+      <div class="meta">
+        Reporte generado: <strong>${ahora}</strong><br>
+        Mes de referencia: <strong>${mesNom.charAt(0).toUpperCase()+mesNom.slice(1)}</strong>
       </div>
     </div>
 
-    ${j.jn.salas.length?`<div class="section">
-      <div class="section-title"><span class="tag tag-jn">JORNADA NORMAL</span> Detalle por nivel</div>
-      <table><thead><tr><th>Nivel</th><th>Sala</th><th>Cap</th><th>Mat</th><th>L.Espera</th><th>Cupos</th><th>Asistencia</th></tr></thead>
-      <tbody>${tablaJN}</tbody></table>
-    </div>`:''}
-
-    ${j.tjmj.salas.length?`<div class="section">
-      <div class="section-title"><span class="tag tag-tjmj">TJMJ</span> Detalle por nivel</div>
-      <table><thead><tr><th>Nivel</th><th>Sala</th><th>Cap</th><th>Mat</th><th>L.Espera</th><th>Cupos</th><th>Asistencia</th></tr></thead>
-      <tbody>${tablaJNTJMJ}</tbody></table>
-    </div>`:''}
-
+    <!-- SECCIÓN 1: RESUMEN -->
     <div class="section">
-      <div class="section-title">Evolución mensual de asistencia</div>
-      <table style="width:auto"><thead><tr><th>Mes</th><th>% Asistencia</th></tr></thead>
-      <tbody>${evolTabla}</tbody></table>
+      <div class="section-title">1. Resumen por jardín</div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-l">Cap. JN</div><div class="kpi-v">${j.jn.cap||'—'}</div></div>
+        <div class="kpi"><div class="kpi-l">Matrícula JN</div><div class="kpi-v">${j.jn.mat||'—'}</div></div>
+        <div class="kpi"><div class="kpi-l">Desist.</div><div class="kpi-v" style="color:#dc2626">${j.jn.desist||'—'}</div></div>
+        <div class="kpi"><div class="kpi-l">L. Espera</div><div class="kpi-v" style="color:#d97706">${j.jn.lista||'—'}</div></div>
+        <div class="kpi"><div class="kpi-l">Cupos JN</div><div class="kpi-v" style="color:${j.jn.cupos>0?'#16a34a':j.jn.cupos<0?'#dc2626':'#64748b'}">${j.jn.cupos>0?'+'+j.jn.cupos:j.jn.cupos}</div></div>
+        <div class="kpi"><div class="kpi-l">% Ocupación</div><div class="kpi-v">${ocup}</div></div>
+      </div>
+
+      <div class="two-col">
+        ${j.jn.salas.length?`<div>
+          <div style="font-size:11px;font-weight:700;color:#1d4ed8;margin-bottom:6px"><span class="tag tag-jn">JN</span> Jornada Normal — % Asistencia: <span style="color:${j.jn.asist>=75?'#16a34a':j.jn.asist>=55?'#d97706':'#dc2626'}">${j.jn.asist>0?j.jn.asist+'%':'—'}</span></div>
+          <table><thead><tr><th>Nivel</th><th>Sala</th><th>Cap</th><th>Mat</th><th>L.E</th><th>Cupos</th><th>Asist.</th></tr></thead>
+          <tbody>${tablaJN}</tbody></table>
+        </div>`:'<div></div>'}
+        ${j.tjmj.salas.length?`<div>
+          <div style="font-size:11px;font-weight:700;color:#6d28d9;margin-bottom:6px"><span class="tag tag-tjmj">TJMJ</span> TJMJ — % Asistencia: <span style="color:${j.tjmj.asist>=75?'#16a34a':j.tjmj.asist>=55?'#d97706':'#dc2626'}">${j.tjmj.asist>0?j.tjmj.asist+'%':'—'}</span></div>
+          <table><thead><tr><th>Nivel</th><th>Sala</th><th>Cap</th><th>Mat</th><th>L.E</th><th>Cupos</th><th>Asist.</th></tr></thead>
+          <tbody>${tablaJNTJMJ}</tbody></table>
+        </div>`:''}
+      </div>
+    </div>
+
+    <!-- SECCIÓN 2: ASISTENCIA DIARIA -->
+    <div class="section page-break">
+      <div class="section-title">2. Asistencia diaria — ${mesNom.charAt(0).toUpperCase()+mesNom.slice(1)}</div>
+      <div class="asist-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nivel</th><th>Sala</th><th>Mat</th>
+              ${thDias}
+              <th style="text-align:center">% Asist.</th>
+            </tr>
+          </thead>
+          <tbody>${trSalas}</tbody>
+        </table>
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:#64748b">
+        <strong>Referencias:</strong> Número = niños presentes &nbsp;·&nbsp;
+        <span style="background:#fef9c3;color:#78350f;padding:1px 5px;border-radius:3px;font-weight:700">P/C/T…</span> = Causal sin actividad
+      </div>
+    </div>
+
+    <!-- SECCIÓN 3: EVOLUCIÓN MENSUAL -->
+    <div class="section">
+      <div class="section-title">3. Evolución mensual de asistencia</div>
+      <table style="width:auto;min-width:320px">
+        <thead><tr><th>Mes</th><th style="text-align:center">% Asistencia</th><th>Causales registradas</th></tr></thead>
+        <tbody>${evolTabla}</tbody>
+      </table>
     </div>
 
     <div class="footer">
-      <span>Dashboard Jardines AOC</span>
+      <span>Dashboard Jardines AOC &nbsp;·&nbsp; ${j.n} &nbsp;·&nbsp; ${j.c||''}</span>
       <span>${ahora}</span>
     </div>
   </body></html>`;
 
-  const win = window.open('','_blank','width=850,height=900');
+  const win = window.open('','_blank','width=1000,height=900');
   win.document.write(html);
   win.document.close();
-  win.onload = () => setTimeout(()=>{ win.print(); }, 400);
+  win.onload = () => setTimeout(()=>{ win.print(); }, 500);
 }
 
 function sw(id,el) {
@@ -1069,6 +1154,7 @@ function renderComunaChart(data) {
   const maxAsist = 100;
 
   box.style.display = 'block';
+  setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
   box.innerHTML = `
     <div class="comuna-chart-title">📊 ${comunaFil} — Jardines por ocupación y asistencia</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
