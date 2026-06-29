@@ -752,6 +752,13 @@ function procesarCSV(csv) {
 
   try {
     render();
+    // Si el usuario está en la pestaña de asistencia con un jardín seleccionado,
+    // re-renderizar su contenido con los datos recién actualizados
+    const tabAsist = document.getElementById('tab-asistencia');
+    const jSelEl   = document.getElementById('jSel');
+    if (tabAsist && tabAsist.classList.contains('on') && jSelEl && jSelEl.value !== '') {
+      renderAsist();
+    }
   } catch(err) {
     console.error('render() error:', err);
     const em = document.getElementById('errMsg');
