@@ -94,6 +94,9 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 .asist-bar-f.g{background:#10b981}.asist-bar-f.a{background:#f59e0b}.asist-bar-f.r{background:#ef4444}
 .asist-label{font-size:11px;color:#8a97b0;text-align:right;margin-bottom:2px}
 .card-toggle{font-size:11px;color:#5a677f;text-align:center;padding:3px 0;cursor:pointer}
+.card-asist-btn{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#60a5fa;background:#0d1f3c;border:1px solid #1d4ed8;border-radius:6px;padding:4px 10px;cursor:pointer;transition:all .15s;margin-top:6px;text-decoration:none}
+.card-asist-btn:hover{background:#1d4ed8;color:#fff}
+.card-footer-row{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
 .card-body{max-height:0;overflow:hidden;border-top:0px solid #21283a;transition:max-height .35s ease,border-top .35s ease,padding .35s ease}
 .card.open .card-body{max-height:900px;border-top:1px solid #21283a}
 .card.open{border-color:#2a3a5c}
@@ -132,6 +135,14 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 
 /* ── JSR BLOCK ── */
 .jsr-block{background:#1a1f2e;border:1px solid #2a1f4a;border-radius:10px;padding:14px 16px;margin-bottom:14px;display:none}
+.comuna-chart-box{background:#161b27;border:1px solid #21283a;border-radius:12px;padding:16px;margin-bottom:16px;display:none}
+.comuna-chart-title{font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:12px}
+.com-bars{display:flex;flex-direction:column;gap:10px}
+.com-bar-row{display:grid;grid-template-columns:140px 1fr 50px;align-items:center;gap:10px;font-size:12px}
+.com-bar-label{color:#8a97b0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.com-bar-track{background:#21283a;border-radius:4px;height:10px;overflow:hidden}
+.com-bar-fill{height:100%;border-radius:4px;transition:width .4s ease}
+.com-bar-val{color:#e2e8f0;font-weight:600;text-align:right}
 .jsr-block-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .jsr-tag{font-size:11px;font-weight:700;padding:2px 10px;border-radius:4px;letter-spacing:.06em;background:#1d1a2d;color:#a78bfa}
 .jsr-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
@@ -153,6 +164,8 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 .ak-v{font-size:16px;font-weight:700;color:#e2e8f0}
 .view-toggle{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
 .vbtn{padding:6px 14px;font-size:12px;font-weight:500;border-radius:7px;border:1px solid #21283a;background:#161b27;color:#5a677f;cursor:pointer;transition:all .15s}
+.pdf-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;font-size:12px;font-weight:600;border-radius:7px;border:1px solid #991b1b;background:#2d0f0f;color:#fca5a5;cursor:pointer;transition:all .15s;float:right}
+.pdf-btn:hover{background:#991b1b;color:#fff}
 .vbtn.on{background:#0d1f3c;color:#60a5fa;border-color:#1d4ed8}
 .vbtn:hover:not(.on){color:#e2e8f0}
 .chart-box{background:#161b27;border:1px solid #21283a;border-radius:12px;padding:16px;margin-bottom:14px;position:relative;height:280px}
@@ -295,6 +308,7 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
     <button class="fbtn" onclick="setF('lleno',this)">Sin cupos JN</button>
   </div>
   <div class="stat-row" id="statRow"></div>
+  <div class="comuna-chart-box" id="comunaChart"></div>
   <div class="jsr-block" id="jsrBlock"></div>
   <div class="grid" id="grid"><div class="loading">⏳ Cargando datos…</div></div>
 </div>
@@ -321,16 +335,18 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
       <div class="evol-section">
         <div class="evol-title-row">
           <span class="evol-title-text">📅 Evolución mensual</span>
+          <span id="trendIndicator" style="display:none;font-size:12px;font-weight:700;padding:3px 10px;background:#161b27;border-radius:20px;border:1px solid #21283a"></span>
         </div>
         <div class="evol-grid" id="evolGrid"></div>
         <div class="evol-chart-box"><canvas id="evolChart"></canvas></div>
       </div>
 
       <!-- Vistas del mes seleccionado -->
-      <div class="view-toggle">
+      <div class="view-toggle" style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
         <button class="vbtn on" onclick="setView('detalle',this)">📋 Detalle por nivel/día</button>
         <button class="vbtn" onclick="setView('semana',this)">📅 Por semana</button>
         <button class="vbtn" onclick="setView('grafico',this)">📊 Gráfico</button>
+        <button class="pdf-btn" onclick="exportarPDF()" style="margin-left:auto">⬇ Exportar PDF</button>
       </div>
       <div id="v-detalle"><div class="det-wrap"><table class="det-table" id="detTable"></table></div></div>
       <div id="v-semana" style="display:none"><div class="sem-grid" id="semGrid"></div></div>
@@ -806,6 +822,137 @@ function selectMes(i) {
   if (det && det.style.display !== 'none') det.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
+// ── EXPORTAR PDF ─────────────────────────────────────────────────────────────
+function exportarPDF() {
+  const idx = document.getElementById('jSel').value;
+  const j = J[parseInt(idx)];
+  if (!j) { alert('Selecciona un jardín primero'); return; }
+  const jorn = document.getElementById('jornSel').value;
+  const blk = MESES_BLOQUES[mesFiltro] || MESES_BLOQUES[mesActivo];
+  const mesNom = blk.nombre.charAt(0)+blk.nombre.slice(1).toLowerCase();
+  const salas = getSalas();
+  const ahora = new Date().toLocaleString('es-CL');
+
+  // Datos evolución
+  const evolRows = MESES_BLOQUES.map((b,mi) => {
+    let sl = [];
+    if(jorn==='ambas'||jorn==='jn')   sl=sl.concat(j.jn.salas.map(s=>({...s,_jorn:'jn'})));
+    if(jorn==='ambas'||jorn==='tjmj') sl=sl.concat(j.tjmj.salas.map(s=>({...s,_jorn:'tjmj'})));
+    const diasM = sl.map(s=>(s.diasPorMes&&s.diasPorMes[mi])||[]);
+    const totM = sl.reduce((a,s)=>a+s.mat,0);
+    const sumA = diasM.reduce((a,d)=>a+d.reduce((x,v)=>x+(typeof v==='number'&&v>0?v:0),0),0);
+    const denom = totM*(b.diasCols.length||1);
+    const pct = denom>0?parseFloat((sumA/denom*100).toFixed(1)):0;
+    return { mes:b.nombre.charAt(0)+b.nombre.slice(1).toLowerCase(), pct, esActual:mi===mesActivo };
+  }).filter(e=>e.pct>0);
+
+  // Detalle niveles JN
+  const tablaJN = j.jn.salas.map(s=>`
+    <tr>
+      <td>${s.nivel}</td><td>${s.s}</td><td>${s.cap}</td><td>${s.mat}</td>
+      <td>${s.lista||'—'}</td><td>${s.cupos>0?'+'+s.cupos:s.cupos}</td>
+      <td style="color:${s.asist>=75?'#16a34a':s.asist>=55?'#d97706':'#dc2626'}">${s.asist>0?s.asist.toFixed(1)+'%':'—'}</td>
+    </tr>`).join('');
+
+  const tablaJNTJMJ = j.tjmj.salas.length ? j.tjmj.salas.map(s=>`
+    <tr>
+      <td>${s.nivel}</td><td>${s.s}</td><td>${s.cap}</td><td>${s.mat}</td>
+      <td>${s.lista||'—'}</td><td>${s.cupos>0?'+'+s.cupos:s.cupos}</td>
+      <td style="color:${s.asist>=75?'#16a34a':s.asist>=55?'#d97706':'#dc2626'}">${s.asist>0?s.asist.toFixed(1)+'%':'—'}</td>
+    </tr>`).join('') : '';
+
+  const evolTabla = evolRows.map(e=>{
+    const clr=e.pct>=75?'#16a34a':e.pct>=55?'#d97706':'#dc2626';
+    return `<tr><td>${e.mes}${e.esActual?' ●':''}</td><td style="color:${clr};font-weight:600">${e.pct>0?e.pct+'%':'—'}</td></tr>`;
+  }).join('');
+
+  const comuna = COMUNAS[j.n]||'—';
+  const ocup = j.jn.cap>0?(j.jn.mat/j.jn.cap*100).toFixed(1)+'%':'—';
+
+  const html = `<!DOCTYPE html><html lang="es"><head>
+    <meta charset="UTF-8">
+    <title>Reporte ${j.n}</title>
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:Arial,sans-serif;color:#1a1a2e;padding:28px;font-size:13px}
+      .header{border-bottom:3px solid #1d4ed8;padding-bottom:16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start}
+      .logo-box{background:linear-gradient(135deg,#00c896,#0077ff);border-radius:8px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;flex-shrink:0}
+      h1{font-size:20px;color:#1a1a2e;margin-bottom:3px}
+      .sub{font-size:12px;color:#64748b}
+      .meta{text-align:right;font-size:11px;color:#64748b;line-height:1.8}
+      .section{margin-bottom:20px}
+      .section-title{font-size:13px;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e2e8f0}
+      .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+      .kpi{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;text-align:center}
+      .kpi-l{font-size:10px;color:#64748b;margin-bottom:4px;font-weight:600;text-transform:uppercase}
+      .kpi-v{font-size:18px;font-weight:700;color:#1a1a2e}
+      table{width:100%;border-collapse:collapse;font-size:12px}
+      th{background:#1d4ed8;color:#fff;padding:7px 10px;text-align:left;font-size:11px;font-weight:600}
+      td{padding:6px 10px;border-bottom:1px solid #f1f5f9}
+      tr:nth-child(even) td{background:#f8fafc}
+      .tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+      .tag-jn{background:#dbeafe;color:#1d4ed8}
+      .tag-tjmj{background:#ede9fe;color:#6d28d9}
+      .evol-row{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+      .evol-cell{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px;text-align:center}
+      .evol-mes{font-size:10px;color:#64748b;margin-bottom:3px}
+      .evol-pct{font-size:14px;font-weight:700}
+      .footer{margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}
+      @media print{body{padding:16px}.header{margin-bottom:14px}}
+    </style>
+  </head><body>
+    <div class="header">
+      <div style="display:flex;gap:14px;align-items:center">
+        <div class="logo-box">AOC</div>
+        <div>
+          <h1>${j.n}</h1>
+          <div class="sub">Código: ${j.c||'—'} · Comuna: ${comuna} · Jornada: ${jorn==='ambas'?'JN + TJMJ':jorn==='jn'?'Jornada Normal':'TJMJ'}</div>
+        </div>
+      </div>
+      <div class="meta">Reporte generado: ${ahora}<br>Mes de referencia: ${mesNom}</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Resumen Jornada Normal</div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-l">Capacidad JN</div><div class="kpi-v">${j.jn.cap||'—'}</div></div>
+        <div class="kpi"><div class="kpi-l">Matrícula JN</div><div class="kpi-v">${j.jn.mat||'—'}</div></div>
+        <div class="kpi"><div class="kpi-l">Cupos disp.</div><div class="kpi-v" style="color:${j.jn.cupos>0?'#16a34a':j.jn.cupos<0?'#dc2626':'#64748b'}">${j.jn.cupos>0?'+'+j.jn.cupos:j.jn.cupos}</div></div>
+        <div class="kpi"><div class="kpi-l">% Ocupación</div><div class="kpi-v">${ocup}</div></div>
+        <div class="kpi"><div class="kpi-l">% Asistencia</div><div class="kpi-v" style="color:${j.jn.asist>=75?'#16a34a':j.jn.asist>=55?'#d97706':'#dc2626'}">${j.jn.asist>0?j.jn.asist+'%':'—'}</div></div>
+      </div>
+    </div>
+
+    ${j.jn.salas.length?`<div class="section">
+      <div class="section-title"><span class="tag tag-jn">JORNADA NORMAL</span> Detalle por nivel</div>
+      <table><thead><tr><th>Nivel</th><th>Sala</th><th>Cap</th><th>Mat</th><th>L.Espera</th><th>Cupos</th><th>Asistencia</th></tr></thead>
+      <tbody>${tablaJN}</tbody></table>
+    </div>`:''}
+
+    ${j.tjmj.salas.length?`<div class="section">
+      <div class="section-title"><span class="tag tag-tjmj">TJMJ</span> Detalle por nivel</div>
+      <table><thead><tr><th>Nivel</th><th>Sala</th><th>Cap</th><th>Mat</th><th>L.Espera</th><th>Cupos</th><th>Asistencia</th></tr></thead>
+      <tbody>${tablaJNTJMJ}</tbody></table>
+    </div>`:''}
+
+    <div class="section">
+      <div class="section-title">Evolución mensual de asistencia</div>
+      <table style="width:auto"><thead><tr><th>Mes</th><th>% Asistencia</th></tr></thead>
+      <tbody>${evolTabla}</tbody></table>
+    </div>
+
+    <div class="footer">
+      <span>Dashboard Jardines AOC</span>
+      <span>${ahora}</span>
+    </div>
+  </body></html>`;
+
+  const win = window.open('','_blank','width=850,height=900');
+  win.document.write(html);
+  win.document.close();
+  win.onload = () => setTimeout(()=>{ win.print(); }, 400);
+}
+
 function sw(id,el) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
@@ -900,6 +1047,62 @@ function staleBadgeHtml(dias) {
   return             `<span class="stale-badge alert">🔴 ${dias}d sin cambios</span>`;
 }
 
+// ── GRÁFICO COMUNAS ──────────────────────────────────────────────────────────
+function renderComunaChart(data) {
+  const box = document.getElementById('comunaChart');
+  if (!box) return;
+  if (!comunaFil) { box.style.display='none'; return; }
+
+  // Agrupar jardines de la misma comuna (normalmente será 1 filtro = 1 comuna)
+  // Mostrar: % ocupación, % asistencia promedio, y matrícula
+  const rows = data.map(j => ({
+    n: j.n,
+    ocup: j.jn.asist || 0,
+    mat: j.jn.mat || 0,
+    cupos: j.jn.cupos || 0,
+    cap: j.jn.cap || 0
+  })).filter(r => r.cap > 0).sort((a,b) => b.ocup - a.ocup);
+
+  if (!rows.length) { box.style.display='none'; return; }
+
+  const maxOcup = Math.max(...rows.map(r => r.cap > 0 ? r.mat/r.cap*100 : 0), 1);
+  const maxAsist = 100;
+
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div class="comuna-chart-title">📊 ${comunaFil} — Jardines por ocupación y asistencia</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div style="font-size:11px;color:#5a677f;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">% Ocupación (Mat/Cap)</div>
+        <div class="com-bars">
+          ${rows.map(r => {
+            const pct = r.cap > 0 ? (r.mat/r.cap*100) : 0;
+            const clr = pct>=75?'#34d399':pct>=55?'#fbbf24':'#f87171';
+            return `<div class="com-bar-row">
+              <div class="com-bar-label" title="${r.n}">${r.n}</div>
+              <div class="com-bar-track"><div class="com-bar-fill" style="width:${Math.min(pct,100)}%;background:${clr}"></div></div>
+              <div class="com-bar-val" style="color:${clr}">${pct.toFixed(0)}%</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:#5a677f;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">% Asistencia JN</div>
+        <div class="com-bars">
+          ${rows.map(r => {
+            const pct = r.ocup || 0;
+            const clr = pct>=75?'#34d399':pct>=55?'#fbbf24':pct>0?'#f87171':'#3d4f6a';
+            return `<div class="com-bar-row">
+              <div class="com-bar-label" title="${r.n}">${r.n}</div>
+              <div class="com-bar-track"><div class="com-bar-fill" style="width:${Math.min(pct,100)}%;background:${clr}"></div></div>
+              <div class="com-bar-val" style="color:${clr}">${pct>0?pct.toFixed(1)+'%':'—'}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
 // ── RENDER PRINCIPAL ──────────────────────────────────────────────────────────
 function render() {
   if (!J.length||!MESES_BLOQUES.length) return;
@@ -953,6 +1156,7 @@ function render() {
   document.getElementById('hcA').textContent = '● Asist. '+(avgAFinal?avgAFinal.toFixed(1)+'%':'—');
   document.getElementById('hcD').textContent = '● Desist. '+(tDesistJard||'—');
 
+  renderComunaChart(data);
   document.getElementById('statRow').textContent =
     `Mostrando ${data.length} jardines — ${data.filter(j=>j.jn.cupos>0).length} con cupos JN · ${mesNom} ${new Date().getFullYear()}`;
 
@@ -992,7 +1196,7 @@ function render() {
     const badgeDesist = jn.desist>0?`<span class="badge-desist">Desist. -${jn.desist}</span>`:'';
     const cid = 'cd-'+di;
     return `<div class="card" id="${cid}">
-      <div class="card-hdr" onclick="toggleCard('${cid}')">
+      <div class="card-hdr" onclick="if(!event.target.closest('.card-footer-row'))toggleCard('${cid}')">
         <div class="card-title-row">
           <span class="card-name">${j.n}</span>
           <div class="badge-row">${badgeJN}${badgeDesist}</div>
@@ -1011,7 +1215,10 @@ function render() {
           <div class="asist-bar-bg"><div class="asist-bar-f ${bj}" style="width:${Math.min(jn.asist||0,100)}%"></div></div>
         </div>
         <div class="asist-label">% Asistencia JN: ${jn.asist>0?jn.asist+'%':'—'}</div>
-        <div class="card-toggle">▾ ver desglose por nivel y TJMJ</div>
+        <div class="card-footer-row">
+          <div class="card-toggle" onclick="event.stopPropagation();toggleCard('${cid}')">▾ ver desglose por nivel y TJMJ</div>
+          <button class="card-asist-btn" onclick="irAAsistencia(${J.indexOf(j)},event)">📊 Ver asistencia</button>
+        </div>
       </div>
       <div class="card-body">
         <div class="bloque">
@@ -1037,10 +1244,26 @@ function toggleCard(cid) {
   const el = document.getElementById(cid);
   if (!el) return;
   const opening = !el.classList.contains('open');
-  // Permitir múltiples cards abiertos simultáneamente
   el.classList.toggle('open', opening);
   const tog = el.querySelector('.card-toggle');
   if (tog) tog.textContent = opening ? '▴ ocultar desglose' : '▾ ver desglose por nivel y TJMJ';
+}
+
+function irAAsistencia(jIdx, event) {
+  event.stopPropagation(); // no abrir el card toggle
+  // Seleccionar el jardín en el select
+  const sel = document.getElementById('jSel');
+  if (sel) sel.value = jIdx;
+  // Cambiar a la pestaña de asistencia
+  const tabEl = document.querySelector('.tab:not(.on)');
+  document.querySelectorAll('.tab').forEach(t => {
+    if (t.textContent.includes('Asistencia')) {
+      t.click();
+    }
+  });
+  renderAsist();
+  // Scroll suave al top
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 // ── ASISTENCIA ────────────────────────────────────────────────────────────────
@@ -1177,23 +1400,52 @@ function renderEvolucion(){
     </div>`;
   }).join('');
 
-  // Gráfico evolución — SIN línea meta
+  // Gráfico evolución con línea de tendencia
   if(evolChartInst){evolChartInst.destroy();evolChartInst=null;}
   const mesesOrdenados=[...evolData].reverse();
+  const pctVals = mesesOrdenados.map(e=>e.pct>0?e.pct:null);
+
+  // Calcular tendencia lineal (regresión simple sobre puntos no-nulos)
+  const pts = pctVals.map((v,i)=>v!==null?{x:i,y:v}:null).filter(Boolean);
+  let trendData = pctVals.map(()=>null);
+  if(pts.length>=2){
+    const n=pts.length, sx=pts.reduce((a,p)=>a+p.x,0), sy=pts.reduce((a,p)=>a+p.y,0);
+    const sxy=pts.reduce((a,p)=>a+p.x*p.y,0), sxx=pts.reduce((a,p)=>a+p.x*p.x,0);
+    const slope=(n*sxy-sx*sy)/(n*sxx-sx*sx||1);
+    const intercept=(sy-slope*sx)/n;
+    trendData=pctVals.map((_,i)=>parseFloat((slope*i+intercept).toFixed(1)));
+    // Arrow indicator
+    const dir=slope>0.5?'↑ Subiendo':slope<-0.5?'↓ Bajando':'→ Estable';
+    const dirClr=slope>0.5?'#34d399':slope<-0.5?'#f87171':'#fbbf24';
+    const trendEl=document.getElementById('trendIndicator');
+    if(trendEl){trendEl.textContent=dir;trendEl.style.color=dirClr;trendEl.style.display='inline';}
+  }
+
   evolChartInst=new Chart(document.getElementById('evolChart'),{
     type:'line',
     data:{
       labels:mesesOrdenados.map(e=>e.mes.charAt(0)+e.mes.slice(1).toLowerCase()),
-      datasets:[{
-        label:'% Asistencia',
-        data:mesesOrdenados.map(e=>e.pct>0?e.pct:null),
-        borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,.1)',
-        borderWidth:2,pointRadius:5,pointBackgroundColor:'#60a5fa',tension:.3,fill:true,spanGaps:true
-      }]
+      datasets:[
+        {
+          label:'% Asistencia',
+          data:pctVals,
+          borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,.1)',
+          borderWidth:2,pointRadius:5,pointBackgroundColor:'#60a5fa',tension:.3,fill:true,spanGaps:true
+        },
+        {
+          label:'Tendencia',
+          data:trendData,
+          borderColor:'rgba(251,191,36,.5)',backgroundColor:'transparent',
+          borderWidth:1.5,borderDash:[5,4],pointRadius:0,tension:0,fill:false,spanGaps:true
+        }
+      ]
     },
     options:{
       responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
+      plugins:{
+        legend:{display:true,labels:{color:'#8a97b0',font:{size:11},boxWidth:14}},
+        tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.parsed.y+'%'}}
+      },
       scales:{
         x:{ticks:{color:'#8a97b0',font:{size:11}},grid:{color:'rgba(255,255,255,.04)'}},
         y:{ticks:{color:'#8a97b0',font:{size:11},callback:v=>v+'%'},
