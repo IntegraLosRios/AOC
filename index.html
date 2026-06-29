@@ -84,11 +84,15 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 .badge.a{background:#2d1a07;color:#fbbf24}
 .badge.v{background:#1d1a2d;color:#a78bfa}
 .badge-desist{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#2d0f0f;color:#f87171}
-.card-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:8px 0}
-.cm{background:#0d1117;border-radius:6px;padding:5px 6px;text-align:center;overflow:hidden;min-width:0}
-.cm-l{font-size:9.5px;color:#8a97b0;white-space:normal;word-break:break-word;line-height:1.2}
-.cm-v{font-size:14px;font-weight:700;color:#ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media(max-width:480px){.cm-l{font-size:8.5px}.cm-v{font-size:13px}.card-meta{gap:3px}}
+.card-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+.cm{background:#0d1117;border-radius:6px;padding:7px 4px;text-align:center;min-width:0}
+.cm-l{font-size:9px;color:#8a97b0;white-space:nowrap;line-height:1.3;display:block;margin-bottom:3px}
+.cm-v{font-size:15px;font-weight:700;color:#ffffff;white-space:nowrap;display:block}
+@media(max-width:360px){
+  .card-meta{grid-template-columns:repeat(2,1fr);gap:5px}
+  .cm-l{font-size:9px}
+  .cm-v{font-size:14px}
+}
 .asist-bar-wrap{margin:6px 0 3px}
 .asist-bar-bg{background:#0d1117;border-radius:3px;height:5px;overflow:hidden}
 .asist-bar-f{height:5px;border-radius:3px}
@@ -136,7 +140,7 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 
 /* ── JSR BLOCK ── */
 .jsr-block{background:#1a1f2e;border:1px solid #2a1f4a;border-radius:10px;padding:14px 16px;margin-bottom:14px;display:none}
-.comuna-chart-box{background:#161b27;border:1px solid #21283a;border-radius:12px;padding:16px;margin-bottom:16px;display:none}
+.comuna-chart-box{background:#161b27;border:1px solid #21283a;border-radius:12px;padding:20px;margin-bottom:16px;display:none}
 .comuna-chart-title{font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:12px}
 .com-bars{display:flex;flex-direction:column;gap:8px}
 .com-bar-row{display:grid;grid-template-columns:minmax(80px,150px) 1fr 44px;align-items:center;gap:8px;font-size:12px}
@@ -316,7 +320,7 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
   <div class="stat-row" id="statRow"></div>
   <div class="jsr-block" id="jsrBlock"></div>
   <div class="grid" id="grid"><div class="loading">⏳ Cargando datos…</div></div>
-  <div class="comuna-chart-box" id="comunaChart"></div>
+  <div style="margin-top:24px"><div class="comuna-chart-box" id="comunaChart"></div></div>
 </div>
 
 <!-- ── TAB ASISTENCIA ── -->
