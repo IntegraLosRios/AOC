@@ -727,10 +727,13 @@ function procesarCSV(csv) {
   // Detectar cambios y actualizar timestamps en localStorage
   _snaps = actualizarSnaps();
 
-  // Poblar selector jardines
+  // Poblar selector jardines (preservar selección previa si existe)
   const sel = document.getElementById('jSel');
+  const prevJSel = sel.value; // guardar antes de borrar
   sel.innerHTML = '<option value="">— Selecciona un jardín —</option>';
   J.forEach((j,i)=>{const o=document.createElement('option');o.value=i;o.textContent=j.n;sel.appendChild(o);});
+  // Restaurar selección previa si el índice sigue siendo válido
+  if(prevJSel !== '' && J[parseInt(prevJSel)]) sel.value = prevJSel;
 
   // Actualizar subtítulo con mes activo
   const mesNomActivo = MESES_BLOQUES[mesActivo].nombre.charAt(0)+MESES_BLOQUES[mesActivo].nombre.slice(1).toLowerCase();
@@ -803,8 +806,13 @@ function sw(id,el) {
   document.getElementById('tab-'+id).classList.add('on');
   const cs = document.getElementById('comunaStrip');
   if(cs) cs.style.display = id==='resumen'?'':'none';
-  // Cuando se abre asistencia, renderizar las pestañas de mes
-  if (id==='asistencia') renderMesTabs();
+  // Cuando se abre asistencia, renderizar las pestañas de mes y restaurar vista
+  if (id==='asistencia') {
+    renderMesTabs();
+    // Si ya hay un jardín seleccionado, re-renderizar su contenido
+    const jSelEl = document.getElementById('jSel');
+    if (jSelEl && jSelEl.value !== '') renderAsist();
+  }
 }
 function setF(f,btn){fil=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');render();}
 function setComuna(c){comunaFil=c;document.querySelectorAll('.cbtn').forEach(b=>b.classList.toggle('on',b.dataset.c===(c||'')));render();}
