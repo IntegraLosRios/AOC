@@ -1037,14 +1037,7 @@ function toggleCard(cid) {
   const el = document.getElementById(cid);
   if (!el) return;
   const opening = !el.classList.contains('open');
-  // Cerrar todos los demás — solo uno abierto a la vez
-  document.querySelectorAll('.card.open').forEach(c => {
-    if (c.id !== cid) {
-      c.classList.remove('open');
-      const t = c.querySelector('.card-toggle');
-      if (t) t.textContent = '▾ ver desglose por nivel y TJMJ';
-    }
-  });
+  // Permitir múltiples cards abiertos simultáneamente
   el.classList.toggle('open', opening);
   const tog = el.querySelector('.card-toggle');
   if (tog) tog.textContent = opening ? '▴ ocultar desglose' : '▾ ver desglose por nivel y TJMJ';
