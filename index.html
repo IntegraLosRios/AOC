@@ -386,6 +386,7 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 const URL_SHEET = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSS-eDu5WFkMlyVSMPQDEIhlmC__dPNGZqAdSFAxU9eXZQSiMUIaSzSl_9YdDIKaSZk0ZgAij8b9Tw2/pub?gid=909729487&single=true&output=csv';
@@ -1112,44 +1113,55 @@ function exportarPDF() {
     const ANCHO = 1100;
     const ALTO  = target.scrollHeight;
 
-    // IMPORTANTE: capturamos el canvas NOSOTROS MISMOS directamente desde `target`,
-    // en vez de dejar que html2pdf.js lo envuelva en su propio contenedor. Ese
-    // contenedor interno de html2pdf se centra dentro de un overlay cuyo ancho
-    // depende del tamaño REAL de la ventana del navegador en el momento de exportar
-    // (windowWidth ambiental) — eso es lo que causaba que la franja derecha del
-    // reporte se recortara de forma inconsistente. Al fijar windowWidth/windowHeight
-    // exactamente al tamaño de nuestro contenido, controlamos el "viewport" virtual
-    // que usa html2canvas y eliminamos esa dependencia por completo.
-    html2canvas(target, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      windowWidth: ANCHO,
-      windowHeight: Math.max(ALTO + 100, 800),
-      width: ANCHO,
-      height: ALTO,
-      x: 0,
-      y: 0,
-      scrollX: 0,
-      scrollY: 0
-    }).then(canvas => {
-      return html2pdf().set({
-        margin: [6,6,6,6],
-        filename: fileName,
-        image: { type: 'jpeg', quality: 0.98 },
-        jsPDF: { unit: 'mm', format: 'letter', orientation: 'landscape' },
-        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.kpi', '.section'] }
-      }).from(canvas, 'canvas').save();
-    }).then(() => {
-      container.innerHTML = '';
-      container.style.cssText = 'display:none';
-      if (btnEl) { btnEl.textContent = btnOriginalText; btnEl.disabled = false; }
-    }).catch(err => {
+    function manejarError(err) {
       console.error('Error generando PDF:', err);
       container.style.cssText = 'display:none';
       if (btnEl) { btnEl.textContent = btnOriginalText; btnEl.disabled = false; }
       alert('Hubo un error generando el PDF. Intenta nuevamente.');
-    });
+    }
+
+    if (typeof html2canvas !== 'function') {
+      manejarError(new Error('html2canvas no está disponible (falló la carga de la librería).'));
+      return;
+    }
+
+    try {
+      // IMPORTANTE: capturamos el canvas NOSOTROS MISMOS directamente desde `target`,
+      // en vez de dejar que html2pdf.js lo envuelva en su propio contenedor. Ese
+      // contenedor interno de html2pdf se centra dentro de un overlay cuyo ancho
+      // depende del tamaño REAL de la ventana del navegador en el momento de exportar
+      // (windowWidth ambiental) — eso es lo que causaba que la franja derecha del
+      // reporte se recortara de forma inconsistente. Al fijar windowWidth/windowHeight
+      // exactamente al tamaño de nuestro contenido, controlamos el "viewport" virtual
+      // que usa html2canvas y eliminamos esa dependencia por completo.
+      html2canvas(target, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        windowWidth: ANCHO,
+        windowHeight: Math.max(ALTO + 100, 800),
+        width: ANCHO,
+        height: ALTO,
+        x: 0,
+        y: 0,
+        scrollX: 0,
+        scrollY: 0
+      }).then(canvas => {
+        return html2pdf().set({
+          margin: [6,6,6,6],
+          filename: fileName,
+          image: { type: 'jpeg', quality: 0.98 },
+          jsPDF: { unit: 'mm', format: 'letter', orientation: 'landscape' },
+          pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.kpi', '.section'] }
+        }).from(canvas, 'canvas').save();
+      }).then(() => {
+        container.innerHTML = '';
+        container.style.cssText = 'display:none';
+        if (btnEl) { btnEl.textContent = btnOriginalText; btnEl.disabled = false; }
+      }).catch(manejarError);
+    } catch (err) {
+      manejarError(err);
+    }
   }); });
 }
 
