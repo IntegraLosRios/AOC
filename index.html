@@ -930,7 +930,7 @@ function exportarPDF() {
   }).filter((_,i)=>evolRows[i].pct>0||evolRows[i].esActual).join('');
 
   const pdfStyles = `
-    font-family:Arial,sans-serif;color:#1a1a2e;font-size:10px;background:#ffffff;width:277mm;padding:10px 14px;
+    font-family:Arial,sans-serif;color:#1a1a2e;font-size:10px;background:#ffffff;width:1100px;padding:14px 18px;display:block;
   `;
 
   const pdfCss = `
@@ -1016,7 +1016,7 @@ function exportarPDF() {
     </div>
 
     <!-- SECCIÓN 2: ASISTENCIA DIARIA -->
-    <div class="section page-break">
+    <div class="section">
       <div class="section-title">2. Asistencia diaria — ${mesNom.charAt(0).toUpperCase()+mesNom.slice(1)}</div>
       <div class="asist-table-wrap">
         <table>
@@ -1051,16 +1051,17 @@ function exportarPDF() {
     </div>`;
 
   // Generar PDF directo (descarga) usando html2pdf.js en vez de abrir diálogo de impresión
+  // IMPORTANTE: el contenedor debe estar DENTRO del flujo del documento (no fixed/offscreen)
+  // para que html2canvas calcule correctamente alturas y saltos de página.
   let container = document.getElementById('pdfExportContainer');
   if (!container) {
     container = document.createElement('div');
     container.id = 'pdfExportContainer';
-    container.style.position = 'fixed';
-    container.style.left = '-99999px';
-    container.style.top = '0';
     document.body.appendChild(container);
   }
-  container.innerHTML = `<div id="pdfExportInner" style="${pdfStyles}">${html}</div>`;
+  // Visible dentro del flujo pero oculto a la vista del usuario (no afecta layout de la página)
+  container.style.cssText = 'position:absolute;top:0;left:0;width:1100px;opacity:0;pointer-events:none;z-index:-1;overflow:visible';
+  container.innerHTML = `<div id="pdfExportInner" style="${pdfStyles}box-sizing:border-box;">${html}</div>`;
 
   const target = document.getElementById('pdfExportInner');
   const fileName = `Reporte_${j.n.replace(/[^a-zA-Z0-9]+/g,'_')}_${mesNom}.pdf`;
@@ -1069,21 +1070,26 @@ function exportarPDF() {
   const btnOriginalText = btnEl ? btnEl.textContent : '';
   if (btnEl) { btnEl.textContent = '⏳ Generando PDF…'; btnEl.disabled = true; }
 
-  html2pdf().set({
-    margin: 0,
-    filename: fileName,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
-    pagebreak: { mode: ['css', 'legacy'] }
-  }).from(target).save().then(() => {
-    container.innerHTML = '';
-    if (btnEl) { btnEl.textContent = btnOriginalText; btnEl.disabled = false; }
-  }).catch(err => {
-    console.error('Error generando PDF:', err);
-    if (btnEl) { btnEl.textContent = btnOriginalText; btnEl.disabled = false; }
-    alert('Hubo un error generando el PDF. Intenta nuevamente.');
-  });
+  // Esperar un frame para que el navegador termine de calcular el layout antes de capturar
+  requestAnimationFrame(() => { requestAnimationFrame(() => {
+    html2pdf().set({
+      margin: [6,6,6,6],
+      filename: fileName,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1100, scrollX: 0, scrollY: 0 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+      pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.kpi', '.section'] }
+    }).from(target).save().then(() => {
+      container.innerHTML = '';
+      container.style.cssText = 'display:none';
+      if (btnEl) { btnEl.textContent = btnOriginalText; btnEl.disabled = false; }
+    }).catch(err => {
+      console.error('Error generando PDF:', err);
+      container.style.cssText = 'display:none';
+      if (btnEl) { btnEl.textContent = btnOriginalText; btnEl.disabled = false; }
+      alert('Hubo un error generando el PDF. Intenta nuevamente.');
+    });
+  }); });
 }
 
 function sw(id,el) {
