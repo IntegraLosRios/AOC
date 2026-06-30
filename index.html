@@ -873,31 +873,73 @@ function exportarPDF() {
 
   const miBlk = MESES_BLOQUES.indexOf(blk);
 
-  // Agrupar días por semana para que no quede demasiado ancho
-  // Crear filas de la tabla: una por sala, columnas = días
-  const thDias = diasLabels.map(l=>`<th style="text-align:center;font-size:7.5px;padding:3px 1px">${(l.trim().replace(/\s+/g,' ').match(/[LMJV]\s*(\d+)/i)||['','',l.trim().replace(/\s+/g,' ').match(/\d+/)||''])[0].replace(/\s+/,' ')}</th>`).join('');
+  // Etiqueta corta de un día (ej. "L 6")
+  const labelDia = l => (l.trim().replace(/\s+/g,' ').match(/[LMJV]\s*(\d+)/i)||['','',l.trim().replace(/\s+/g,' ').match(/\d+/)||''])[0].replace(/\s+/,' ');
 
-  const trSalas = salasFiltradas.map(s=>{
+  // Construye una celda de asistencia para una sala/día dado
+  function celdaAsist(s, di) {
     const dias = (s.diasPorMes && s.diasPorMes[miBlk]) || [];
-    const celdas = diasLabels.map((_,di)=>{
-      const v = dias[di];
-      if(typeof v==='string'&&v) return `<td style="text-align:center;background:#fef9c3;color:#78350f;font-weight:700;font-size:9px">${v}</td>`;
-      if(typeof v==='number'&&v>0){
-        const pctD = s.mat>0?v/s.mat*100:0;
-        const bg = pctD>=75?'#f0fdf4':pctD>=55?'#fefce8':'#fef2f2';
-        const clr= pctD>=75?'#15803d':pctD>=55?'#a16207':'#b91c1c';
-        return `<td style="text-align:center;background:${bg};color:${clr};font-size:10px;font-weight:600">${v}</td>`;
-      }
-      return `<td style="text-align:center;color:#cbd5e1;font-size:10px">—</td>`;
+    const v = dias[di];
+    if(typeof v==='string'&&v) return `<td style="text-align:center;background:#fef9c3;color:#78350f;font-weight:700;font-size:9px">${v}</td>`;
+    if(typeof v==='number'&&v>0){
+      const pctD = s.mat>0?v/s.mat*100:0;
+      const bg = pctD>=75?'#f0fdf4':pctD>=55?'#fefce8':'#fef2f2';
+      const clr= pctD>=75?'#15803d':pctD>=55?'#a16207':'#b91c1c';
+      return `<td style="text-align:center;background:${bg};color:${clr};font-size:10px;font-weight:600">${v}</td>`;
+    }
+    return `<td style="text-align:center;color:#cbd5e1;font-size:10px">—</td>`;
+  }
+
+  // Dividir los días del mes en 2 bloques (quincenas) para que cada tabla quepa
+  // de ancho en la hoja sin recortar columnas. Si hay pocos días (<=11), no hace falta dividir.
+  const nDiasTot = diasLabels.length;
+  const partir = nDiasTot > 11;
+  const corte = Math.ceil(nDiasTot / 2);
+  const indicesTotales = diasLabels.map((_,i)=>i);
+  const bloquesDias = partir
+    ? [ indicesTotales.slice(0, corte), indicesTotales.slice(corte) ]
+    : [ indicesTotales ];
+
+  // Genera el HTML de una tabla de asistencia para un subconjunto de índices de días.
+  // mostrarTotal: si true, agrega la columna final "% Asist." (mes completo).
+  function tablaAsistenciaHTML(idxs, mostrarTotal, tituloRango) {
+    const thDiasG = idxs.map(di => `<th style="text-align:center;font-size:7.5px;padding:3px 1px">${labelDia(diasLabels[di])}</th>`).join('');
+    const filas = salasFiltradas.map(s => {
+      const celdas = idxs.map(di => celdaAsist(s, di)).join('');
+      const jorTag = s._jorn==='TJMJ'?'<span style="font-size:8px;background:#ede9fe;color:#6d28d9;border-radius:3px;padding:1px 4px;margin-left:3px">TJMJ</span>':'';
+      const totalCell = mostrarTotal ? `<td class="asist-total-col" style="text-align:center;font-size:10px;font-weight:700;padding:4px 6px;color:${s.asist>=75?'#15803d':s.asist>=55?'#a16207':s.asist>0?'#b91c1c':'#94a3b8'}">${s.asist>0?s.asist.toFixed(1)+'%':'—'}</td>` : '';
+      return `<tr>
+        <td style="font-size:10px;white-space:nowrap;padding:4px 6px;font-weight:600">${s.nivel}${jorTag}</td>
+        <td style="font-size:10px;color:#64748b;padding:4px 6px">${s.s}</td>
+        <td style="text-align:center;font-size:10px;padding:4px 6px">${s.mat}</td>
+        ${celdas}
+        ${totalCell}
+      </tr>`;
     }).join('');
-    const jorTag = s._jorn==='TJMJ'?'<span style="font-size:8px;background:#ede9fe;color:#6d28d9;border-radius:3px;padding:1px 4px;margin-left:3px">TJMJ</span>':'';
-    return `<tr>
-      <td style="font-size:10px;white-space:nowrap;padding:4px 6px;font-weight:600">${s.nivel}${jorTag}</td>
-      <td style="font-size:10px;color:#64748b;padding:4px 6px">${s.s}</td>
-      <td style="text-align:center;font-size:10px;padding:4px 6px">${s.mat}</td>
-      ${celdas}
-      <td style="text-align:center;font-size:10px;font-weight:700;padding:4px 6px;color:${s.asist>=75?'#15803d':s.asist>=55?'#a16207':s.asist>0?'#b91c1c':'#94a3b8'}">${s.asist>0?s.asist.toFixed(1)+'%':'—'}</td>
-    </tr>`;
+    return `
+      <div style="margin-top:6px">
+        ${tituloRango ? `<div style="font-size:8.5px;font-weight:700;color:#475569;margin-bottom:3px">${tituloRango}</div>` : ''}
+        <div class="asist-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nivel</th><th>Sala</th><th>Mat</th>
+                ${thDiasG}
+                ${mostrarTotal ? '<th class="asist-total-col" style="text-align:center">% Asist.</th>' : ''}
+              </tr>
+            </thead>
+            <tbody>${filas}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
+  const tablasAsistenciaHTML = bloquesDias.map((idxs, bi) => {
+    const esUltimo = bi === bloquesDias.length - 1;
+    const tituloRango = partir
+      ? `${bi===0?'1ª quincena':'2ª quincena'} — ${labelDia(diasLabels[idxs[0]])} al ${labelDia(diasLabels[idxs[idxs.length-1]])}`
+      : '';
+    return tablaAsistenciaHTML(idxs, esUltimo, tituloRango);
   }).join('');
 
   // ── Sección 3: Evolución mensual ───────────────────────────────────────────
@@ -963,7 +1005,7 @@ function exportarPDF() {
     #pdfExportInner .asist-table-wrap th:first-child,#pdfExportInner .asist-table-wrap td:first-child{text-align:left;width:90px}
     #pdfExportInner .asist-table-wrap th:nth-child(2),#pdfExportInner .asist-table-wrap td:nth-child(2){width:55px}
     #pdfExportInner .asist-table-wrap th:nth-child(3),#pdfExportInner .asist-table-wrap td:nth-child(3){width:28px}
-    #pdfExportInner .asist-table-wrap th:last-child,#pdfExportInner .asist-table-wrap td:last-child{width:38px;font-weight:700}
+    #pdfExportInner .asist-total-col{width:38px;font-weight:700}
   `;
 
   // Inyectar el CSS del PDF una sola vez
@@ -1019,18 +1061,7 @@ function exportarPDF() {
     <!-- SECCIÓN 2: ASISTENCIA DIARIA -->
     <div class="section">
       <div class="section-title">2. Asistencia diaria — ${mesNom.charAt(0).toUpperCase()+mesNom.slice(1)}</div>
-      <div class="asist-table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Nivel</th><th>Sala</th><th>Mat</th>
-              ${thDias}
-              <th style="text-align:center">% Asist.</th>
-            </tr>
-          </thead>
-          <tbody>${trSalas}</tbody>
-        </table>
-      </div>
+      ${tablasAsistenciaHTML}
       <div style="margin-top:4px;font-size:8px;color:#64748b">
         <strong>Referencias:</strong> Número = niños presentes &nbsp;·&nbsp;
         <span style="background:#fef9c3;color:#78350f;padding:1px 5px;border-radius:3px;font-weight:700">P/C/T…</span> = Causal sin actividad
@@ -1092,7 +1123,7 @@ function exportarPDF() {
       // franja derecha se recortaba al capturar el canvas. Forzamos aquí el ancho real
       // de captura para que tome el contenido completo sin recortes.
       html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', x: 0, y: 0, width: 1100, scrollX: 0, scrollY: 0 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+      jsPDF: { unit: 'mm', format: 'letter', orientation: 'landscape' },
       pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.kpi', '.section'] }
     }).from(target).save().then(() => {
       container.innerHTML = '';
