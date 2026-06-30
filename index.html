@@ -1086,7 +1086,12 @@ function exportarPDF() {
       // tiene un ancho CSS fijo (1100px), forzar windowWidth provoca que html2canvas
       // desplace el contenido y lo recorte por el lado izquierdo (bug conocido de
       // html2pdf.js/html2canvas). Con x:0,y:0 fijamos el origen de captura explícitamente.
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', x: 0, y: 0, scrollX: 0, scrollY: 0 },
+      // IMPORTANTE: html2pdf.js envuelve el contenido en un contenedor propio cuyo ancho
+      // fija en mm = ancho útil de la página PDF (~285mm ≈ 1077px para A4 landscape con
+      // margen 6mm). Como nuestro reporte mide 1100px, sobresalía de ese contenedor y la
+      // franja derecha se recortaba al capturar el canvas. Forzamos aquí el ancho real
+      // de captura para que tome el contenido completo sin recortes.
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', x: 0, y: 0, width: 1100, scrollX: 0, scrollY: 0 },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
       pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.kpi', '.section'] }
     }).from(target).save().then(() => {
