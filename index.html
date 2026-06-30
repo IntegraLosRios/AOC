@@ -1109,23 +1109,38 @@ function exportarPDF() {
 
   // Esperar un frame para que el navegador termine de calcular el layout antes de capturar
   requestAnimationFrame(() => { requestAnimationFrame(() => {
-    html2pdf().set({
-      margin: [6,6,6,6],
-      filename: fileName,
-      image: { type: 'jpeg', quality: 0.98 },
-      // IMPORTANTE: no pasar windowWidth/windowHeight aquí. Cuando el contenedor ya
-      // tiene un ancho CSS fijo (1100px), forzar windowWidth provoca que html2canvas
-      // desplace el contenido y lo recorte por el lado izquierdo (bug conocido de
-      // html2pdf.js/html2canvas). Con x:0,y:0 fijamos el origen de captura explícitamente.
-      // IMPORTANTE: html2pdf.js envuelve el contenido en un contenedor propio cuyo ancho
-      // fija en mm = ancho útil de la página PDF (~285mm ≈ 1077px para A4 landscape con
-      // margen 6mm). Como nuestro reporte mide 1100px, sobresalía de ese contenedor y la
-      // franja derecha se recortaba al capturar el canvas. Forzamos aquí el ancho real
-      // de captura para que tome el contenido completo sin recortes.
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', x: 0, y: 0, width: 1100, scrollX: 0, scrollY: 0 },
-      jsPDF: { unit: 'mm', format: 'letter', orientation: 'landscape' },
-      pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.kpi', '.section'] }
-    }).from(target).save().then(() => {
+    const ANCHO = 1100;
+    const ALTO  = target.scrollHeight;
+
+    // IMPORTANTE: capturamos el canvas NOSOTROS MISMOS directamente desde `target`,
+    // en vez de dejar que html2pdf.js lo envuelva en su propio contenedor. Ese
+    // contenedor interno de html2pdf se centra dentro de un overlay cuyo ancho
+    // depende del tamaño REAL de la ventana del navegador en el momento de exportar
+    // (windowWidth ambiental) — eso es lo que causaba que la franja derecha del
+    // reporte se recortara de forma inconsistente. Al fijar windowWidth/windowHeight
+    // exactamente al tamaño de nuestro contenido, controlamos el "viewport" virtual
+    // que usa html2canvas y eliminamos esa dependencia por completo.
+    html2canvas(target, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      windowWidth: ANCHO,
+      windowHeight: Math.max(ALTO + 100, 800),
+      width: ANCHO,
+      height: ALTO,
+      x: 0,
+      y: 0,
+      scrollX: 0,
+      scrollY: 0
+    }).then(canvas => {
+      return html2pdf().set({
+        margin: [6,6,6,6],
+        filename: fileName,
+        image: { type: 'jpeg', quality: 0.98 },
+        jsPDF: { unit: 'mm', format: 'letter', orientation: 'landscape' },
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.kpi', '.section'] }
+      }).from(canvas, 'canvas').save();
+    }).then(() => {
       container.innerHTML = '';
       container.style.cssText = 'display:none';
       if (btnEl) { btnEl.textContent = btnOriginalText; btnEl.disabled = false; }
