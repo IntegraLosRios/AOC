@@ -1070,13 +1070,22 @@ function exportarPDF() {
   const btnOriginalText = btnEl ? btnEl.textContent : '';
   if (btnEl) { btnEl.textContent = '⏳ Generando PDF…'; btnEl.disabled = true; }
 
+  // Asegurar que la página esté desplazada a (0,0) antes de capturar: si el usuario
+  // había hecho scroll horizontal/vertical, html2canvas puede calcular mal el origen
+  // y recortar el contenido por la izquierda.
+  window.scrollTo(0, 0);
+
   // Esperar un frame para que el navegador termine de calcular el layout antes de capturar
   requestAnimationFrame(() => { requestAnimationFrame(() => {
     html2pdf().set({
       margin: [6,6,6,6],
       filename: fileName,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1100, scrollX: 0, scrollY: 0 },
+      // IMPORTANTE: no pasar windowWidth/windowHeight aquí. Cuando el contenedor ya
+      // tiene un ancho CSS fijo (1100px), forzar windowWidth provoca que html2canvas
+      // desplace el contenido y lo recorte por el lado izquierdo (bug conocido de
+      // html2pdf.js/html2canvas). Con x:0,y:0 fijamos el origen de captura explícitamente.
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', x: 0, y: 0, scrollX: 0, scrollY: 0 },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
       pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.kpi', '.section'] }
     }).from(target).save().then(() => {
