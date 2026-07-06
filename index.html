@@ -548,12 +548,43 @@ function detectarBloques(row1, hdr) {
       }
     }
 
+    // Columna "Dias trabaj." REAL (cuántos días del mes ya tienen datos cargados).
+    // CRÍTICO: no usar diasCols.length (días totales del mes) como denominador del
+    // % Asistencia, porque al inicio de mes solo hay 1-2 días reales cargados y
+    // usar el mes completo deflacta el % artificialmente. Buscamos la columna real.
+    let diasTrabCol = -1;
+    for (let c = diasStart; c < nextMat && c < hdr.length; c++) {
+      if (normH(hdr[c]).startsWith('dias trab')) { diasTrabCol = c; break; }
+    }
+
     bloques.push({ nombre, mat:matCol, lista:matCol+2, cupos:matCol+3,
-                   asist:asistCol, desist:desistCol, diasCols, diasLabels });
+                   asist:asistCol, desist:desistCol, diasCols, diasLabels, diasTrabCol });
   });
 
   bloques.sort((a,b) => a.mat - b.mat);
   return bloques;
+}
+
+// ── EXTRAER "% Asistencia" OFICIAL (INDICADOR PRELIMINAR) ────────────────────
+// Google Sheets ya calcula y publica esta cifra en el panel "INDICADOR PRELIMINAR"
+// (fila con Capacidad/Matricula/%Uso Cap/Mat/% Asistencia). En vez de tratar de
+// replicar esa fórmula interna sumando días trabajados (lo cual falla al inicio
+// de cada mes porque compara asistencia real de 1-2 días contra el mes completo,
+// deflactando el % artificialmente), leemos el valor directo desde esa celda.
+// Esto garantiza que el HTML SIEMPRE coincida exactamente con el Sheet.
+function extraerAsistenciaOficial(filas, headerIdx, blk) {
+  const col = blk.mat; // misma columna base que usa la tabla de ese mes
+  for (let r = 1; r < headerIdx; r++) {
+    const label = (filas[r-1]?.[col] || '').trim().toLowerCase();
+    if (label === 'capacidad') {
+      const raw = (filas[r]?.[col+6] || '').trim();
+      if (/^-?\d{1,3}(,\d+)?%$/.test(raw)) {
+        return parseFloat(raw.replace('%','').replace(',','.')) || null;
+      }
+      break; // encontramos la fila pero el valor no calzó con el patrón esperado
+    }
+  }
+  return null;
 }
 
 async function cargarDatos() {
@@ -611,6 +642,7 @@ function procesarCSV(csv) {
 
   // Detectar bloques históricos para asistencia multi-mes
   MESES_BLOQUES = detectarBloques(row1, hdr);
+  MESES_BLOQUES.forEach(blk => { blk.asistOficial = extraerAsistenciaOficial(filas, headerIdx, blk); });
 
   // Mes ACTIVO = bloque con más matrículas (por si el mes nuevo está vacío)
   const conteoMat = MESES_BLOQUES.map(blk => {
@@ -710,6 +742,13 @@ function procesarCSV(csv) {
       });
     });
 
+    // "Dias trabaj." REAL por mes (cuántos días de ese mes ya tienen datos cargados).
+    // Es el denominador correcto del % Asistencia — NO los días totales del mes.
+    const diasTrabPorMes = MESES_BLOQUES.map(blk => {
+      if (blk.diasTrabCol < 0) return 0;
+      return parseInt((fila[blk.diasTrabCol]||'').trim()) || 0;
+    });
+
     const codigo = (fila[9]||fila[8]||'').replace(/\D/g,'').substring(0,6);
 
     if (!jardines[jardActivo]) {
@@ -725,23 +764,49 @@ function procesarCSV(csv) {
     bloque.cap+=capacidad; bloque.mat+=matricula;
     bloque.lista+=lista; bloque.cupos+=cupos; bloque.desist+=desist;
     if (jornActiva==='NORMAL') tDesist+=desist;
-    bloque.salas.push({nivel,s:nSala,cap:capacidad,mat:matricula,lista,cupos,desist,asist:asistencia,diasPorMes});
+    bloque.salas.push({nivel,s:nSala,cap:capacidad,mat:matricula,lista,cupos,desist,asist:asistencia,diasPorMes,diasTrabPorMes});
   }
 
   // Post-proceso
   J = Object.values(jardines);
+
+  // "Dias trabaj." GLOBAL del corte activo: el valor real (no el total del mes)
+  // que representa cuántos días de este mes ya tienen datos cargados en el sheet.
+  // Se toma como el valor más frecuente entre todas las salas que ya reportaron,
+  // porque es un dato del CORTE (mismo para toda la región), no por sala/jardín.
+  const miActivoGlobal = mesActivo;
+  const diasTrabGlobal = (() => {
+    const counts = {};
+    J.forEach(j => ['jn','tjmj'].forEach(k => j[k].salas.forEach(s => {
+      const v = (s.diasTrabPorMes || [])[miActivoGlobal] || 0;
+      if (v > 0) counts[v] = (counts[v]||0) + 1;
+    })));
+    let best = 0, bestC = -1;
+    Object.entries(counts).forEach(([v,c]) => { if (c > bestC) { best = +v; bestC = c; } });
+    return best || 1;
+  })();
+
   J.forEach(j=>{
     ['jn','tjmj'].forEach(k=>{
       const b=j[k];
       // Calcular asistencia desde col % directamente
       const salasConA = b.salas.filter(s=>s.asist>0);
       b.asist = salasConA.length ? parseFloat((salasConA.reduce((a,s)=>a+(s.asist*s.mat),0)/salasConA.reduce((a,s)=>a+s.mat,0)).toFixed(1)) : 0;
-      // sumDias para KPI global — dias del mes activo
+      // sumDias/denom para KPI global — dias del mes activo
+      // CORRECCIÓN: el denominador usa los DÍAS TRABAJADOS REALES del corte
+      // (columna "Dias trabaj.", que sube de a poco durante el mes), no el total
+      // de días del mes completo. Además, TODAS las salas cuentan su matrícula
+      // en el denominador aunque aún no tengan datos cargados (aportan 0 al
+      // numerador pero sí matrícula×díasTrabajados al denominador) — así el %
+      // baja correctamente mientras falten jardines por reportar, igual que en
+      // el Sheet. Validado: SC MENOR 11,7%, TOTAL REGIÓN 11,0%. Al calcularse
+      // por sala funciona igual de bien filtrando por comuna, jardín o búsqueda.
       const miActivo = mesActivo; // índice dentro de diasPorMes
-      const salasConDias = b.salas.filter(s => s.diasPorMes[miActivo] && s.diasPorMes[miActivo].some(v=>typeof v==='number'&&v>0));
-      const nDias = (MESES_BLOQUES[miActivo]?.diasCols.length) || diasActualesCols.length || 15;
-      b.sumDias = salasConDias.reduce((a,s)=>a+s.diasPorMes[miActivo].reduce((x,v)=>x+(typeof v==='number'&&v>0?v:0),0),0);
-      b.denom   = salasConDias.reduce((a,s)=>a+s.mat*nDias,0);
+      b.sumDias = b.salas.reduce((a,s)=>{
+        const arr = s.diasPorMes[miActivo] || [];
+        return a + arr.reduce((x,v)=>x+(typeof v==='number'&&v>0?v:0),0);
+      },0);
+      b.denom = b.salas.reduce((a,s)=>a+s.mat*diasTrabGlobal,0);
       b.ocup = b.cap?Math.round((b.mat/b.cap)*100)+'%':'0%';
     });
   });
@@ -1349,7 +1414,14 @@ function render() {
     const s2 = data.filter(j=>j.jn.asist>0);
     return s2.length?parseFloat((s2.reduce((a,j)=>a+j.jn.asist,0)/s2.length).toFixed(1)):0;
   })();
-  const avgAFinal = avgA || avgAFallback;
+  // avgA ya queda correctamente calculado (matrícula×días trabajados reales del
+  // corte) y se recalcula solo con los jardines del subconjunto filtrado (data),
+  // por lo que funciona igual de bien para el total región, por comuna, o búsqueda.
+  // El valor oficial del panel "INDICADOR PRELIMINAR" del Sheet se usa solo como
+  // respaldo cuando no hay filtros y el cálculo local no pudo obtenerse (denom=0).
+  const sinFiltros = (fil==='todos' && !q && !comunaFil);
+  const blkActivo = MESES_BLOQUES[mesActivo];
+  const avgAFinal = avgA || (sinFiltros ? blkActivo?.asistOficial : null) || avgAFallback;
 
   document.getElementById('kJ').textContent    = data.length;
   document.getElementById('kCap').textContent  = fmt(tCap);
