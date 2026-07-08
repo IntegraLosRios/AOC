@@ -914,43 +914,53 @@ function procesarCSV(csv) {
   ultimoNumFilasValidas = filas.length;
   ultimoNumJardinesValidos = J.length;
 
-  // "Dias trabaj." GLOBAL del corte activo: el valor real (no el total del mes)
-  // que representa cuántos días de este mes ya tienen datos cargados en el sheet.
-  // Se toma como el MÁXIMO entre todas las salas (no la moda): si UNA sala ya
-  // muestra día 2, es porque el día 2 ya ocurrió realmente, aunque otras salas
-  // (típicamente las más grandes, con más filas) aún no hayan reportado y sigan
-  // marcando día 1 — usar la moda subestima el corte real en esos casos.
-  const miActivoGlobal = mesActivo;
-  const diasTrabGlobal = (() => {
-    let max = 0;
-    J.forEach(j => ['jn','tjmj'].forEach(k => j[k].salas.forEach(s => {
-      const v = (s.diasTrabPorMes || [])[miActivoGlobal] || 0;
-      if (v > max) max = v;
-    })));
-    return max || 1;
-  })();
 
   J.forEach(j=>{
     ['jn','tjmj'].forEach(k=>{
       const b=j[k];
-      // Calcular asistencia desde col % directamente
-      const salasConA = b.salas.filter(s=>s.asist>0);
-      b.asist = salasConA.length ? parseFloat((salasConA.reduce((a,s)=>a+(s.asist*s.mat),0)/salasConA.reduce((a,s)=>a+s.mat,0)).toFixed(1)) : 0;
-      // sumDias/denom para KPI global — dias del mes activo
-      // CORRECCIÓN: el denominador usa los DÍAS TRABAJADOS REALES del corte
-      // (columna "Dias trabaj.", que sube de a poco durante el mes), no el total
-      // de días del mes completo. Además, TODAS las salas cuentan su matrícula
-      // en el denominador aunque aún no tengan datos cargados (aportan 0 al
-      // numerador pero sí matrícula×díasTrabajados al denominador) — así el %
-      // baja correctamente mientras falten jardines por reportar, igual que en
-      // el Sheet. Validado: SC MENOR 11,7%, TOTAL REGIÓN 11,0%. Al calcularse
-      // por sala funciona igual de bien filtrando por comuna, jardín o búsqueda.
+      // sumDias/denom/asist — TODOS calculados desde los días reales del mes
+      // activo, con un único criterio (v3): "días con datos" a nivel de
+      // JARDÍN/JORNADA (uniforme para todas sus salas), igual que la tabla
+      // de detalle y la card de evolución.
+      //
+      // Antes (v2) el denominador usaba el propio "días trabajados" de CADA
+      // sala. Eso evitaba el cruce entre comunas (bien), pero introducía otro
+      // bug: si UNA sola sala tenía un día puntual sin cargar o marcado con
+      // causal (p.ej. "BM" en Sala Cuna), esa sala aportaba su matrícula
+      // completa al numerador cada vez y sin embargo reducía su propio
+      // denominador — inflando el % agregado muy por encima del real (ej:
+      // mostraba 32,9% en vez del 30,4% real de la tabla de detalle).
+      //
+      // Además, b.asist (el que se muestra en la card del jardín y en el
+      // gráfico de comuna) usaba una TERCERA fuente: la columna "% Asistencia"
+      // que trae la planilla por sala, ponderada por matrícula — sin relación
+      // con los días reales. Eso hacía que la card mostrara un número (ej.
+      // 31%) distinto tanto del KPI general como de la tabla de detalle.
+      //
+      // Ahora las tres vistas (KPI general, card del jardín/gráfico de
+      // comuna, tabla de detalle) usan el MISMO cálculo: suma de asistencia
+      // real de los días cargados, dividido por (matrícula total × cantidad
+      // de días con datos, contados una sola vez por jardín). La columna de
+      // % del Sheet solo se usa como respaldo si ese mes no tiene columnas
+      // de días detectadas (diasConDatos = 0).
       const miActivo = mesActivo; // índice dentro de diasPorMes
-      b.sumDias = b.salas.reduce((a,s)=>{
+      const nDiasBlk = (MESES_BLOQUES[miActivo] && MESES_BLOQUES[miActivo].diasCols.length) || 0;
+      const totDiasArr = Array(nDiasBlk).fill(0);
+      b.salas.forEach(s=>{
         const arr = s.diasPorMes[miActivo] || [];
-        return a + arr.reduce((x,v)=>x+(typeof v==='number'&&v>0?v:0),0);
-      },0);
-      b.denom = b.salas.reduce((a,s)=>a+s.mat*diasTrabGlobal,0);
+        arr.forEach((v,i)=>{ if(typeof v==='number'&&v>0) totDiasArr[i]+=v; });
+      });
+      const diasConDatos = totDiasArr.filter(v=>v>0).length;
+      b.sumDias = totDiasArr.reduce((a,v)=>a+v,0);
+      b.denom = diasConDatos * b.mat;
+      if (b.denom > 0) {
+        b.asist = parseFloat((b.sumDias / b.denom * 100).toFixed(1));
+      } else {
+        // Respaldo: sin columnas de días para este mes, usar el % que trae
+        // la planilla por sala, ponderado por matrícula.
+        const salasConA = b.salas.filter(s=>s.asist>0);
+        b.asist = salasConA.length ? parseFloat((salasConA.reduce((a,s)=>a+(s.asist*s.mat),0)/salasConA.reduce((a,s)=>a+s.mat,0)).toFixed(1)) : 0;
+      }
       b.ocup = b.cap?Math.round((b.mat/b.cap)*100)+'%':'0%';
     });
   });
