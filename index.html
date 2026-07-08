@@ -11,7 +11,8 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 /* ── HEADER ── */
 .hdr{background:#161b27;border-bottom:1px solid #21283a;padding:13px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:100}
 .brand{display:flex;align-items:center;gap:12px}
-.logo{width:38px;height:38px;background:linear-gradient(135deg,#00c896,#0077ff);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;flex-shrink:0}
+.logo{width:50px;height:50px;background:#fff;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;flex-shrink:0;object-fit:contain;padding:3px;box-sizing:border-box}
+.credit{font-size:9px;color:#5a677f;margin-top:1px}
 .brand h1{font-size:16px;font-weight:600;color:#fff}
 .brand p{font-size:12px;color:#8a97b0}
 .hchips{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
@@ -252,10 +253,11 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 <!-- HEADER -->
 <div class="hdr">
   <div class="brand">
-    <div class="logo">AOC</div>
+    <img class="logo" src="data:image/png;base64,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" alt="Logo AOC">
     <div>
       <h1>Dashboard Jardines AOC</h1>
       <p id="hdrSubtitle">45 Jardines AOC · Datos actualizados desde Google Sheets</p>
+      <p class="credit">Creado por Julio Alveal Tejos</p>
     </div>
   </div>
   <div class="hchips">
@@ -315,6 +317,7 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
     <button class="fbtn on" onclick="setF('todos',this)">Todos</button>
     <button class="fbtn" onclick="setF('cupos',this)">Con cupos JN</button>
     <button class="fbtn" onclick="setF('lleno',this)">Sin cupos JN</button>
+    <button class="fbtn" onclick="setF('desact',this)" title="Jardines cuyos datos no han cambiado en 5 días o más">⚠ Sin actualizar</button>
   </div>
   <div class="stat-row" id="statRow"></div>
   <div class="jsr-block" id="jsrBlock"></div>
@@ -388,7 +391,7 @@ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e2e8f0;min
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
-const URL_SHEET = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSS-eDu5WFkMlyVSMPQDEIhlmC__dPNGZqAdSFAxU9eXZQSiMUIaSzSl_9YdDIKaSZk0ZgAij8b9Tw2/pub?gid=909729487&single=true&output=csv';
+const URL_SHEET = 'https://script.google.com/macros/s/AKfycbwl4TICVzHL4hpb3LrXgXmqqlsIDo1s_qB3RcbxQAEsDeazC9T44cOo0VehpVZqF47H2Q/exec';
 
 const JARDINES_AOC = [
   'El Canelito','Cuncunita','Esperanza','Papelucho','Ensueño','Los Pinguinitos',
@@ -441,6 +444,16 @@ const ALIAS = {
 const MESES_NOMBRES = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
 const CAUSALES_KEYS = ['C','CA','P','CE','BM','REC','PR','M','DI','T','F','DIA','W'];
 
+// ── UMBRALES DE COLOR (centralizados) ───────────────────────────────────────
+// % Asistencia: verde desde 70%, rojo bajo 70% (sin tramo amarillo intermedio)
+function asistColor(p){ return p>0 ? (p>=70?'#34d399':'#f87171') : '#3d4f6a'; }
+function asistColorPDF(p){ return p>0 ? (p>=70?'#16a34a':'#dc2626') : '#94a3b8'; }
+function asistBgPDF(p){ return p>0 ? (p>=70?'#f0fdf4':'#fef2f2') : '#f8fafc'; }
+function asistClase(p){ return p>0 ? (p>=70?'g':'r') : 'z'; }
+// % Ocupación (Mat/Cap): verde desde 75%, amarillo 65%-74%, rojo bajo 65%
+function ocupColor(p){ return p>=75?'#34d399':p>=65?'#fbbf24':'#f87171'; }
+function ocupClase(p){ return p>=75?'g':p>=65?'a':'r'; }
+
 // Estado global
 let J = [];
 let MESES_BLOQUES = [];
@@ -452,6 +465,12 @@ let comunaFil = '';
 let vistaActual = 'detalle';
 let chartInst = null;
 let evolChartInst = null;
+let cargaInicial = true;   // solo forzar mesFiltro=mesActivo en la primera carga
+let ultimoCSVRaw = null;   // último CSV recibido, para saltar re-render si no cambió nada
+let cargando = false;      // candado: evita peticiones de refresco superpuestas
+let turnoCarga = 0;        // número de secuencia para descartar respuestas obsoletas
+let ultimoNumFilasValidas = 0;     // nº de filas de la última carga BUENA (anti-corrupción)
+let ultimoNumJardinesValidos = 0;  // nº de jardines reconocidos en la última carga BUENA
 
 // ── CSV PARSER ────────────────────────────────────────────────────────────────
 function parseCSV(text) {
@@ -587,22 +606,109 @@ function extraerAsistenciaOficial(filas, headerIdx, blk) {
   return null;
 }
 
-async function cargarDatos() {
-  try {
-    const resp = await fetch(URL_SHEET);
-    if (!resp.ok) throw new Error('HTTP '+resp.status);
-    procesarCSV(await resp.text());
-  } catch(e) {
-    const em = document.getElementById('errMsg');
-    em.textContent = 'Error cargando datos: '+e.message;
-    em.style.display = 'block';
-    document.getElementById('grid').innerHTML = '<div class="nodata">Sin datos disponibles</div>';
+// Google Sheets (pub CSV) no envia cabecera CORS, asi que al abrir el
+// dashboard como archivo local (file://) o desde ciertas redes, el navegador
+// bloquea la peticion directa. Usamos un proxy que agrega esa cabecera,
+// con un par de alternativas por si alguno de los servicios esta caido.
+const CORS_PROXIES = [
+  url => url, // directo: el Apps Script ya agrega la cabecera CORS correcta
+  url => 'https://corsproxy.io/?url=' + encodeURIComponent(url),
+  url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)
+];
+
+async function fetchConProxy(url) {
+  // Parámetro anti-cache: cambia en cada llamado para evitar que Google
+  // Apps Script o los proxies intermedios devuelvan una copia vieja guardada.
+  const urlFresca = url + (url.includes('?') ? '&' : '?') + '_cb=' + Date.now();
+  let ultimoError = null;
+  for (const construirUrl of CORS_PROXIES) {
+    try {
+      const resp = await fetch(construirUrl(urlFresca), { cache: 'no-store' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const texto = await resp.text();
+      if (!texto || texto.trim().length < 5) throw new Error('Respuesta vacia');
+      // Si un proxy devuelve una página de error/HTML (p.ej. límite de uso
+      // excedido) en vez del CSV real, la descartamos para no corromper el
+      // dashboard con datos falsos.
+      if (texto.trim().startsWith('<')) throw new Error('Respuesta no es CSV (proxy devolvió HTML)');
+      return texto;
+    } catch (e) {
+      ultimoError = e;
+    }
   }
+  throw ultimoError || new Error('No se pudo conectar');
+}
+
+async function cargarDatos() {
+  // Candado de concurrencia: si la petición anterior todavía no termina,
+  // no lanzamos otra en paralelo. Con un intervalo tan corto (1-5s) y un
+  // Google Apps Script que puede tardar varios segundos en responder, sin
+  // este candado se disparaban peticiones superpuestas y la que respondía
+  // más lento podía "pisar" a la más reciente — eso era lo que causaba el
+  // salto entre datos viejos/nuevos/borrados.
+  if (cargando) return;
+  cargando = true;
+
+  // Número de secuencia de esta petición: si al terminar ya hay una petición
+  // más nueva en curso (o completada), descartamos este resultado aunque
+  // haya llegado bien, para nunca pintar una respuesta obsoleta encima de
+  // una más reciente.
+  const miTurno = ++turnoCarga;
+  let csv = null;
+
+  try {
+    csv = await fetchConProxy(URL_SHEET);
+    if (miTurno !== turnoCarga) return; // ya hay algo más nuevo en curso, descartar
+
+    const em = document.getElementById('errMsg');
+    if (em) em.style.display = 'none';
+    if (csv === ultimoCSVRaw) {
+      // Los datos no cambiaron: solo refrescamos el reloj de "última actualización"
+      // y NO tocamos el DOM del dashboard, para que no haya parpadeos ni saltos.
+      actualizarTimestamp();
+      return;
+    }
+    ultimoCSVRaw = csv;
+    procesarCSV(csv);
+  } catch(e) {
+    if (miTurno !== turnoCarga) return; // respuesta obsoleta, ignorar
+    // Importante: si ya teníamos datos cargados en pantalla, NO los borramos
+    // por un fallo puntual de red/proxy (eso era lo que hacía "desaparecer"
+    // la información cada cierto tiempo). Solo mostramos un aviso discreto y
+    // reintentamos automáticamente en el próximo ciclo.
+    // Si procesarCSV detectó una respuesta corrupta/incompleta (ver
+    // validación anti-corrupción dentro de procesarCSV), también "olvidamos"
+    // el CSV guardado como referencia para que el próximo intento no lo
+    // confunda con "sin cambios" y vuelva a intentar procesar uno bueno.
+    if (ultimoCSVRaw === csv) ultimoCSVRaw = null;
+    const em = document.getElementById('errMsg');
+    if (em) {
+      em.textContent = 'Aviso: no se pudo actualizar en el último intento (reintentando)… '+e.message;
+      em.style.display = 'block';
+    }
+    if (!J.length) {
+      document.getElementById('grid').innerHTML = '<div class="nodata">Sin datos disponibles</div>';
+    }
+  } finally {
+    cargando = false;
+  }
+}
+
+function actualizarTimestamp() {
+  let ts = document.getElementById('ts');
+  if(!ts){ts=document.createElement('div');ts.id='ts';ts.style.cssText='position:fixed;bottom:10px;right:10px;background:#161b27;border:1px solid #21283a;padding:6px 10px;border-radius:6px;font-size:11px;color:#5a677f;z-index:9999';document.body.appendChild(ts);}
+  ts.textContent='Última actualización: '+new Date().toLocaleString('es-CL');
 }
 
 function procesarCSV(csv) {
   const filas = parseCSV(csv);
   if (!filas.length) return;
+
+  // Backups para poder revertir sin dejar el dashboard a medio-actualizar si
+  // esta respuesta resulta estar corrupta/incompleta (ver validaciones abajo).
+  const J_backup = J;
+  const MESES_BLOQUES_backup = MESES_BLOQUES;
+  const mesActivo_backup = mesActivo;
 
   // Detectar header row
   let headerIdx = -1;
@@ -612,6 +718,26 @@ function procesarCSV(csv) {
     const f12 = (f[12]||'').toLowerCase();
     if (f.length>25 && f12.includes('nivel') && f6.includes('j')) { headerIdx=i; break; }
     if (f.length>25 && ((f[21]||'').toLowerCase().includes('cap')||(f[22]||'').toLowerCase().includes('matricula'))) { headerIdx=i; break; }
+  }
+
+  // ── VALIDACIÓN ANTI-CORRUPCIÓN ────────────────────────────────────────────
+  // Los proxies CORS intermedios (corsproxy.io / allorigins) a veces devuelven
+  // una copia parcial, cacheada a medias, o truncada de la hoja — sobre todo
+  // bajo carga o al llegar a su límite de uso. Ese CSV "parece" válido (no
+  // arranca con "<") pero tiene muchas menos filas de lo normal, o ni
+  // siquiera contiene la fila de cabecera esperada. Antes esto se pintaba
+  // igual en pantalla, causando el efecto de "parpadeo": aparecían datos
+  // viejos, luego datos incompletos/borrados, y recién en el siguiente ciclo
+  // bueno se estabilizaba. Ahora, si ya tenemos una carga buena previa,
+  // comparamos contra ella y descartamos silenciosamente cualquier respuesta
+  // sospechosa, reintentando en el siguiente ciclo sin tocar la pantalla.
+  if (ultimoNumFilasValidas > 0) {
+    if (headerIdx === -1) {
+      throw new Error('No se encontró la cabecera esperada en la respuesta (posible respuesta corrupta)');
+    }
+    if (filas.length < ultimoNumFilasValidas * 0.7) {
+      throw new Error('Respuesta con muchas menos filas de lo esperado (posible corte/proxy caído)');
+    }
   }
   if (headerIdx===-1) headerIdx=0;
 
@@ -655,7 +781,11 @@ function procesarCSV(csv) {
   });
   const maxSuma = Math.max(...conteoMat, 1);
   mesActivo = conteoMat[0] >= maxSuma * 0.5 ? 0 : conteoMat.indexOf(maxSuma);
-  mesFiltro = mesActivo;
+  // Solo forzamos mesFiltro al mes activo en la carga inicial. En refrescos
+  // posteriores respetamos el mes que el usuario haya seleccionado, para que
+  // la vista no "salte" de vuelta al mes actual cada vez que llegan datos nuevos.
+  if (cargaInicial) { mesFiltro = mesActivo; cargaInicial = false; }
+  else if (mesFiltro >= MESES_BLOQUES.length) { mesFiltro = mesActivo; }
 
   // mesTabs se renderiza cuando se abre la tab de asistencia
   // NO llamar aquí porque el elemento puede no existir aún
@@ -770,6 +900,20 @@ function procesarCSV(csv) {
   // Post-proceso
   J = Object.values(jardines);
 
+  // Segunda validación anti-corrupción: si ya teníamos una carga buena con
+  // varias decenas de jardines reconocidos y esta pasada reconoció muchísimos
+  // menos, es casi seguro que el CSV llegó mutilado a mitad de camino (por
+  // ejemplo un proxy que cortó la respuesta). Revertimos a los datos previos
+  // en vez de pintar un dashboard con jardines "desaparecidos".
+  if (ultimoNumJardinesValidos > 0 && J.length < ultimoNumJardinesValidos * 0.7) {
+    J = J_backup;
+    MESES_BLOQUES = MESES_BLOQUES_backup;
+    mesActivo = mesActivo_backup;
+    throw new Error('Se reconocieron muy pocos jardines ('+Object.values(jardines).length+' de '+ultimoNumJardinesValidos+' esperados); se descarta esta actualización');
+  }
+  ultimoNumFilasValidas = filas.length;
+  ultimoNumJardinesValidos = J.length;
+
   // "Dias trabaj." GLOBAL del corte activo: el valor real (no el total del mes)
   // que representa cuántos días de este mes ya tienen datos cargados en el sheet.
   // Se toma como el MÁXIMO entre todas las salas (no la moda): si UNA sala ya
@@ -838,9 +982,7 @@ function procesarCSV(csv) {
   db.style.display = 'block';
 
   // Timestamp
-  let ts = document.getElementById('ts');
-  if(!ts){ts=document.createElement('div');ts.id='ts';ts.style.cssText='position:fixed;bottom:10px;right:10px;background:#161b27;border:1px solid #21283a;padding:6px 10px;border-radius:6px;font-size:11px;color:#5a677f;z-index:9999';document.body.appendChild(ts);}
-  ts.textContent='Última actualización: '+new Date().toLocaleString('es-CL');
+  actualizarTimestamp();
 
   try {
     render();
@@ -917,7 +1059,7 @@ function exportarPDF() {
       <td>${s.nivel}</td><td>${s.s}</td><td>${s.cap}</td><td>${s.mat}</td>
       <td>${s.lista||'—'}</td>
       <td style="color:${s.cupos>0?'#16a34a':s.cupos<0?'#dc2626':'#64748b'};font-weight:600">${s.cupos>0?'+'+s.cupos:s.cupos}</td>
-      <td style="color:${s.asist>=75?'#16a34a':s.asist>=55?'#d97706':s.asist>0?'#dc2626':'#94a3b8'};font-weight:600">${s.asist>0?s.asist.toFixed(1)+'%':'—'}</td>
+      <td style="color:${asistColorPDF(s.asist)};font-weight:600">${s.asist>0?s.asist.toFixed(1)+'%':'—'}</td>
     </tr>`).join('');
 
   const tablaJNTJMJ = j.tjmj.salas.length ? j.tjmj.salas.map(s=>`
@@ -925,7 +1067,7 @@ function exportarPDF() {
       <td>${s.nivel}</td><td>${s.s}</td><td>${s.cap}</td><td>${s.mat}</td>
       <td>${s.lista||'—'}</td>
       <td style="color:${s.cupos>0?'#16a34a':s.cupos<0?'#dc2626':'#64748b'};font-weight:600">${s.cupos>0?'+'+s.cupos:s.cupos}</td>
-      <td style="color:${s.asist>=75?'#16a34a':s.asist>=55?'#d97706':s.asist>0?'#dc2626':'#94a3b8'};font-weight:600">${s.asist>0?s.asist.toFixed(1)+'%':'—'}</td>
+      <td style="color:${asistColorPDF(s.asist)};font-weight:600">${s.asist>0?s.asist.toFixed(1)+'%':'—'}</td>
     </tr>`).join('') : '';
 
   // ── Sección 2: Asistencia diaria del mes seleccionado ──────────────────────
@@ -948,8 +1090,8 @@ function exportarPDF() {
     if(typeof v==='string'&&v) return `<td style="text-align:center;background:#fef9c3;color:#78350f;font-weight:700;font-size:9px">${v}</td>`;
     if(typeof v==='number'&&v>0){
       const pctD = s.mat>0?v/s.mat*100:0;
-      const bg = pctD>=75?'#f0fdf4':pctD>=55?'#fefce8':'#fef2f2';
-      const clr= pctD>=75?'#15803d':pctD>=55?'#a16207':'#b91c1c';
+      const bg = asistBgPDF(pctD);
+      const clr= asistColorPDF(pctD);
       return `<td style="text-align:center;background:${bg};color:${clr};font-size:10px;font-weight:600">${v}</td>`;
     }
     return `<td style="text-align:center;color:#cbd5e1;font-size:10px">—</td>`;
@@ -972,7 +1114,7 @@ function exportarPDF() {
     const filas = salasFiltradas.map(s => {
       const celdas = idxs.map(di => celdaAsist(s, di)).join('');
       const jorTag = s._jorn==='TJMJ'?'<span style="font-size:8px;background:#ede9fe;color:#6d28d9;border-radius:3px;padding:1px 4px;margin-left:3px">TJMJ</span>':'';
-      const totalCell = mostrarTotal ? `<td class="asist-total-col" style="text-align:center;font-size:10px;font-weight:700;padding:4px 6px;color:${s.asist>=75?'#15803d':s.asist>=55?'#a16207':s.asist>0?'#b91c1c':'#94a3b8'}">${s.asist>0?s.asist.toFixed(1)+'%':'—'}</td>` : '';
+      const totalCell = mostrarTotal ? `<td class="asist-total-col" style="text-align:center;font-size:10px;font-weight:700;padding:4px 6px;color:${asistColorPDF(s.asist)}">${s.asist>0?s.asist.toFixed(1)+'%':'—'}</td>` : '';
       return `<tr>
         <td style="font-size:10px;white-space:nowrap;padding:4px 6px;font-weight:600">${s.nivel}${jorTag}</td>
         <td style="font-size:10px;color:#64748b;padding:4px 6px">${s.s}</td>
@@ -1014,9 +1156,14 @@ function exportarPDF() {
     if(jorn==='ambas'||jorn==='tjmj') sl=sl.concat(j.tjmj.salas.map(s=>({...s})));
     const diasM = sl.map(s=>(s.diasPorMes&&s.diasPorMes[mi])||[]);
     const totM = sl.reduce((a,s)=>a+s.mat,0);
-    const sumA = diasM.reduce((a,d)=>a+d.reduce((x,v)=>x+(typeof v==='number'&&v>0?v:0),0),0);
-    const denom = totM*(b.diasCols.length||1);
-    const pct = denom>0?parseFloat((sumA/denom*100).toFixed(1)):0;
+    // Denominador correcto: solo los días que YA tienen datos cargados (no el
+    // total de días hábiles del mes completo), igual que en la tabla de detalle.
+    const nDiasBlk = b.diasCols.length;
+    const totDiasArr = Array(nDiasBlk).fill(0);
+    diasM.forEach(d=>d.forEach((v,i)=>{ if(typeof v==='number'&&v>0) totDiasArr[i]+=v; }));
+    const diasConDatos = totDiasArr.filter(v=>v>0).length;
+    const sumA = totDiasArr.reduce((a,v)=>a+v,0);
+    const pct = (totM&&diasConDatos)?parseFloat((sumA/(diasConDatos*totM)*100).toFixed(1)):0;
     // Causales
     const causales={};
     for(let di=0;di<b.diasCols.length;di++){
@@ -1028,7 +1175,7 @@ function exportarPDF() {
     return { mes:b.nombre.charAt(0)+b.nombre.slice(1).toLowerCase(), pct, causStr, esActual:mi===mesActivo };
   });
   const evolTabla = evolRows.map(e=>{
-    const clr=e.pct>=75?'#15803d':e.pct>=55?'#a16207':e.pct>0?'#b91c1c':'#94a3b8';
+    const clr=asistColorPDF(e.pct);
     return `<tr>
       <td>${e.mes}${e.esActual?' ●':''}</td>
       <td style="text-align:center;color:${clr};font-weight:700">${e.pct>0?e.pct+'%':'Sin datos'}</td>
@@ -1111,12 +1258,12 @@ function exportarPDF() {
 
       <div class="two-col">
         ${j.jn.salas.length?`<div>
-          <div style="font-size:9px;font-weight:700;color:#1d4ed8;margin-bottom:4px"><span class="tag tag-jn">JN</span> Jornada Normal — % Asistencia: <span style="color:${j.jn.asist>=75?'#16a34a':j.jn.asist>=55?'#d97706':'#dc2626'}">${j.jn.asist>0?j.jn.asist+'%':'—'}</span></div>
+          <div style="font-size:9px;font-weight:700;color:#1d4ed8;margin-bottom:4px"><span class="tag tag-jn">JN</span> Jornada Normal — % Asistencia: <span style="color:${asistColorPDF(j.jn.asist)}">${j.jn.asist>0?j.jn.asist+'%':'—'}</span></div>
           <table><thead><tr><th>Nivel</th><th>Sala</th><th>Cap</th><th>Mat</th><th>L.E</th><th>Cupos</th><th>Asist.</th></tr></thead>
           <tbody>${tablaJN}</tbody></table>
         </div>`:'<div></div>'}
         ${j.tjmj.salas.length?`<div>
-          <div style="font-size:9px;font-weight:700;color:#6d28d9;margin-bottom:4px"><span class="tag tag-tjmj">TJMJ</span> TJMJ — % Asistencia: <span style="color:${j.tjmj.asist>=75?'#16a34a':j.tjmj.asist>=55?'#d97706':'#dc2626'}">${j.tjmj.asist>0?j.tjmj.asist+'%':'—'}</span></div>
+          <div style="font-size:9px;font-weight:700;color:#6d28d9;margin-bottom:4px"><span class="tag tag-tjmj">TJMJ</span> TJMJ — % Asistencia: <span style="color:${asistColorPDF(j.tjmj.asist)}">${j.tjmj.asist>0?j.tjmj.asist+'%':'—'}</span></div>
           <table><thead><tr><th>Nivel</th><th>Sala</th><th>Cap</th><th>Mat</th><th>L.E</th><th>Cupos</th><th>Asist.</th></tr></thead>
           <tbody>${tablaJNTJMJ}</tbody></table>
         </div>`:''}
@@ -1246,7 +1393,7 @@ function sw(id,el) {
 }
 function setF(f,btn){fil=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');render();}
 function setComuna(c){comunaFil=c;document.querySelectorAll('.cbtn').forEach(b=>b.classList.toggle('on',b.dataset.c===(c||'')));render();}
-function bc(p){return p>=75?'g':p>=55?'a':'r';}
+function bc(p){return p>=70?'g':'r';}
 function tagCupos(c){
   if(c>0) return `<span class="tag-cupos g">+${c} cupos</span>`;
   if(c<0) return `<span class="tag-cupos r">Sobre cupo</span>`;
@@ -1262,7 +1409,7 @@ function nivelesHtml(salas) {
     <thead><tr><th>Nivel</th><th>Sala</th><th>Cap</th><th>Mat</th><th title="Lista de Espera">L.E.</th><th>Cupos</th><th>Asist.</th></tr></thead>
     <tbody>${salas.map(s=>{
       const ap=s.asist>0?s.asist.toFixed(1)+'%':'—';
-      const ac=s.asist>=75?'#34d399':s.asist>=55?'#fbbf24':'#f87171';
+      const ac=asistColor(s.asist);
       return `<tr>
         <td>${s.nivel}</td>
         <td style="color:#5a677f">${s.s}</td>
@@ -1345,7 +1492,10 @@ function renderComunaChart(data) {
   const maxAsist = 100;
 
   box.style.display = 'block';
-  setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+  // NOTA: antes esto hacía scrollIntoView automáticamente al aplicar un filtro
+  // de comuna, lo que desplazaba la página hacia abajo sin que el usuario lo
+  // pidiera. Se quitó a propósito: la página debe quedarse quieta donde el
+  // usuario esté hasta que él mismo decida bajar a ver el gráfico.
   box.innerHTML = `
     <div class="comuna-chart-title">📊 ${comunaFil} — Jardines por ocupación y asistencia</div>
     <div class="com-grid">
@@ -1354,7 +1504,7 @@ function renderComunaChart(data) {
         <div class="com-bars">
           ${rows.map(r => {
             const pct = r.cap > 0 ? (r.mat/r.cap*100) : 0;
-            const clr = pct>=75?'#34d399':pct>=55?'#fbbf24':'#f87171';
+            const clr = ocupColor(pct);
             return `<div class="com-bar-row">
               <div class="com-bar-label" title="${r.n}">${r.n}</div>
               <div class="com-bar-track"><div class="com-bar-fill" style="width:${Math.min(pct,100)}%;background:${clr}"></div></div>
@@ -1368,7 +1518,7 @@ function renderComunaChart(data) {
         <div class="com-bars">
           ${rows.map(r => {
             const pct = r.ocup || 0;
-            const clr = pct>=75?'#34d399':pct>=55?'#fbbf24':pct>0?'#f87171':'#3d4f6a';
+            const clr = asistColor(pct);
             return `<div class="com-bar-row">
               <div class="com-bar-label" title="${r.n}">${r.n}</div>
               <div class="com-bar-track"><div class="com-bar-fill" style="width:${Math.min(pct,100)}%;background:${clr}"></div></div>
@@ -1391,6 +1541,10 @@ function render() {
   let data = J.filter(j=>j.n.toLowerCase().includes(q));
   if (fil==='cupos') data=data.filter(j=>j.jn.cupos>0);
   if (fil==='lleno') data=data.filter(j=>j.jn.cupos<=0);
+  // "Sin actualizar": mismo criterio que la insignia de alerta en cada card
+  // (5 días o más sin cambios en sus datos clave), o sin ningún registro de
+  // cambio todavía (nunca se detectó una carga previa para ese jardín).
+  if (fil==='desact') data=data.filter(j=>{ const d=diasSinCambio(j); return d===null || d>=5; });
   if (comunaFil) data=data.filter(j=>(COMUNAS[j.n]||'')===comunaFil);
 
   const tCapJard   = data.reduce((s,j)=>s+j.jn.cap,0);
@@ -1472,6 +1626,12 @@ function render() {
   const g = document.getElementById('grid');
   if (!data.length){g.innerHTML='<div class="nodata" style="grid-column:1/-1">Sin resultados</div>';return;}
 
+  // Preservar qué cards estaban abiertas y la posición de scroll, para que
+  // redibujar el grid (por refresco automático) no cierre lo que el usuario
+  // tenía abierto ni haga saltar la página.
+  const openIds = Array.from(g.querySelectorAll('.card.open')).map(c=>c.id);
+  const scrollYPrev = window.scrollY;
+
   g.innerHTML = data.map((j,di)=>{
     const jn=j.jn;
     const bj=bc(jn.asist);
@@ -1494,7 +1654,7 @@ function render() {
           <div class="cm"><div class="cm-l">Cap. JN</div><div class="cm-v">${jn.cap||'—'}</div></div>
           <div class="cm"><div class="cm-l">Matrícula</div><div class="cm-v">${jn.mat||'—'}</div></div>
           <div class="cm"><div class="cm-l">L.Espera</div><div class="cm-v" style="color:${jn.lista>0?'#fbbf24':'#5a677f'}">${jn.lista||'—'}</div></div>
-          <div class="cm"><div class="cm-l">Ocup.</div><div class="cm-v">${jn.ocup}</div></div>
+          <div class="cm"><div class="cm-l">Ocup.</div><div class="cm-v" style="color:${ocupColor(parseFloat(jn.ocup))}">${jn.ocup}</div></div>
         </div>
         <div class="asist-bar-wrap">
           <div class="asist-bar-bg"><div class="asist-bar-f ${bj}" style="width:${Math.min(jn.asist||0,100)}%"></div></div>
@@ -1523,6 +1683,19 @@ function render() {
       </div>
     </div>`;
   }).join('');
+
+  // Restaurar cards que estaban abiertas y la posición de scroll
+  if (openIds.length) {
+    openIds.forEach(id=>{
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.add('open');
+        const tog = el.querySelector('.card-toggle');
+        if (tog) tog.textContent = '▴ ocultar desglose';
+      }
+    });
+  }
+  if (scrollYPrev) window.scrollTo(0, scrollYPrev);
 }
 
 function toggleCard(cid) {
@@ -1638,11 +1811,19 @@ function renderEvolucion(){
     if(jorn==='ambas'||jorn==='tjmj') salas=salas.concat(j.tjmj.salas.map(s=>({...s,_jorn:'tjmj'})));
 
     const diasMes=salas.map(s=>(s.diasPorMes&&s.diasPorMes[mi])||[]);
-    const nDias=blk.diasCols.length||1;
     const totMat=salas.reduce((a,s)=>a+s.mat,0);
-    const sumA=diasMes.reduce((a,d)=>a+d.reduce((b,v)=>b+(typeof v==='number'&&v>0?v:0),0),0);
-    const denom=totMat*nDias;
-    let pct=denom>0?parseFloat((sumA/denom*100).toFixed(1)):0;
+    // IMPORTANTE: el denominador debe usar solo los días que YA tienen datos
+    // cargados (igual que la tabla "Detalle por nivel/día" y su fila TOTAL
+    // JARDÍN), no el total de días hábiles del mes completo. Usar el mes
+    // completo como denominador deflacta el % cuando aún faltan días por
+    // cargar — esto es lo que causaba que esta card mostrara un % distinto
+    // (más bajo) que la tabla de detalle para el mismo jardín y mes.
+    const nDiasBlk=blk.diasCols.length;
+    const totDiasArr=Array(nDiasBlk).fill(0);
+    diasMes.forEach(d=>d.forEach((v,i)=>{ if(typeof v==='number'&&v>0) totDiasArr[i]+=v; }));
+    const diasConDatos=totDiasArr.filter(v=>v>0).length;
+    const sumA=totDiasArr.reduce((a,v)=>a+v,0);
+    let pct=(totMat&&diasConDatos)?parseFloat((sumA/(diasConDatos*totMat)*100).toFixed(1)):0;
     // Fallback a % asistencia directo si no hay dias
     if(!pct){
       const conA=salas.filter(s=>s.asist>0);
@@ -1652,7 +1833,6 @@ function renderEvolucion(){
     // Causales: contar por DÍA único (no por sala×nivel)
     // Si en el día di varias salas tienen la misma causal, cuenta solo 1
     const causales={};
-    const nDiasBlk = blk.diasCols.length;
     for(let di=0; di<nDiasBlk; di++){
       // Recolectar causales distintas que aparecen en cualquier sala para ese día
       const causalesDelDia = new Set();
@@ -1671,7 +1851,7 @@ function renderEvolucion(){
 
   // Cards
   document.getElementById('evolGrid').innerHTML=evolData.map((e,i)=>{
-    const clr=e.pct>=75?'#34d399':e.pct>=55?'#fbbf24':'#f87171';
+    const clr=asistColor(e.pct);
     const sel=i===mesFiltro;
     const causStr=Object.entries(e.causales).map(([k,n])=>`<span style="font-size:10px;color:#a78bfa">${k}:${n}</span>`).join(' ');
     return `<div class="evol-mes-card${sel?' selected':''}"
@@ -1762,7 +1942,7 @@ function cellHtml(val,mat){
   const v=typeof val==='number'?val:0;
   if(!v) return `<span class="cell-v z">—</span>`;
   const p=mat>0?Math.round(v/mat*100):0;
-  return `<span class="cell-v ${p>=75?'g':p>=55?'a':'r'}" title="${p}%">${v}</span>`;
+  return `<span class="cell-v ${asistClase(p)}" title="${p}%">${v}</span>`;
 }
 
 // Tabla detalle por nivel/día
@@ -1815,7 +1995,7 @@ function renderDetalle(){
         tbody+=`<td>${cellHtml(v,s.mat)}</td>`;
       });
       tbody+=`<td style="font-weight:600;color:#e2e8f0">${totalS||'—'}</td>
-              <td style="color:${pctS>=75?'#34d399':pctS>=55?'#fbbf24':'#f87171'}">${totalS?pctS+'%':'—'}</td></tr>`;
+              <td style="color:${asistColor(pctS)}">${totalS?pctS+'%':'—'}</td></tr>`;
     });
 
     // Subtotal jornada
@@ -1824,7 +2004,7 @@ function renderDetalle(){
     tbody+=`<tr class="total-row">
       <td class="left" style="color:#60a5fa">TOTAL ${jk.toUpperCase()}</td>
       <td colspan="3" style="color:#5a677f">${jMat} mat.</td>
-      ${jDias.map(v=>{const p=jMat?Math.round(v/jMat*100):0;return`<td><span class="cell-v ${v>0?(p>=75?'g':p>=55?'a':'r'):'z'}">${v||'—'}</span></td>`;}).join('')}
+      ${jDias.map(v=>{const p=jMat?Math.round(v/jMat*100):0;return`<td><span class="cell-v ${v>0?asistClase(p):'z'}">${v||'—'}</span></td>`;}).join('')}
       <td style="color:#60a5fa;font-weight:700">${jt||'—'}</td>
       <td style="color:#fbbf24">${jt&&jp?jp+'%':'—'}</td></tr>`;
   });
@@ -1836,7 +2016,7 @@ function renderDetalle(){
     tbody+=`<tr class="total-row" style="border-top:2px solid #21283a">
       <td class="left" style="color:#fbbf24">TOTAL JARDÍN</td>
       <td colspan="3" style="color:#5a677f">${totMat} mat.</td>
-      ${totDias.map(v=>{const p=totMat?Math.round(v/totMat*100):0;return`<td><span class="cell-v ${v>0?(p>=75?'g':p>=55?'a':'r'):'z'}">${v||'—'}</span></td>`;}).join('')}
+      ${totDias.map(v=>{const p=totMat?Math.round(v/totMat*100):0;return`<td><span class="cell-v ${v>0?asistClase(p):'z'}">${v||'—'}</span></td>`;}).join('')}
       <td style="color:#fbbf24;font-weight:700">${gt||'—'}</td>
       <td style="color:#fbbf24">${gt&&gp?gp+'%':'—'}</td></tr>`;
   }
@@ -1893,7 +2073,7 @@ function renderSemana(){
     const gP=totMat&&dConT?Math.round(tT/(dConT*totMat)*100):0;
     rows+=`<tr class="total-sem">
       <td class="left" style="color:#fbbf24">TOTAL</td><td>${totMat}</td><td>—</td>
-      ${totSem.map(v=>{const p=totMat?Math.round(v/totMat*100):0;return`<td><span class="cell-v ${v>0?(p>=75?'g':p>=55?'a':'r'):'z'}">${v||'—'}</span></td>`;}).join('')}
+      ${totSem.map(v=>{const p=totMat?Math.round(v/totMat*100):0;return`<td><span class="cell-v ${v>0?asistClase(p):'z'}">${v||'—'}</span></td>`;}).join('')}
       <td style="color:#fbbf24">${tT&&gP?gP+'%':'—'}</td></tr>`;
 
     return `<div class="sem-blk">
@@ -1954,9 +2134,26 @@ function renderGrafico(){
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
+// El polling se bajó de 1s a 20s: pedir la hoja cada 1 segundo saturaba los
+// proxies CORS gratuitos (corsproxy.io / allorigins), que ante ese volumen
+// respondían de forma intermitente con copias parciales/caducas — eso era lo
+// que causaba el "parpadeo" (se veía el dato anterior, luego el nuevo, y
+// recién se estabilizaba varios ciclos después). 20s sigue siendo lo bastante
+// frecuente para reflejar cambios de la planilla casi en tiempo real, pero
+// deja margen de sobra para que cada respuesta llegue completa.
+const INTERVALO_REFRESCO_MS = 20000;
+
 window.addEventListener('load',()=>{
   cargarDatos();
-  setInterval(cargarDatos, 60000);
+  setInterval(cargarDatos, INTERVALO_REFRESCO_MS);
+});
+
+// Al volver a la pestaña (el usuario la minimizó, cambió de app, o la dejó
+// de fondo) forzamos un refresco inmediato, para que "cuando lo abro" el
+// usuario siempre vea el dato más reciente sin tener que esperar el próximo
+// ciclo del intervalo.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') cargarDatos();
 });
 </script>
 </body>
